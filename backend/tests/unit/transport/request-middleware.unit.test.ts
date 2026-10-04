@@ -4,7 +4,10 @@ import { randomBytes } from "node:crypto";
 import test from "node:test";
 import { createEncryptedTransportEnvelope, getTransportAad, wrapAesKey } from "../../../src/modules/transport/infrastructure/TransportCrypto";
 import { createTestTransportKeyStore } from "../../../src/modules/transport/infrastructure/TransportKeyStore";
-import { createTransportMiddleware } from "../../../src/middleware/transport";
+import {
+  createTransportMiddleware,
+  isTransportPlaintextEndpoint,
+} from "../../../src/middleware/transport";
 import { startTestServer } from "../../support/appFactory";
 
 async function createEncryptedRequest(
@@ -80,4 +83,15 @@ test("transport middleware rejects malformed request keys generically", async ()
   } finally {
     await close();
   }
+});
+
+test("keeps inspection image proxy responses plaintext for browser image/PDF loading", () => {
+  assert.equal(
+    isTransportPlaintextEndpoint({
+      method: "GET",
+      path: "/api/upload/inspection-image/user-1/capture.jpg",
+      query: {},
+    } as any),
+    true,
+  );
 });

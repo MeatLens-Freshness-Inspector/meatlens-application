@@ -1,5 +1,7 @@
 import { resolveReportOrganization } from "../../model/organizations";
 import type { ReportTemplateKey } from "@/features/reports/model/types";
+import { createAuthHeaders } from "@/shared/api/auth-headers";
+import { API_BASE_URL } from "@/shared/api/base-url";
 
 const REPORT_TEMPLATE_FRAME_ASSET_PATHS: Record<ReportTemplateKey, string> = {
   gcccs: "/letterheads/rendered/gcccs-page.png",
@@ -31,7 +33,11 @@ async function readReportAssetAsDataUrl(
   path: string,
   expectedImage = false,
 ): Promise<string> {
-  const response = await fetch(path);
+  const requestUrl = expectedImage ? buildInspectionImageRequestUrl(path) : path;
+  const response = await fetch(
+    requestUrl,
+    requestUrl === path ? undefined : { headers: createAuthHeaders() },
+  );
 
   if (!response.ok) {
     throw new Error(
@@ -68,6 +74,26 @@ export async function loadOptionalReportImageAsset(
     return await readReportAssetAsDataUrl(path);
   } catch {
     return null;
+  }
+}
+
+export function buildInspectionImageRequestUrl(path: string): string {
+  try {
+    const url = new URL(path);
+    const storageMarker = "/storage/v1/object/public/inspection-images/";
+    if (!url.hostname.endsWith(".supabase.co") || !url.pathname.includes(storageMarker)) {
+      return path;
+    }
+
+    const storagePath = url.pathname.slice(url.pathname.indexOf(storageMarker) + storageMarker.length);
+    const segments = storagePath.split("/").filter(Boolean).map((segment) => decodeURIComponent(segment));
+    if (segments.length !== 2 || segments.some((segment) => segment.includes(".."))) {
+      return path;
+    }
+
+    return `${API_BASE_URL}/upload/inspection-image/${segments.map(encodeURIComponent).join("/")}`;
+  } catch {
+    return path;
   }
 }
 

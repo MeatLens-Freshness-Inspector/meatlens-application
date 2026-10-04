@@ -11,5 +11,10 @@ router.post(
   requireAuthentication,
   (req, res) => controller.uploadInspectionImage(req, res)
 );
+router.get(
+  "/inspection-image/:userId/:fileName",
+  requireAuthentication,
+  (req, res) => void controller.getInspectionImage(req, res),
+);
 
 export default router;

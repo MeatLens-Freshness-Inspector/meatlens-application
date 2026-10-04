@@ -173,6 +173,11 @@ const statsOperations: ApiDocsOperation[] = [
 
 const uploadOperations: ApiDocsOperation[] = [
   operation("upload-inspection-image", "upload", "POST", "/upload/inspection-image", "Upload an inspection image", "Authenticated", { body: formDataBody([fileField("image", "Inspection image", "image/*")]) }),
+  operation("upload-inspection-image-read", "upload", "GET", "/upload/inspection-image/{userId}/{fileName}", "Read an inspection image", "Authenticated", {
+    parameters: [pathParameter("userId", "Inspection owner user id"), pathParameter("fileName", "Stored image filename")],
+    responseKind: "blob",
+    responseContentType: "image/*",
+  }),
 ];
 
 const chatOperations: ApiDocsOperation[] = [

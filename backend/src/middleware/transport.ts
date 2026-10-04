@@ -183,6 +183,7 @@ export function isTransportPlaintextEndpoint(req: Request): boolean {
         && typeof req.query.token === "string"
         && req.query.token.length >= 32
       )
+      || /^\/api\/upload\/inspection-image\/[^/]+\/[^/]+$/.test(req.path)
     );
 }
 
