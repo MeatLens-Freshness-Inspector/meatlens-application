@@ -26,6 +26,26 @@ async function readTermsBeforeSignup(page: Page) {
   await termsCheckbox.click();
 }
 
+async function readPrivacyBeforeSignup(page: Page) {
+  const privacyCheckbox = page.getByRole("checkbox", {
+    name: /i have read the meatlens privacy policy/i,
+  });
+  await expect(privacyCheckbox).toBeDisabled();
+
+  await page.getByRole("button", { name: /view privacy policy/i }).click();
+  const privacyDialog = page.getByRole("dialog");
+  await expect(privacyDialog).toBeVisible();
+
+  await privacyDialog.getByTestId("privacy-scroll-container").evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event("scroll", { bubbles: true }));
+  });
+
+  await privacyDialog.getByRole("button", { name: "Close" }).click();
+  await expect(privacyCheckbox).toBeEnabled();
+  await privacyCheckbox.click();
+}
+
 test("signup requires accepting terms and conditions before account creation", async ({ page }) => {
   let signUpCalls = 0;
   let signUpPayload = "";
@@ -62,7 +82,7 @@ test("signup requires accepting terms and conditions before account creation", a
   expect(signUpCalls).toBe(0);
 
   await readTermsBeforeSignup(page);
-  await page.getByRole("checkbox", { name: /i have read the meatlens privacy policy/i }).click();
+  await readPrivacyBeforeSignup(page);
   await page.getByLabel("Report header organization").click();
   await page.getByRole("option", { name: "Gordon College CCS" }).click();
   await page.getByRole("button", { name: "Create Account" }).click();
@@ -102,7 +122,7 @@ test("signup requires selecting a report header organization before account crea
   await page.getByLabel(/^password$/i).fill("hunter22");
   await page.getByLabel("Access Code").fill("INSP-002");
   await readTermsBeforeSignup(page);
-  await page.getByRole("checkbox", { name: /i have read the meatlens privacy policy/i }).click();
+  await readPrivacyBeforeSignup(page);
 
   await page.getByRole("button", { name: "Create Account" }).click();
 
