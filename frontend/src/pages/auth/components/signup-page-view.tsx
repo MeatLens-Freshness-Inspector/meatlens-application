@@ -35,6 +35,7 @@ const SignupPageView = () => {
     acceptedTerms,
     termsReadToEnd,
     acceptedPrivacy,
+    privacyReadToEnd,
     formError,
     showTermsDialog,
     showPrivacyDialog,
@@ -50,6 +51,7 @@ const SignupPageView = () => {
     handleAcceptedTermsChange,
     handleTermsReadToEnd,
     handleAcceptedPrivacyChange,
+    handlePrivacyReadToEnd,
   } = useSignupPage({
     signUp: auth.signUp,
     isReportOrganization,
@@ -171,6 +173,7 @@ const SignupPageView = () => {
                 <Checkbox
                   id="accept-privacy"
                   checked={acceptedPrivacy}
+                  disabled={!privacyReadToEnd}
                   onCheckedChange={(checked) => {
                     handleAcceptedPrivacyChange(Boolean(checked));
                   }}
@@ -180,6 +183,11 @@ const SignupPageView = () => {
                   <Label htmlFor="accept-privacy" className="text-xs leading-relaxed">
                     I have read the MeatLens Privacy Policy.
                   </Label>
+                  {!privacyReadToEnd ? (
+                    <p className="text-xs text-muted-foreground">
+                      Open the Privacy Policy and scroll to the bottom before checking this box.
+                    </p>
+                  ) : null}
                   <Button
                     type="button"
                     variant="link"
@@ -217,7 +225,11 @@ const SignupPageView = () => {
         onOpenChange={setShowTermsDialog}
         onReadToEnd={handleTermsReadToEnd}
       />
-      <PrivacyPolicyDialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog} />
+      <PrivacyPolicyDialog
+        open={showPrivacyDialog}
+        onOpenChange={setShowPrivacyDialog}
+        onReadToEnd={handlePrivacyReadToEnd}
+      />
     </div>
   );
 };
