@@ -148,8 +148,10 @@ test("renders the scope and delimitations reference page for signed-in inspector
   await expect(page.getByRole("heading", { name: /scope and delimitations/i })).toBeVisible();
   await expect(page.getByText(/pork inspection support only/i)).toBeVisible();
   await expect(page.getByText(/field screening support only/i)).toBeVisible();
-  await expect(page.getByText(/not a lab diagnosis/i)).toBeVisible();
-  await expect(page.getByText(/not a legal certification tool/i)).toBeVisible();
+  await expect(
+    page.getByText(/not a microbiological or chemical laboratory test/i),
+  ).toBeVisible();
+  await expect(page.getByText(/legal certification tool/i)).toBeVisible();
   await expect(page.getByText(/beef, poultry, fish/i)).toBeVisible();
   await expect(
     page.getByText(/final inspection judgment remains with the inspector/i),
