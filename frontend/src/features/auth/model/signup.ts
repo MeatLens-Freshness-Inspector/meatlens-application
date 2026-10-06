@@ -1,9 +1,14 @@
 export function validateSignupState(input: {
   acceptedPrivacy: boolean;
   acceptedTerms: boolean;
+  termsReadToEnd: boolean;
   accessCode: string;
   reportOrganization: string;
 }, isReportOrganization: (value: unknown) => boolean): string | null {
+  if (!input.termsReadToEnd) {
+    return "Please open and read the Terms and Conditions through the end before accepting them.";
+  }
+
   if (!input.acceptedTerms) {
     return "Please accept the Terms and Conditions before creating an account.";
   }

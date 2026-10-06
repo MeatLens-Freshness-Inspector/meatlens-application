@@ -1,10 +1,30 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import {
   decryptEncryptedRouteRequest,
   fulfillEncryptedRoute,
   mockTransportPublicKey,
 } from "../../../support/fixtures/transport";
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
+
+async function readTermsBeforeSignup(page: Page) {
+  const termsCheckbox = page.getByRole("checkbox", {
+    name: /i have read the meatlens terms and conditions/i,
+  });
+  await expect(termsCheckbox).toBeDisabled();
+
+  await page.getByRole("button", { name: /view terms and conditions/i }).click();
+  const termsDialog = page.getByRole("dialog");
+  await expect(termsDialog).toBeVisible();
+
+  await termsDialog.getByTestId("terms-scroll-container").evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event("scroll", { bubbles: true }));
+  });
+
+  await termsDialog.getByRole("button", { name: "Close" }).click();
+  await expect(termsCheckbox).toBeEnabled();
+  await termsCheckbox.click();
+}
 
 test("signup requires accepting terms and conditions before account creation", async ({ page }) => {
   let signUpCalls = 0;
@@ -38,10 +58,10 @@ test("signup requires accepting terms and conditions before account creation", a
 
   await page.getByRole("button", { name: "Create Account" }).click();
 
-  await expect(page.getByRole("alert")).toContainText(/accept the terms and conditions/i);
+  await expect(page.getByRole("alert")).toContainText(/open and read the terms and conditions/i);
   expect(signUpCalls).toBe(0);
 
-  await page.getByRole("checkbox", { name: /i agree to the meatlens terms and conditions/i }).click();
+  await readTermsBeforeSignup(page);
   await page.getByRole("checkbox", { name: /i have read the meatlens privacy policy/i }).click();
   await page.getByLabel("Report header organization").click();
   await page.getByRole("option", { name: "Gordon College CCS" }).click();
@@ -81,7 +101,7 @@ test("signup requires selecting a report header organization before account crea
   await page.getByLabel("Email").fill("inspector.two@example.com");
   await page.getByLabel(/^password$/i).fill("hunter22");
   await page.getByLabel("Access Code").fill("INSP-002");
-  await page.getByRole("checkbox", { name: /i agree to the meatlens terms and conditions/i }).click();
+  await readTermsBeforeSignup(page);
   await page.getByRole("checkbox", { name: /i have read the meatlens privacy policy/i }).click();
 
   await page.getByRole("button", { name: "Create Account" }).click();

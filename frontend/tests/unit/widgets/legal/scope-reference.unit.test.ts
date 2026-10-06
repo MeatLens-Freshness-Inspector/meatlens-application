@@ -23,6 +23,16 @@ test("scope reference limits output to freshness and excludes health assessment"
   const reminderText = JSON.stringify(inspectScopeReminder);
 
   assert.match(scopeText, /Fresh, Not Fresh, or Spoiled/);
-  assert.match(scopeText, /does not assess sickness/);
+  assert.match(scopeText, /does not detect or diagnose sick meat/);
   assert.match(reminderText, /Freshness classification only/);
+});
+
+test("scope reference explicitly excludes sick-meat and unsupported-condition scanning", () => {
+  const scopeText = JSON.stringify(scopeReferencePage);
+
+  assert.match(scopeText, /sick meat/i);
+  assert.match(scopeText, /pathogens/i);
+  assert.match(scopeText, /contamination/i);
+  assert.match(scopeText, /chemical adulteration/i);
+  assert.match(scopeText, /non-pork/i);
 });

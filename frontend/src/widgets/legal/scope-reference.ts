@@ -30,7 +30,8 @@ export const scopeReferencePage = {
       body: [
         "MeatLens currently provides pork inspection support only.",
         "The current product scope is limited to inspector-facing pork freshness screening inside the MeatLens workflow.",
-        "The system classifies meat as Fresh, Not Fresh, or Spoiled only. It does not assess sickness, illness, pathogens, contamination, or other health conditions.",
+        "The system classifies meat as Fresh, Not Fresh, or Spoiled only. It does not detect or diagnose sick meat, disease, illness, pathogens, contamination, parasites, chemical adulteration, or other health conditions.",
+        "Freshness indicators do not establish that meat is safe, fit for consumption, or free from hazards.",
       ],
     },
     {
@@ -65,7 +66,7 @@ export const scopeReferencePage = {
       title: "Operational delimitations",
       body: [
         "MeatLens is field screening support only.",
-        "MeatLens is not a lab diagnosis and not a legal certification tool.",
+        "MeatLens is not a microbiological or chemical laboratory test, veterinary or medical diagnostic tool, legal certification tool, or standalone basis for enforcement or public-health decisions.",
       ],
     },
     {
@@ -84,6 +85,7 @@ export const scopeReferencePage = {
       ],
       bullets: [
         "Non-pork samples",
+        "Suspected sick meat, disease, illness, contamination, pathogens, parasites, or chemical adulteration",
         "Cases requiring laboratory confirmation",
         "Situations where official procedure overrides the AI output",
       ],

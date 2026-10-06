@@ -22,3 +22,11 @@ test("terms explain recommended device specifications and assessment boundaries"
   assert.match(source, /may still work/);
   assert.match(source, /does not assess sickness/);
 });
+
+test("terms explicitly exclude sick-meat and unsupported-condition scanning", () => {
+  assert.match(source, /sick meat/i);
+  assert.match(source, /pathogens/i);
+  assert.match(source, /contamination/i);
+  assert.match(source, /chemical adulteration/i);
+  assert.match(source, /non-pork/i);
+});

@@ -27,6 +27,7 @@ export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDe
     ReportOrganization | ""
   >("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [termsReadToEnd, setTermsReadToEnd] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [formError, setFormError] = useState("");
   const [showTermsDialog, setShowTermsDialog] = useState(false);
@@ -40,6 +41,7 @@ export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDe
     const validationError = validateSignupState({
       acceptedPrivacy,
       acceptedTerms,
+      termsReadToEnd,
       accessCode,
       reportOrganization,
     }, isReportOrganization);
@@ -76,10 +78,20 @@ export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDe
   };
 
   const handleAcceptedTermsChange = (checked: boolean) => {
+    if (checked && !termsReadToEnd) {
+      setAcceptedTerms(false);
+      setFormError("Please open and read the Terms and Conditions through the end before accepting them.");
+      return;
+    }
+
     setAcceptedTerms(checked);
     if (checked) {
       setFormError("");
     }
+  };
+
+  const handleTermsReadToEnd = () => {
+    setTermsReadToEnd(true);
   };
 
   const handleAcceptedPrivacyChange = (checked: boolean) => {
@@ -96,6 +108,7 @@ export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDe
     accessCode,
     reportOrganization,
     acceptedTerms,
+    termsReadToEnd,
     acceptedPrivacy,
     formError,
     showTermsDialog,
@@ -110,6 +123,7 @@ export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDe
     setShowPrivacyDialog,
     handleSubmit,
     handleAcceptedTermsChange,
+    handleTermsReadToEnd,
     handleAcceptedPrivacyChange,
   };
 }

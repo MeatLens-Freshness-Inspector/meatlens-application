@@ -51,8 +51,10 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
           </li>
           <li>
             The system assesses meat freshness only and classifies samples as <strong>Fresh, Not Fresh, or Spoiled</strong>.
-            It does not assess sickness, illness, pathogens, contamination, or other health conditions, and it does not
-            issue certifications, official findings, or regulatory rulings.
+            It does not detect or diagnose sick meat, disease, illness, pathogens, contamination, parasites, chemical
+            adulteration, or other health conditions. Freshness indicators do not establish that meat is safe, fit for
+            consumption, or free from hazards, and the system does not issue certifications, official findings, or
+            regulatory rulings.
           </li>
         </ul>
 

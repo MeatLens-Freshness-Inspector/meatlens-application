@@ -33,6 +33,7 @@ const SignupPageView = () => {
     accessCode,
     reportOrganization,
     acceptedTerms,
+    termsReadToEnd,
     acceptedPrivacy,
     formError,
     showTermsDialog,
@@ -47,6 +48,7 @@ const SignupPageView = () => {
     setShowPrivacyDialog,
     handleSubmit,
     handleAcceptedTermsChange,
+    handleTermsReadToEnd,
     handleAcceptedPrivacyChange,
   } = useSignupPage({
     signUp: auth.signUp,
@@ -133,6 +135,7 @@ const SignupPageView = () => {
                 <Checkbox
                   id="accept-terms"
                   checked={acceptedTerms}
+                  disabled={!termsReadToEnd}
                   onCheckedChange={(checked) => {
                     handleAcceptedTermsChange(Boolean(checked));
                   }}
@@ -140,8 +143,13 @@ const SignupPageView = () => {
                 />
                 <div className="space-y-1">
                   <Label htmlFor="accept-terms" className="text-xs leading-relaxed">
-                    I agree to the MeatLens Terms and Conditions.
+                    I have read the MeatLens Terms and Conditions.
                   </Label>
+                  {!termsReadToEnd ? (
+                    <p className="text-xs text-muted-foreground">
+                      Open the Terms and Conditions and scroll to the bottom before checking this box.
+                    </p>
+                  ) : null}
                   <Button
                     type="button"
                     variant="link"
@@ -204,7 +212,11 @@ const SignupPageView = () => {
           </div>
         </CardContent>
       </Card>
-      <TermsAndConditionsDialog open={showTermsDialog} onOpenChange={setShowTermsDialog} />
+      <TermsAndConditionsDialog
+        open={showTermsDialog}
+        onOpenChange={setShowTermsDialog}
+        onReadToEnd={handleTermsReadToEnd}
+      />
       <PrivacyPolicyDialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog} />
     </div>
   );
