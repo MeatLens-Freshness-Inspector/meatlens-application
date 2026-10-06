@@ -1,6 +1,8 @@
 import { ShieldAlert } from "lucide-react";
+import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
+import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import type { InspectionPreScanForm } from "@/entities/inspection";
 
 type InspectPreScanSectionProps = {
@@ -11,7 +13,7 @@ type InspectPreScanSectionProps = {
   onFieldChange: (field: keyof InspectionPreScanForm, value: string) => void;
 };
 
-type SelectFieldProps = {
+type RadioFieldProps = {
   label: string;
   field: keyof InspectionPreScanForm;
   value: string;
@@ -19,34 +21,58 @@ type SelectFieldProps = {
   onFieldChange: (field: keyof InspectionPreScanForm, value: string) => void;
 };
 
-function SelectField({
+const RADIO_OPTIONS = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+] as const;
+
+function RadioField({
   label,
   field,
   value,
   disabled,
   onFieldChange,
-}: SelectFieldProps) {
+}: RadioFieldProps) {
   return (
-    <div className="space-y-2">
-      <Label
-        htmlFor={field}
-        className="text-[11px] uppercase tracking-widest text-muted-foreground"
-      >
+    <fieldset className="space-y-2">
+      <legend className="text-[11px] uppercase tracking-widest text-muted-foreground">
         {label}
-      </Label>
-      <select
-        id={field}
-        aria-label={label}
+      </legend>
+      <RadioGroup
         value={value}
         disabled={disabled}
-        onChange={(event) => onFieldChange(field, event.target.value)}
-        className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+        aria-label={label}
+        onValueChange={(nextValue) => onFieldChange(field, nextValue)}
+        className="grid grid-cols-1 gap-2 sm:grid-cols-2"
       >
-        <option value="">Select answer</option>
-        <option value="yes">Yes</option>
-        <option value="no">No</option>
-      </select>
-    </div>
+        {RADIO_OPTIONS.map((option) => {
+          const id = `${field}-${option.value}`;
+          const isSelected = value === option.value;
+
+          return (
+            <Label
+              key={option.value}
+              htmlFor={id}
+              className={cn(
+                "flex min-h-12 cursor-pointer touch-manipulation items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+                isSelected
+                  ? "border-primary bg-primary/10 text-foreground"
+                  : "border-input bg-background text-muted-foreground hover:border-primary/60 hover:text-foreground",
+                disabled && "cursor-not-allowed opacity-60",
+              )}
+            >
+              <RadioGroupItem
+                id={id}
+                value={option.value}
+                aria-label={`${label}: ${option.label}`}
+                className="h-5 w-5 shrink-0"
+              />
+              <span>{option.label}</span>
+            </Label>
+          );
+        })}
+      </RadioGroup>
+    </fieldset>
   );
 }
 
@@ -141,7 +167,7 @@ export function InspectPreScanSection({
           />
         </div>
 
-        <SelectField
+        <RadioField
           label="Storage Correct"
           field="storageCorrect"
           value={form.storageCorrect}
@@ -149,7 +175,7 @@ export function InspectPreScanSection({
           onFieldChange={onFieldChange}
         />
 
-        <SelectField
+        <RadioField
           label="Light Color Correct"
           field="lightColorCorrect"
           value={form.lightColorCorrect}
@@ -177,7 +203,7 @@ export function InspectPreScanSection({
           </div>
         )}
 
-        <SelectField
+        <RadioField
           label="Area Clean"
           field="areaClean"
           value={form.areaClean}
