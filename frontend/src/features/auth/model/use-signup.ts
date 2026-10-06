@@ -29,6 +29,7 @@ export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDe
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [termsReadToEnd, setTermsReadToEnd] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const [privacyReadToEnd, setPrivacyReadToEnd] = useState(false);
   const [formError, setFormError] = useState("");
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
@@ -42,6 +43,7 @@ export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDe
       acceptedPrivacy,
       acceptedTerms,
       termsReadToEnd,
+      privacyReadToEnd,
       accessCode,
       reportOrganization,
     }, isReportOrganization);
@@ -95,10 +97,20 @@ export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDe
   };
 
   const handleAcceptedPrivacyChange = (checked: boolean) => {
+    if (checked && !privacyReadToEnd) {
+      setAcceptedPrivacy(false);
+      setFormError("Please open and read the Privacy Policy through the end before accepting it.");
+      return;
+    }
+
     setAcceptedPrivacy(checked);
     if (checked) {
       setFormError("");
     }
+  };
+
+  const handlePrivacyReadToEnd = () => {
+    setPrivacyReadToEnd(true);
   };
 
   return {
@@ -110,6 +122,7 @@ export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDe
     acceptedTerms,
     termsReadToEnd,
     acceptedPrivacy,
+    privacyReadToEnd,
     formError,
     showTermsDialog,
     showPrivacyDialog,
@@ -125,5 +138,6 @@ export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDe
     handleAcceptedTermsChange,
     handleTermsReadToEnd,
     handleAcceptedPrivacyChange,
+    handlePrivacyReadToEnd,
   };
 }
