@@ -7,9 +7,9 @@ async function completePreScanChecklist(page: Page) {
   await page.getByLabel(/stall number/i).fill("12-A");
   await page.getByLabel(/meat inspection certificate proof/i).fill("CERT-77");
   await page.getByLabel(/meat expiry date|expiry of meat/i).fill(futureDateOnly());
-  await page.getByLabel(/storage correct/i).selectOption("yes");
-  await page.getByLabel(/light color correct/i).selectOption("yes");
-  await page.getByLabel(/area clean/i).selectOption("yes");
+  await page.getByRole("radio", { name: "Storage Correct: Yes" }).click();
+  await page.getByRole("radio", { name: "Light Color Correct: Yes" }).click();
+  await page.getByRole("radio", { name: "Area Clean: Yes" }).click();
 }
 
 async function installMockQualityGate(page: Page) {
@@ -93,9 +93,9 @@ test("offline protocol failure queues a spoiled protocol result without AI analy
   await page.getByLabel(/stall number/i).fill("12-A");
   await page.getByLabel(/meat inspection certificate proof/i).fill("CERT-77");
   await page.getByLabel(/meat expiry date|expiry of meat/i).fill(meatExpiryDate);
-  await page.getByLabel(/storage correct/i).selectOption("no");
-  await page.getByLabel(/light color correct/i).selectOption("yes");
-  await page.getByLabel(/area clean/i).selectOption("yes");
+  await page.getByRole("radio", { name: "Storage Correct: No" }).click();
+  await page.getByRole("radio", { name: "Light Color Correct: Yes" }).click();
+  await page.getByRole("radio", { name: "Area Clean: Yes" }).click();
 
   await context.setOffline(true);
   await uploadSamplePhoto(page);

@@ -123,9 +123,9 @@ async function completePreScanChecklist(page: Page): Promise<void> {
   await page.getByLabel(/stall number/i).fill("12-A");
   await page.getByLabel(/meat inspection certificate proof/i).fill("CERT-77");
   await page.getByLabel(/meat expiry date|expiry of meat/i).fill(futureDateOnly());
-  await page.getByLabel(/storage correct/i).selectOption("yes");
-  await page.getByLabel(/light color correct/i).selectOption("yes");
-  await page.getByLabel(/area clean/i).selectOption("yes");
+  await page.getByRole("radio", { name: "Storage Correct: Yes" }).click();
+  await page.getByRole("radio", { name: "Light Color Correct: Yes" }).click();
+  await page.getByRole("radio", { name: "Area Clean: Yes" }).click();
 }
 
 test("inspectors only see the default open camera entrypoint", async ({ page }) => {
