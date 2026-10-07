@@ -63,7 +63,7 @@ Use these groups and links:
 ## Product and policy references
 
 - [Manual content](manual-content.md)
-- [Terms and conditions](NEW-Terms%20and%20Conditions.md)
+- [Terms and conditions](NEW-Terms and Conditions.md)
 - [Manual assets](manual-assets/README.md)
 ```
 
