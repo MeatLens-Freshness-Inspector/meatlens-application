@@ -2,67 +2,128 @@
 
 ## Runtime
 
-The backend is a TypeScript Express application in `backend/`. It composes module routers in `src/bootstrap/routes.ts`, starts from `src/server.ts`, and serves the API under `/api`.
+The backend is a Node.js 22+ TypeScript Express application in `backend/`.
+`src/server.ts` starts the process, `src/app.ts` creates the Express
+application, and `src/bootstrap/routes.ts` mounts the API namespaces under
+`/api`.
 
-The backend has no top-level `routes`, `controllers`, `services`, or `models` compatibility directories. Feature code lives in bounded modules; cross-cutting HTTP concerns remain in `src/middleware`.
+The backend is a modular monolith. Feature code belongs under a bounded module;
+cross-cutting HTTP and security behavior belongs under `src/middleware`,
+configuration under `src/config`, and reusable primitives under `src/shared`.
+The removed top-level `routes`, `controllers`, `services`, and `models`
+directories are not valid import locations.
+
+See [Architecture](../ARCHITECTURE.md) for the complete request flow and
+[API reference](../API_REFERENCE.md) for route behavior.
 
 ## Source layout
 
 ```text
 backend/src/
 ├── app.ts                         # Express application composition
-├── server.ts                       # process entry point
+├── server.ts                      # process entry point
 ├── bootstrap/
-│   ├── dependencies.ts             # dependency root
-│   ├── modules.ts                  # module registry
-│   └── routes.ts                   # API namespace mounting
+│   ├── dependencies.ts            # root dependency inputs
+│   ├── modules.ts                 # module registry
+│   └── routes.ts                  # API namespace mounting
+├── config/                        # environment and runtime policy
+├── integrations/                  # Supabase and external adapter boundaries
+├── middleware/                    # auth, CORS, transport, uploads, errors
 ├── modules/
 │   └── <bounded-context>/
-│       ├── domain/                 # ports, value objects, domain rules
-│       ├── application/            # one-operation use cases
-│       ├── infrastructure/        # Supabase/storage/email adapters
-│       └── presentation/           # Express routes, controllers, views
-├── middleware/                    # auth, CSRF, CORS, rate limit, uploads, errors
-├── config/                        # environment and runtime policy
-├── integrations/                  # Supabase client boundaries
-├── shared/                        # reusable primitives and HTTP responses
-└── types/                         # transport/domain types shared by modules
+│       ├── domain/                # ports, IDs, value objects, policies
+│       ├── application/           # one-operation use cases
+│       ├── infrastructure/       # Supabase/storage/email/realtime adapters
+│       ├── presentation/          # routers, controllers, views
+│       └── index.ts               # public module surface
+├── shared/                        # application, domain, HTTP, and Supabase primitives
+└── types/                         # transport and domain types shared across modules
 ```
 
-The MVC path is preserved inside every module:
+Current bounded contexts are `access-codes`, `analysis`, `analytics`, `audit`,
+`auth`, `chat`, `developer`, `inspections`, `markets`, `model-accuracy`,
+`transport`, and `users`.
+
+The normal module flow is:
 
 ```text
-HTTP route → controller → application use case → infrastructure adapter → view/response
+HTTP route
+  → controller
+  → application use case (`execute`)
+  → domain port or gateway
+  → infrastructure adapter
+  → shared view/HTTP response
 ```
 
-Application classes expose one public `execute` operation. Controllers translate HTTP input/output and do not query Supabase directly. Infrastructure owns persistence and uses explicit columns, bounded reads, deterministic ordering, and parameterized Supabase calls.
+Application classes expose one public `execute` operation. Controllers parse
+HTTP input, resolve authentication context, map status/error responses, and
+do not query Supabase directly. Infrastructure owns persistence and uses
+explicit projections, bounded reads, deterministic ordering, and parameterized
+Supabase calls.
 
 ## Composition and middleware
 
-`app.ts` applies security headers, origin rejection, CORS, JSON parsing, module routers, and the global error handler. `middleware/auth.ts` is a cross-cutting authentication adapter that uses auth and users module components; it is not a legacy service layer.
+`src/app.ts` applies the following cross-cutting order:
 
-Feature routes use `upload.ts` for inspection images and `developerPackageUpload.ts` for training-run packages. `rateLimit.ts` provides bounded in-process request throttling for public auth and chat; it does not require Redis.
+1. Security headers.
+2. Origin rejection for unsafe requests.
+3. Credentialed CORS.
+4. JSON parsing within the configured envelope limit.
+5. Transport envelope handling.
+6. Module route registration.
+7. Global error serialization.
+
+`middleware/auth.ts` resolves app-session cookies or bearer tokens, validates
+CSRF/origin conditions for unsafe cookie requests, and attaches role context.
+`upload.ts` constrains inspection multipart files. 
+`developerPackageUpload.ts` constrains training-run packages. `rateLimit.ts`
+provides bounded in-process limits for public auth and chat; it does not
+require Redis.
 
 ## Configuration
 
-Copy `backend/.env.example` to `backend/.env`. Required runtime values are:
+Copy `backend/.env.example` to `backend/.env`. The main values are:
 
 ```env
 PORT=3001
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=...
-SUPABASE_PUBLISHABLE_KEY=...
-APP_SESSION_SECRET=...
-AUDIT_LOG_KEY=<64 hex characters or base64 for 32 bytes>
-ALLOWED_ORIGINS=http://localhost:8080
+SUPABASE_SERVICE_KEY=your-supabase-service-role-key
+SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-or-anon-key
+APP_SESSION_SECRET=replace-with-a-long-random-secret
+CSRF_TOKEN_SECRET=replace-with-a-second-long-random-secret
+TRANSPORT_KEY_ID=v1
+TRANSPORT_RSA_PRIVATE_KEY=replace-with-a-3072-bit-rsa-private-key
+ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080
+UPLOAD_DIR=./uploads
 ```
 
-Optional values include `CSRF_TOKEN_SECRET`, `CSRF_TOKEN_TTL_SECONDS`, `APP_SESSION_COOKIE_SECURE`, `APP_SESSION_COOKIE_NAME`, `UPLOAD_DIR`, developer-option secrets, and SMTP credentials for email flows. Never commit credentials or use the service key in browser code.
+`TRANSPORT_RSA_PRIVATE_KEY`, `SUPABASE_SERVICE_KEY`, session secrets, audit
+keys, developer-option secrets, SMTP credentials, and model/provider secrets
+are backend-only. The frontend receives only its public API base URL and never
+receives a service key or reusable transport secret. See [Security](../SECURITY.md)
+for the full trust-boundary rules.
+
+Optional settings include session/cookie names and TTLs, CSRF TTL, audit-key
+identifiers, developer-token TTL, `SESSION_LIMIT`, `WEBAUTHN_ORIGIN`,
+`WEBAUTHN_RP_NAME`, `GROQ_API_KEY`, and SMTP credentials.
+
+## Database and storage
+
+Apply `backend/supabase/migrations/` in filename order using the project’s
+Supabase workflow. Migrations are append-only; existing migration files are
+not edited in place. Index and aggregate-RPC migrations support bounded
+inspection, session, passkey, audit, role, model, and chat workloads.
+
+Supabase Storage holds inspection images and developer artifacts. `UPLOAD_DIR`
+is only a bounded local staging directory for multipart uploads and temporary
+export/import work. Storage policies and inspection-image access are described
+in [Image access control](../../IMAGE_ACCESS_CONTROL.md) and [Storage setup](../../STORAGE_SETUP.md).
 
 ## Commands
 
+From the repository root:
+
 ```bash
-# from the repository root
 npm install
 npm run dev:backend
 npm run typecheck -w backend
@@ -71,24 +132,17 @@ npm run build -w backend
 npm run test:contract
 ```
 
-The backend test command runs unit, integration, and architecture suites. The root contract suite starts the composed app and verifies shared frontend/backend response schemas. Architecture tests verify module boundaries, query shape, final-class conventions, router composition, and absence of the deleted legacy directories.
-
-CI’s backend gates are therefore:
-
-```text
-change detection → lint/typecheck → script/documentation checks
-  → backend unit/integration/architecture → API contract tests → build
-  → aggregate quality gate
-```
-
-Architecture tests run as their own CI lane so module boundaries, MVC composition, query-shape rules, and final-class conventions remain visible as independent failures. The aggregate quality gate tolerates intentionally skipped path-specific lanes while failing on any failed or cancelled required lane.
-
-## Database and storage
-
-Apply `backend/supabase/migrations/` in filename order using the project’s Supabase migration workflow. Migrations are append-only. The query-support migrations add indexes and aggregate RPCs for bounded inspection, session, passkey, audit, role, and chat workloads.
-
-Supabase Storage holds inspection images and developer artifacts. Local `UPLOAD_DIR` is only a staging location for multipart uploads and temporary export/import work.
+The backend test command runs unit, integration, and architecture suites.
+Architecture tests verify module boundaries, query shape, final-class
+conventions, route registration, module exports, and absence of the removed
+legacy directories. The root contract suite checks shared frontend/backend
+response schemas.
 
 ## API authority
 
-The registered API is defined by module presentation routers and mounted by `src/bootstrap/routes.ts`. Use [API_REFERENCE.md](../API_REFERENCE.md) for the current namespace summary and [SECURITY.md](../SECURITY.md) for request-authentication rules. Shared payload contracts live under the repository-level `tests/contracts` suite and should be updated alongside frontend API types.
+The registered API is defined by the module presentation routers and mounted by
+`src/bootstrap/routes.ts`. Keep frontend API clients and contract fixtures in
+sync with that route registry. See [API reference](../API_REFERENCE.md) for the
+current route catalog and [Getting started](../GETTING_STARTED.md) for local
+verification.
+

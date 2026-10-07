@@ -236,10 +236,12 @@ Link biometric documents to security, getting started, and verification guidance
 Run:
 
 ```powershell
-Select-String -Path (Get-ChildItem documentation -Recurse -Filter *.md).FullName -Pattern 'planned-architecture\.md'
+Select-String -Path (Get-ChildItem documentation -Recurse -Filter *.md).FullName -Pattern '\]\([^)]*planned-architecture\.md'
 ```
 
-Expected: no matches. Confirm `backend/planned-architecture.md` has no diff.
+Expected: no matches for Markdown link syntax targeting
+`planned-architecture.md`. Plain-text exclusion notes in this design and plan
+are expected. Confirm `backend/planned-architecture.md` has no diff.
 
 - [ ] **Step 3: Verify all maintained Markdown links.**
 
