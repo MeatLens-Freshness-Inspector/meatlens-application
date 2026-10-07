@@ -1,5 +1,9 @@
 # Deployment guide
 
+Use [Getting started](GETTING_STARTED.md) for local prerequisites and
+environment names, [Security](SECURITY.md) for trust boundaries, and [API
+reference](API_REFERENCE.md) for health and smoke-check endpoints.
+
 MeatLens is deployed as two application services backed by Supabase:
 
 - Frontend: Netlify static hosting.
@@ -121,3 +125,7 @@ Do not configure GitHub Actions, cron-job.org, UptimeRobot, or another hosted mo
 While the backend is running, tracked-session cleanup starts once and then issues one combined Supabase delete every 900 seconds (96 scheduled requests per day at most). It makes no requests while Render is spun down.
 
 Messages use one authenticated browser event stream only while the Messages screen is visible and online. The backend lazily shares one Supabase Realtime channel across active stream clients and removes it after the final client leaves. Opening, selecting, focusing, reconnecting, sending, and manual refresh may issue bounded REST requests; no interval polling or REST fallback is used.
+
+For the implemented service boundary and route composition, see
+[Architecture](ARCHITECTURE.md). For the repository’s required CI quality
+gates, see the CI section of the root [README](../README.md).

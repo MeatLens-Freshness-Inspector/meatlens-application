@@ -1,5 +1,10 @@
 # Backend security guide
 
+This guide describes the trust boundaries enforced by the current backend and
+frontend. For route-level authentication requirements, see [API reference](API_REFERENCE.md);
+for environment setup and release configuration, see [Getting started](GETTING_STARTED.md)
+and [Deployment](DEPLOYMENT.md).
+
 ## Secrets and trust boundaries
 
 Required backend secrets are configured only on the server:
@@ -79,3 +84,6 @@ Security-sensitive changes must include or update tests under `backend/tests/uni
 npm run test -w backend
 npm run typecheck -w backend
 ```
+
+Also run `npm run test:documentation` when changing security instructions or
+route references so the linked operational guides remain valid.

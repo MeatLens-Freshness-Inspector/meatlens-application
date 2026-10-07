@@ -1,5 +1,9 @@
 # Getting started
 
+This guide gets a clean checkout running locally. Read [Architecture](ARCHITECTURE.md)
+for system boundaries, [API reference](API_REFERENCE.md) for route behavior,
+and [Security](SECURITY.md) before configuring shared or hosted environments.
+
 ## Prerequisites
 
 - Node.js 22.x (the supported runtime range is >=22 <25).
@@ -31,12 +35,17 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-server-only-service-role-key
 SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
 APP_SESSION_SECRET=use-a-long-random-value
+CSRF_TOKEN_SECRET=use-a-second-long-random-value
+TRANSPORT_KEY_ID=v1
+TRANSPORT_RSA_PRIVATE_KEY=backend-only-3072-bit-rsa-private-key
 AUDIT_LOG_KEY=64-hex-characters-or-base64-for-32-bytes
 ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,https://localhost,capacitor://localhost,http://localhost
 UPLOAD_DIR=./uploads
 ```
 
-For password-reset email, also configure `SMTP_USER` and `SMTP_PASS`. Developer dashboard flows require `DEVELOPER_OPTIONS_PASSWORD`; the token secret and TTL are optional overrides. Keep all of these values server-side.
+For password-reset email, also configure `SMTP_USER` and `SMTP_PASS`.
+Developer dashboard flows require `DEVELOPER_OPTIONS_PASSWORD`; the token
+secret and TTL are optional overrides. Keep all of these values server-side.
 
 ## Configure the frontend
 
@@ -138,3 +147,4 @@ JSON.parse(sessionStorage.getItem("meatlens-api-transport-diagnostics") || "[]")
 For a CORS failure, the useful record will show `stage=network-error`, `errorMessage=Failed to fetch`, `platform=android`, and `appOrigin=https://localhost`. Rebuild and reinstall the APK after frontend changes, and redeploy the backend after CORS changes.
 
 See [Architecture](ARCHITECTURE.md), [API reference](API_REFERENCE.md), and [Security](SECURITY.md) for the corresponding runtime rules.
+For hosted deployment and release order, see [Deployment](DEPLOYMENT.md).
