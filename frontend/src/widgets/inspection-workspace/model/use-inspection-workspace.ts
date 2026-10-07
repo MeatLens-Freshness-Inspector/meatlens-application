@@ -85,6 +85,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   const [coordinateStatus, setCoordinateStatus] = useState<CoordinateCaptureStatus>("idle");
   const [inspectionDecisionSource, setInspectionDecisionSource] =
     useState<InspectionDecisionSource | null>(null);
+  const [captureResetKey, setCaptureResetKey] = useState(0);
   const [developerFlags, setDeveloperFlags] = useState<DeveloperOptionsFlags>(DEFAULT_DEVELOPER_OPTIONS_FLAGS);
   const [isDeveloperUnlocked, setIsDeveloperUnlocked] = useState(false);
   const saveLockRef = useRef(false);
@@ -562,6 +563,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
 
   const handleReset = useCallback(() => {
     coordinateRequestIdRef.current += 1;
+    setCaptureResetKey((current) => current + 1);
     setCapturedInput(null);
     setResult(null);
     setPreScanForm(createEmptyPreScanForm());
@@ -637,6 +639,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     showDetailedResults: Boolean(profile?.show_detailed_results),
     showModelInputPreview: developerFlags.showModelInputPreview,
     disableRoiSegmentation,
+    captureResetKey,
     showAnalyzeAction: Boolean(capturedInput && !result && inspectionDecisionSource !== "protocol_pre_scan"),
     showSaveActions: Boolean(result),
     captureStatusText: getCaptureStatusText(capturedInput),

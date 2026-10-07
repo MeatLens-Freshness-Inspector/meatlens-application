@@ -49,6 +49,7 @@ const InspectPageView = () => {
             isInAppCameraEnabled={inspectPage.isInAppCameraEnabled}
             showModelInputPreview={inspectPage.showModelInputPreview}
             disableRoiSegmentation={inspectPage.disableRoiSegmentation}
+            captureResetKey={inspectPage.captureResetKey}
             onSelectedLocationChange={inspectPage.onSelectedLocationChange}
             onCapture={inspectPage.onCapture}
             onAnalyze={inspectPage.onAnalyze}

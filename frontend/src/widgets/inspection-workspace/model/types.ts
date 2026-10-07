@@ -34,6 +34,7 @@ export interface InspectPageViewModel {
   showDetailedResults: boolean;
   showModelInputPreview: boolean;
   disableRoiSegmentation: boolean;
+  captureResetKey: number;
   showAnalyzeAction: boolean;
   showSaveActions: boolean;
   captureStatusText: string;
