@@ -59,6 +59,8 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
   const contactsPromiseRef = useRef<{ identity: string; promise: Promise<void> } | null>(null);
   const snapshotPromiseRef = useRef<Promise<void> | null>(null);
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
+  const messageListRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoScrollMessagesRef = useRef(true);
   const authIdentity = auth.isOnlineAuthenticated ? currentUserId : null;
   const authIdentityRef = useRef(authIdentity);
   const previousAuthIdentityRef = useRef(authIdentity);
@@ -193,6 +195,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     contactsPromiseRef.current = null;
     snapshotPromiseRef.current = null;
     selectedContactIdRef.current = null;
+    shouldAutoScrollMessagesRef.current = true;
     setContacts([]);
     setMessages([]);
     setSelectedContactId(null);
@@ -206,6 +209,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     if (!auth.isOnlineAuthenticated) {
       setContacts([]);
       setMessages([]);
+      shouldAutoScrollMessagesRef.current = true;
       setIsLoadingContacts(false);
       setIsLoadingMessages(false);
       return;
@@ -217,6 +221,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     const nextId = resolveSelectedContactId(contacts, selectedContactIdRef.current, isDesktop);
     if (nextId === selectedContactIdRef.current) return;
     selectedContactIdRef.current = nextId;
+    shouldAutoScrollMessagesRef.current = true;
     setMessages([]);
     setSelectedContactId(nextId);
   }, [contacts, isDesktop]);
@@ -231,8 +236,18 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
   }, [isDesktop, mobilePanel, selectedContactId]);
 
   useEffect(() => {
-    lastMessageRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+    if (!shouldAutoScrollMessagesRef.current) return;
+    lastMessageRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
   }, [messages]);
+
+  const handleMessageListScroll = useCallback(() => {
+    const messageList = messageListRef.current;
+    if (!messageList) return;
+
+    const distanceFromBottom =
+      messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight;
+    shouldAutoScrollMessagesRef.current = distanceFromBottom <= 48;
+  }, []);
 
   const handleRefreshMessages = useCallback(async () => {
     if (!auth.isOnlineAuthenticated) {
@@ -277,6 +292,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
   const handleSelectContact = useCallback((contactId: string) => {
     if (selectedContactIdRef.current === contactId) return;
     selectedContactIdRef.current = contactId;
+    shouldAutoScrollMessagesRef.current = true;
     setMessages([]);
     setSelectedContactId(contactId);
     if (!isDesktop) setMobilePanel("thread");
@@ -299,6 +315,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     isLoadingMessages,
     isSendingMessage,
     messageStreamStatus: messageStream.status as MessageStreamStatus,
+    messageListRef,
     lastMessageRef,
     contactStats,
     showContactsPanel: isDesktop || mobilePanel === "contacts",
@@ -311,6 +328,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     handleReconnectMessages: messageStream.reconnect,
     handleSelectContact,
     handleSendMessage,
+    handleMessageListScroll,
   };
 }
 

@@ -19,7 +19,9 @@ type ThreadPanelProps = {
   isSendingMessage: boolean;
   draftMessage: string;
   connectionStatus: "connecting" | "connected" | "disconnected";
+  messageListRef?: RefObject<HTMLDivElement | null>;
   lastMessageRef: RefObject<HTMLDivElement | null>;
+  onMessageListScroll?: () => void;
   onBack: () => void;
   onDraftChange: (value: string) => void;
   onSendMessage: () => void | Promise<void>;
@@ -35,7 +37,9 @@ export function ThreadPanel({
   isSendingMessage,
   draftMessage,
   connectionStatus,
+  messageListRef,
   lastMessageRef,
+  onMessageListScroll,
   onBack,
   onDraftChange,
   onSendMessage,
@@ -109,7 +113,11 @@ export function ThreadPanel({
             )}
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+          <div
+            ref={messageListRef}
+            onScroll={onMessageListScroll}
+            className="min-h-0 flex-1 overflow-y-auto px-3 py-3"
+          >
             {!selectedContact ? (
               <div className="flex h-full items-center justify-center text-center text-sm text-muted-foreground">
                 <div className="space-y-1">
