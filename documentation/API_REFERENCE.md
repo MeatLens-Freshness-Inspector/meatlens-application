@@ -73,6 +73,26 @@ progress-aware ZIP exports. Developer exports are bounded to 10,000 matching
 records, use explicit manifest fields, and return an error instead of a
 partial archive when a required existing image cannot be downloaded.
 
+The progress-aware export lifecycle is:
+
+- `POST /api/developer-dashboard/datasets/export/start` starts an owner-scoped
+  in-process export session.
+- `GET /api/developer-dashboard/datasets/export/:exportId/progress` reports
+  the current assembly stage and progress totals.
+- `GET /api/developer-dashboard/datasets/export/:exportId/download` streams
+  the completed ZIP and releases the temporary session.
+- `GET /api/developer-dashboard/datasets/exports` lists the authenticated
+  developer’s stored export history.
+- `POST /api/developer-dashboard/datasets/exports/:exportId/download-url`
+  returns a short-lived signed URL for a ready export.
+- `GET /api/developer-dashboard/datasets/exports/:exportId/download` streams a
+  stored export through a short-lived download token.
+
+Completed ZIPs are stored as private objects for two days.
+The legacy `POST /api/developer-dashboard/datasets/export` service path remains
+available for compatibility, but new clients should use the progress-aware
+start/progress/download lifecycle.
+
 ## Model accuracy and calibration
 
 Register a model version before deploying it:
@@ -137,4 +157,3 @@ repository contract tests together. Run `npm run test:documentation`, the
 relevant backend/frontend test lane, and `npm run test:contract` before
 merging. See [Getting started](GETTING_STARTED.md) for the local verification
 sequence.
-
