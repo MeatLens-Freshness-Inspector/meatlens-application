@@ -11,6 +11,7 @@ import { QueryProvider } from "@/app/providers/query-provider";
 import { NotificationProvider } from "@/app/providers/notification-provider";
 import { NetworkProvider } from "@/app/providers/network-provider";
 import { ThemeController } from "@/app/providers/theme-controller";
+import { ScrollToTopOnRouteChange } from "@/app/providers/scroll-to-top";
 import { ROUTE_PATHS } from "@/app/router/paths";
 import { AppRouter } from "@/app/router/app-router";
 import { ProtectedRoute as ProtectedRouteGuard, type ProtectedRouteProps } from "@/app/router/guards/protected-route";
@@ -202,6 +203,7 @@ const App = () => {
       <TooltipProvider>
         <NotificationProvider>
           <BrowserRouter>
+            <ScrollToTopOnRouteChange />
             <NetworkProvider>
               <AuthProvider>
                 <AuthOfflineSyncManager />
