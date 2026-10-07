@@ -9,6 +9,8 @@ export type ApiSessionRefreshHandler = () => Promise<string | null>;
 let apiSessionRefreshHandler: ApiSessionRefreshHandler | null = null;
 let apiSessionRefreshPromise: Promise<string | null> | null = null;
 
+// CSRF state is kept in memory only. Safe methods do not need the token;
+// mutating browser requests receive it at the final RequestInit boundary.
 function isSafeMethod(method: string | undefined): boolean {
   const normalizedMethod = (method ?? "GET").toUpperCase();
   return normalizedMethod === "GET" || normalizedMethod === "HEAD" || normalizedMethod === "OPTIONS";
@@ -59,6 +61,8 @@ export function notifyApiAuthExpired(): void {
   window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
 }
 
+// Native requests omit browser credentials, while web requests keep the
+// session cookie. Both platforms share the same CSRF header policy.
 export function applyApiRequestInit(init: RequestInit = {}): RequestInit {
   const headers = new Headers(init.headers);
 

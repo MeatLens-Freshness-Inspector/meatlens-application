@@ -85,6 +85,8 @@ const LOW_CONFIDENCE_WARNING_THRESHOLD_PERCENT = 90;
 const SEGMENTATION_BACKGROUND_GRAY = 127;
 const SEGMENTATION_MIN_COMPONENT_RATIO = 0.015;
 
+// Image segmentation helpers isolate the central meat foreground before the
+// model-specific crop and tensor preparation stages.
 function isFinitePositive(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
@@ -388,6 +390,7 @@ export function applyRoiSegmentationWithFallback(
   return applyFeatureRoiSegmentationWithFallback(imageData);
 }
 
+// Public preprocessing entry points used by the active analysis runtime.
 export async function createCroppedResizedImageFile(
   imageFile: File,
   options: PreprocessImageOptions = {}
@@ -689,6 +692,8 @@ function parseLegacyPrediction(probabilities: number[], labelOrder: string[]): {
   };
 }
 
+// Re-export the focused implementations as the stable module surface used by
+// runtime selection and tests.
 export const preprocessRgbPixel = preprocessFeatureRgbPixel;
 export const buildImageTensorData = buildFeatureImageTensorData;
 export const normalizeClassificationLabel = normalizeFeatureClassificationLabel;

@@ -54,6 +54,8 @@ import MessagesPage from "@/pages/inspector/messages-page";
 import OnboardingPage from "@/pages/inspector/onboarding-page";
 import NotFound from "@/pages/not-found/NotFound";
 
+// These adapters give the offline-sync feature its online persistence and
+// model dependencies without coupling the feature to the app shell.
 const offlineSyncDependencies: OfflineSyncDependencies = {
   uploadInspectionImage: (file) => uploadClient.uploadInspectionImage(file),
   createInspection: (inspection) => inspectionClient.create(inspection),
@@ -73,6 +75,7 @@ const offlineSyncDependencies: OfflineSyncDependencies = {
     isDeveloperOptionsSessionExpired(session as Parameters<typeof isDeveloperOptionsSessionExpired>[0]),
 };
 
+// Browser/native boot work belongs here so it runs once before route rendering.
 export function initializeAppRuntime() {
   // Start in light mode; the app router/auth layer will apply user preference from DB.
   applyTheme(false);
@@ -92,6 +95,7 @@ function ThemeRouteController() {
   return <ThemeController isAuthenticated={Boolean(user)} isDarkMode={profile?.is_dark_mode} />;
 }
 
+// The following wrappers translate AuthProvider state into route/widget props.
 function AuthBottomNav() {
   const { isAdmin } = useAuth();
 
@@ -189,6 +193,8 @@ function AuthOnboardingRoute({ children }: Pick<OnboardingRouteProps, "children"
   );
 }
 
+// Provider order is intentional: query/network/auth state must exist before
+// offline sync, guards, and the route-specific application shell render.
 const App = () => {
   return (
     <QueryProvider>

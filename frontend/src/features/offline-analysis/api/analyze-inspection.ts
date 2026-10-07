@@ -287,6 +287,8 @@ function buildAnalysisExplanation({
   return sentences.filter(Boolean).join(" ");
 }
 
+// Model loading is bounded so the UI can report an actionable warmup failure
+// instead of waiting indefinitely on a device or an unavailable asset.
 async function waitForAnalysisLoad(timeoutMs: number): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
 
@@ -338,6 +340,8 @@ async function assessFileImageQuality(file: File): Promise<ImageQualityResult | 
   }
 }
 
+// This function is the analysis boundary used by both online capture and the
+// offline queue: quality gate -> model readiness -> inference -> app result.
 /**
  * Run full offline analysis on the captured image file.
  *

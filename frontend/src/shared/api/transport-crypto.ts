@@ -33,6 +33,8 @@ const BASE64_URL_PATTERN = /^(?:[A-Za-z0-9_-]{2,})?$/;
 let cachedTransportPublicKey: TransportPublicKey | null = null;
 let publicKeyRequest: Promise<TransportPublicKey> | null = null;
 
+// Key and byte helpers are kept separate from request orchestration so the
+// envelope format can be reviewed independently from fetch behavior.
 function subtleCrypto(): SubtleCrypto {
   const cryptoApi = globalThis.crypto;
   if (!cryptoApi?.subtle) {
@@ -290,6 +292,8 @@ export function decryptTransportSseStream(
   });
 }
 
+// Request bodies are normalized into the logical transport payload before
+// AES-GCM encryption. This is where JSON, forms, blobs, and binary limits meet.
 function contentTypeForBody(contentType: string | undefined): string {
   return contentType?.trim() || "application/octet-stream";
 }
@@ -450,6 +454,8 @@ export async function createEncryptedRequest(
   init: RequestInit = {},
   forcePublicKeyRefresh = false,
 ): Promise<PreparedTransportRequest> {
+  // Health and public-key discovery remain plaintext bootstrap endpoints; all
+  // other API traffic receives a per-request AES key wrapped with RSA-OAEP.
   const url = requestUrl(input);
   const method = requestMethod(input, init);
   const headers = mergeRequestHeaders(input, init);

@@ -67,6 +67,7 @@ import {
   resolveSelectedLocation,
 } from "./inspect-page";
 
+// Inspection workflow: pre-scan/capture -> local inference -> online save or offline queue.
 export function useInspectionWorkspace(): InspectPageViewModel {
   const { user, profile, isAdmin, isDeveloper } = useAuth();
   const [capturedInput, setCapturedInput] = useState<CapturedImagePayload | null>(null);

@@ -41,6 +41,8 @@ export function createApp(
   config = Config.getInstance(),
   transportKeyStore?: TransportKeyStore,
 ) {
+  // Composition root: dependencies, transport encryption, middleware, and
+  // module routers are assembled here before the server starts listening.
   const app = express();
   const dependencies = createBackendDependencies(config);
   const modules = createModuleRegistry(dependencies);
@@ -61,6 +63,9 @@ export function createApp(
 
   ensureUploadDirectory(config.uploadDir);
 
+  // Middleware order is security-sensitive. Requests pass through origin and
+  // body limits before encrypted transport handling and module routes; the
+  // error handler must remain last so it can catch downstream failures.
   app.use(applySecurityHeaders);
   app.use(createOriginRejectionMiddleware(config));
   app.use(cors(createCorsOptions(config.allowedOrigins)));

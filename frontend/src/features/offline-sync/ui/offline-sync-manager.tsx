@@ -119,6 +119,9 @@ export function resolveActiveModelSelection(
   return developerFlags.selectedModel;
 }
 
+// A queued scan is replayed in the same order as the online flow: optional
+// local inference, best-effort image upload, server persistence, then removal
+// from the durable queue only after the inspection is accepted.
 /**
  * Queued scans may already include analysisResult, or only a cached capture.
  * If analysis is missing we run local model inference during sync, then upload
@@ -217,6 +220,8 @@ async function processAuditLogs(logs: PendingAuditLog[], dependencies: OfflineSy
   }
 }
 
+// Mounted once inside the authenticated shell; this component coordinates
+// online transitions, model warmup, and draining both durable queues.
 /**
  * Mount this component once inside <AuthProvider>.
  * - Drains the offline scan queue when the device comes back online.

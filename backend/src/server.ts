@@ -8,6 +8,8 @@ const config = Config.getInstance();
 const app = createApp(config);
 const fatalHandlerFlag = "__meatlensFatalHandlersInstalled";
 
+// Keep process-level failures visible and terminate rather than leaving a
+// partially healthy API process serving requests after an uncaught error.
 function formatFatalError(error: unknown): string {
   if (error instanceof Error) {
     return `${error.name}: ${error.message}`;
@@ -36,6 +38,8 @@ function installFatalHandlers(): void {
 
 installFatalHandlers();
 
+// Startup errors are handled separately so an occupied port gives an
+// actionable message while other failures retain their original diagnostics.
 function handleServerError(error: NodeJS.ErrnoException): never {
   if (error.code === "EADDRINUSE") {
     console.error(`[Startup] Port ${config.port} is already in use.`);
@@ -49,6 +53,8 @@ function handleServerError(error: NodeJS.ErrnoException): never {
 }
 
 export function startServer(): Server {
+  // Runtime services are started with the HTTP server and stopped together
+  // during SIGTERM/SIGINT or when the server closes.
   const sessionCleanup = createSessionCleanupService({
     intervalMs: config.sessionCleanupIntervalMs,
     idleTimeoutSeconds: config.sessionIdleTimeoutSeconds,
@@ -89,6 +95,8 @@ export function createGracefulShutdown(
   return () => {
     if (shutdownPromise) return shutdownPromise;
     shutdownPromise = (async () => {
+      // Stop accepting work first, then drain realtime/session services. The
+      // force-close timer protects deployments from connections that hang.
       sessionCleanup.stop();
       const serverClose = new Promise<void>((resolve) => {
         server.close(() => resolve());

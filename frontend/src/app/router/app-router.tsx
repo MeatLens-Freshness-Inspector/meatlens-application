@@ -27,11 +27,14 @@ export type AppRouterProps = {
 export function AppRouter({ elements }: AppRouterProps) {
   return (
     <Routes>
+      {/* Public entry points stay outside authentication guards. */}
       <Route path={ROUTE_PATHS.landing} element={elements.landing} />
       <Route path={ROUTE_PATHS.login} element={elements.login} />
       <Route path={ROUTE_PATHS.signup} element={elements.signup} />
       <Route path={ROUTE_PATHS.forgotPassword} element={elements.forgotPassword} />
       <Route path={ROUTE_PATHS.resetPassword} element={elements.resetPassword} />
+
+      {/* Authenticated flows are wrapped by the element supplied by the app shell. */}
       <Route path={ROUTE_PATHS.onboarding} element={elements.onboarding} />
       <Route path={ROUTE_PATHS.inspect} element={elements.inspect} />
       <Route path={ROUTE_PATHS.history} element={elements.history} />
@@ -46,6 +49,8 @@ export function AppRouter({ elements }: AppRouterProps) {
           />
         )}
       />
+
+      {/* Profile/help and administrator routes retain their specialized guards. */}
       <Route path={ROUTE_PATHS.profile} element={elements.profile} />
       <Route path={ROUTE_PATHS.profileTutorial} element={elements.profileTutorial} />
       <Route path={ROUTE_PATHS.profileHelp} element={elements.profileHelp} />

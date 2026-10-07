@@ -31,8 +31,12 @@ export function createBackendRoutes(
   }
 
   return [
+    // Transport and analysis endpoints are shared by every client, including
+    // the native/offline inspection flow.
     { prefix: "/api/transport", router: createPublicKeyRouter(transportKeyStore) },
     { prefix: "/api/analysis", router: analysisRoutes },
+
+    // Core user-facing domain modules.
     { prefix: "/api/profiles", router: profileRoutes },
     { prefix: "/api/inspections", router: inspectionRoutes },
     { prefix: "/api/access-codes", router: accessCodeRoutes },
@@ -42,6 +46,8 @@ export function createBackendRoutes(
     { prefix: "/api/chat", router: chatRoutes },
     { prefix: "/api/market-locations", router: marketLocationRoutes },
     { prefix: "/api/audit-logs", router: auditLogRoutes },
+
+    // Elevated/admin and model-observability surfaces.
     { prefix: "/api/developer-options", router: developerOptionsRoutes },
     { prefix: "/api/developer-dashboard", router: developerDashboardRoutes },
     { prefix: "/api/user-chat", router: userChatRoutes },
