@@ -1,32 +1,44 @@
 # MeatLens project overview
 
-MeatLens is an AI-assisted meat-freshness inspection system for wet-market workflows. Inspectors capture an image, receive computer-vision decision support, and save a traceable inspection record. Administrators manage users, access codes, markets, audit events, and aggregate reporting; developers manage datasets and training artifacts.
+MeatLens is an AI-assisted meat-freshness inspection system for wet-market
+workflows. Inspectors capture an image, receive computer-vision decision
+support, and save a traceable inspection record. Administrators manage users,
+access codes, markets, audit events, and aggregate reporting. Developers manage
+datasets, model versions, calibration data, and training artifacts.
 
 ## Product capabilities
 
-- Client-side primary MobileNetV3Small ONNX inference for freshness decision support.
-- Developer-only selection of the primary MobileNetV3Small, Seed123 MobileNetV3Small, legacy MobileNetV3Small, ResNet50, or Ensemble runtimes.
-- The developer model selector displays each model's project-added date; the primary model was added on August 13, 2026.
-- Authenticated inspection capture, upload, classification, and history.
-- Role-aware administration for inspectors, admins, and developers.
+- Client-side MobileNetV3Small and other supported ONNX runtimes for primary
+  freshness decision support.
+- Developer-only model selection, model-version history, and calibration
+  analytics.
+- Authenticated inspection capture, upload, classification, dispute, and
+  history workflows.
+- Role-aware administration for inspectors, administrators, and developers.
 - Access-code onboarding and market-location management.
-- Encrypted audit events and user-to-user chat.
+- Encrypted audit events and bounded user-to-user chat with realtime updates.
 - Developer dataset export, manual classification, and training-run import.
-- Offline-friendly frontend workflows backed by explicit sync boundaries.
+- Offline-friendly capture and sync boundaries backed by local SQLite adapters.
 
-## Technology
+AI output is decision support. Inspectors remain responsible for field
+judgment, compliance decisions, and handling conditions that are outside the
+model’s training or image-quality assumptions.
+
+## Technology and deployment
 
 | Area | Technology |
 | --- | --- |
 | Frontend | React 18, TypeScript, Vite, Tailwind, Capacitor, ONNX Runtime Web |
-| Backend | Node.js, Express, TypeScript |
+| Backend | Node.js 22, Express, TypeScript |
 | Database | PostgreSQL through Supabase |
 | Auth | Supabase Auth plus an application-signed session cookie |
 | Storage | Supabase Storage and bounded local upload staging |
-| Testing | Node test runner/tsx, Vitest-compatible frontend tests, Playwright |
+| Realtime | Supabase Realtime, backend bounded hub, and SSE |
+| Testing | Node test runner/tsx, frontend component/integration tests, Playwright, Gradle |
 | Deployment | Netlify frontend, Render backend, Supabase managed services |
 
-No Redis, Grafana, queue, cache server, or external metrics stack is part of the supported deployment.
+No Redis, queue server, cache server, Grafana, Prometheus, or external metrics
+stack is part of the supported deployment.
 
 ## Repository map
 
@@ -34,8 +46,8 @@ No Redis, Grafana, queue, cache server, or external metrics stack is part of the
 botchabuster/
 ├── backend/
 │   ├── src/
-│   │   ├── bootstrap/       # dependency and route composition
-│   │   ├── modules/         # bounded contexts: auth, users, inspections, ...
+│   │   ├── bootstrap/       # dependency setup and route composition
+│   │   ├── modules/         # bounded backend contexts
 │   │   ├── middleware/      # cross-cutting HTTP/security middleware
 │   │   ├── config/          # validated environment and runtime policy
 │   │   ├── integrations/    # Supabase and external adapters
@@ -43,49 +55,64 @@ botchabuster/
 │   │   └── types/           # shared transport and domain types
 │   ├── supabase/migrations/ # append-only database migrations
 │   └── tests/               # unit, integration, and architecture tests
-├── frontend/               # React/Vite web and Capacitor client
-├── documentation/          # this documentation set
-└── scripts/                # monorepo build and model-preflight scripts
+├── frontend/
+│   ├── src/app/             # providers, routing, layouts, and composition
+│   ├── src/pages/           # route-level screens
+│   ├── src/widgets/         # page-scale composition
+│   ├── src/features/        # workflows and user operations
+│   ├── src/entities/        # business concepts and API/cache contracts
+│   └── src/shared/          # generic UI and cross-cutting adapters
+├── android/                 # Capacitor Android shell and local migrations
+├── ios/                     # Capacitor iOS shell
+├── documentation/           # current product, architecture, and operations docs
+├── docs/                    # design/specification and research artifacts
+└── scripts/                 # monorepo build, CI, model, and documentation checks
 ```
 
 ## Backend modules
 
-Each module exposes an `index.ts` composition surface and follows:
+The current bounded contexts are:
 
-```text
-presentation (routes/controllers/views)
-        ↓
-application (one-operation use cases)
-        ↓
-domain (entities/value objects/ports)
-        ↓
-infrastructure (Supabase, storage, email, or other adapters)
-```
-
-Current bounded contexts are:
-
+- `access-codes` — onboarding-code lifecycle.
+- `analysis` — upload/storage boundary and retired server-analysis compatibility.
+- `analytics` — landing-page and inspection aggregates.
+- `audit` — encrypted audit-log persistence and reads.
 - `auth` — credentials, passkeys, sessions, CSRF, email, and cookie policy.
-- `users` — profiles, roles, administration, and user statistics.
-- `inspections` — inspection CRUD, access scope, and inspection statistics.
-- `analysis` — image upload and the retired server-analysis endpoint.
-- `access-codes` — onboarding code lifecycle.
+- `chat` — assistant chat, user-chat conversations, and realtime events.
+- `developer` — datasets, training runs, developer options, and unlock tokens.
+- `inspections` — inspection records, statistics, scope, and result disputes.
 - `markets` — market-location administration.
-- `analytics` — landing-page and aggregate reporting queries.
-- `audit` — encrypted audit-log persistence.
-- `chat` — assistant chat and user-to-user conversations.
-- `developer` — datasets, training runs, unlock tokens, and developer options.
+- `model-accuracy` — model versions, snapshots, and calibration analytics.
+- `transport` — public-key discovery and encrypted application envelopes.
+- `users` — profiles, roles, administration, and user statistics.
+
+See [Architecture](ARCHITECTURE.md) for layer boundaries and request flow.
 
 ## Backend route namespaces
 
-The application mounts the module routers through `backend/src/bootstrap/routes.ts`:
+The application mounts module routers through
+`backend/src/bootstrap/routes.ts`:
 
-`/api/auth`, `/api/analysis`, `/api/upload`, `/api/profiles`, `/api/inspections`, `/api/access-codes`, `/api/stats`, `/api/chat`, `/api/user-chat`, `/api/market-locations`, `/api/audit-logs`, `/api/developer-options`, and `/api/developer-dashboard`.
+`/api/transport`, `/api/analysis`, `/api/profiles`, `/api/inspections`,
+`/api/access-codes`, `/api/stats`, `/api/upload`, `/api/auth`, `/api/chat`,
+`/api/market-locations`, `/api/audit-logs`, `/api/developer-options`,
+`/api/developer-dashboard`, `/api/user-chat`, and `/api/model-accuracy`.
 
-See [API_REFERENCE.md](API_REFERENCE.md) for the route-level summary.
+See [API reference](API_REFERENCE.md) for the route-level catalog and security
+requirements.
 
-## Database and scaling posture
+## Data, privacy, and scale posture
 
-Supabase is used as the only database service. High-volume reads use explicit projections, deterministic ordering, bounded limits, indexes, and aggregate RPCs. New database changes are forward-only migration files; existing migrations are never edited. The design targets roughly 1,000–2,000 simultaneous users without introducing a separate cache or queue.
+Supabase is the system of record for authenticated application data. High-volume
+reads use explicit projections, deterministic ordering, bounded limits, indexes,
+and aggregate RPCs. New database changes are forward-only migration files;
+existing migrations are not edited in place.
+
+The frontend keeps only the local state required for offline capture, queued
+sync, model execution, and native credential unlock. Protected application
+requests use the documented cookie/bearer and transport-envelope boundaries.
+See [Security](SECURITY.md) for trust boundaries and
+[Getting started](GETTING_STARTED.md) for configuration requirements.
 
 ## Development commands
 
@@ -95,13 +122,13 @@ From the repository root:
 npm install
 npm run dev
 npm run build
+npm run lint
+npm run typecheck
+npm run test:documentation
 npm run test:fast
 ```
 
-Backend-only checks:
+For setup and the complete CI-equivalent command list, see
+[Getting started](GETTING_STARTED.md). For release configuration, see
+[Deployment](DEPLOYMENT.md).
 
-```bash
-npm run typecheck -w backend
-npm run test -w backend
-npm run build -w backend
-```
