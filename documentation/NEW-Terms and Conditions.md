@@ -1,5 +1,10 @@
 # MeatLens - Terms and Conditions (Field Use Version)
 
+These field-use terms should be read with the [project overview](PROJECT_OVERVIEW.md),
+[security guide](SECURITY.md), and [user manual](manual-content.md). The
+technical architecture and route behavior are documented separately in
+[Architecture](ARCHITECTURE.md) and [API reference](API_REFERENCE.md).
+
 **Effective Date:** May 1, 2026
 
 ## 1. Purpose of the System

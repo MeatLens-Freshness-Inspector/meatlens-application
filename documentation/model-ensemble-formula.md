@@ -1,5 +1,10 @@
 # Model Ensemble Formula
 
+This formula is a model-runtime reference for the frontend’s offline-analysis
+feature. See [Architecture](ARCHITECTURE.md) for the inference boundary,
+[Frontend documentation](application/frontend_documentation.md) for runtime
+ownership, and [Project overview](PROJECT_OVERVIEW.md) for product scope.
+
 Scope: use `MobileNetV3-small seed123/model2` and `ResNet50` only.
 
 ## Formula

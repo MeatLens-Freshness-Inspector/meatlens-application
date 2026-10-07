@@ -1,5 +1,10 @@
 # MeatLens manual image assets
 
+The assets support the [user manual](../manual-content.md) and reflect the
+current [architecture](../ARCHITECTURE.md). Use [Getting started](../GETTING_STARTED.md)
+and [Deployment](../DEPLOYMENT.md) for the application/runtime context that
+the screenshots and diagrams represent.
+
 These assets support the official `MeatLens User Manual.docx`.
 
 | File | Audience | Source | Status | Caption / use |

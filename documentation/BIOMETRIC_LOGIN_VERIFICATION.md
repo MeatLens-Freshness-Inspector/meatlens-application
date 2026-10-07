@@ -1,5 +1,9 @@
 # Biometric login verification record
 
+This record complements the [biometric login guide](BIOMETRIC_LOGIN.md). See
+[Security](SECURITY.md) for session trust boundaries and [Getting started](GETTING_STARTED.md)
+for local/native verification prerequisites.
+
 Verification date: 2026-09-09
 
 ## Feature coverage

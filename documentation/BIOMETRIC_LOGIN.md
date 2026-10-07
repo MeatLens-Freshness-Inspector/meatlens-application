@@ -1,5 +1,8 @@
 # Biometric login
 
+Related references: [Security](SECURITY.md), [Getting started](GETTING_STARTED.md),
+[Architecture](ARCHITECTURE.md), and the [biometric verification record](BIOMETRIC_LOGIN_VERIFICATION.md).
+
 MeatLens supports two device-unlock experiences:
 
 - WebAuthn passkeys remain the online, server-verified sign-in method for browsers and native platforms.

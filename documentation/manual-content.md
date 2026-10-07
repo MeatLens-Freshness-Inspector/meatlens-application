@@ -9,6 +9,11 @@
 
 This manual explains how to operate, administer, and maintain MeatLens. It is written for inspectors/users, administrators, and developers. The manual describes the implementation present in this repository as of the effective date. Statements labeled **Supported** describe current behavior. Statements labeled **Planned / roadmap** identify future or unverified capability and must not be treated as an operational instruction.
 
+For the technical source of truth, see [Project overview](PROJECT_OVERVIEW.md),
+[Architecture](ARCHITECTURE.md), [API reference](API_REFERENCE.md), and
+[Security](SECURITY.md). For setup and release procedures, see [Getting started](GETTING_STARTED.md)
+and [Deployment](DEPLOYMENT.md).
+
 > **Official-use note:** MeatLens provides AI-assisted decision support. Users must follow applicable food-safety rules, local inspection procedures, and organizational approvals. A model classification does not replace a qualified human decision or regulatory requirement.
 
 [[PAGEBREAK]]
