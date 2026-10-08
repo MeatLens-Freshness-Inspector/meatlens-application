@@ -15,6 +15,15 @@ test("Android CI uses Java 17 and Gradle dependency caching", () => {
   assert.match(workflow, /working-directory: android/);
 });
 
+test("Android CI generates ignored Capacitor project files before Gradle", () => {
+  const androidJob = workflow.slice(workflow.indexOf("  android-tests:"));
+
+  assert.match(
+    androidJob,
+    /- name: Generate Capacitor Android project files[\s\S]*run: npx cap update android[\s\S]*- uses: actions\/setup-java@v4/,
+  );
+});
+
 test("Android CI runs the bounded JVM and instrumentation compile gate", () => {
   assert.match(
     workflow,

@@ -628,6 +628,8 @@ jobs:
       - name: Install dependencies if the shared cache is unavailable
         if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Generate Capacitor Android project files
+        run: npx cap update android
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
