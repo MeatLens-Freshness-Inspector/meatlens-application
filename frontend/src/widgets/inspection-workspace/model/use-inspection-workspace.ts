@@ -7,7 +7,7 @@ import {
   useSubmitInspection,
 } from "@/features/inspection-submission";
 import { useInspectionDispute } from "@/features/inspection-disputes/model/use-inspection-dispute";
-import { queueScan, removeScan } from "@/features/offline-sync";
+import { removeScan } from "@/features/offline-sync";
 import {
   clearDeveloperOptionsSession,
   DEFAULT_DEVELOPER_OPTIONS_FLAGS,
@@ -27,7 +27,6 @@ import {
   getInspectionDecisionSource,
   hasProtocolFailure,
   isPreScanChecklistComplete as isPreScanChecklistCompleteHelper,
-  toInspectionPreScanPayload,
   type InspectionPreScanForm,
 } from "@/entities/inspection";
 import {
@@ -54,6 +53,7 @@ import type { CapturedImagePayload } from "@/features/inspection-capture";
 import type { InspectPageViewModel, InspectionSaveStatus } from "./types";
 import { useInspectionAnalysis } from "./use-inspection-analysis";
 import { resolveInspectionModelSelection } from "./analysis-model-selection";
+import { persistPendingScan as persistPendingScanPayload } from "./pending-scan";
 import { resolveInspectionSegmentationDisabled } from "./segmentation-selection";
 import {
   createClientSubmissionId,
@@ -256,46 +256,17 @@ export function useInspectionWorkspace(): InspectPageViewModel {
         return;
       }
 
-      const preScanPayload = toInspectionPreScanPayload(preScanForm);
-      const decisionSource =
-        inspectionDecisionSource ??
-        (isPreScanBypassed ? "ai" : getInspectionDecisionSource(preScanForm));
-      const hasPreScan =
-        preScanPayload.storage_correct != null ||
-        preScanPayload.light_color_correct != null ||
-        preScanPayload.area_clean != null;
-      const regulatoryCompliance = hasPreScan
-        ? (preScanPayload.storage_correct === true &&
-           preScanPayload.light_color_correct === true &&
-           preScanPayload.area_clean === true)
-        : null;
-      const imageData = await capture.file.arrayBuffer();
-      await queueScan({
-        id: submissionId,
-        imageData,
-        imageType: capture.file.type,
-        imageName: capture.file.name,
-        meatType: DEFAULT_MEAT_TYPE,
-        location: selectedLocation.trim() || null,
-        locationLatitude: nextCoordinates?.latitude ?? null,
-        locationLongitude: nextCoordinates?.longitude ?? null,
-        stallNumber: preScanPayload.stall_number ?? null,
-        meatInspectionCertificateProof:
-          preScanPayload.meat_inspection_certificate_proof ?? null,
-        meatExpiryDate: preScanPayload.meat_expiry_date ?? null,
-        storageCorrect: preScanPayload.storage_correct ?? null,
-        lightColorCorrect: preScanPayload.light_color_correct ?? null,
-        lightColorObserved: preScanPayload.light_color_observed ?? null,
-        areaClean: preScanPayload.area_clean ?? null,
-        regulatoryCompliance,
-        inspectionDecisionSource: decisionSource,
-        protocolSpoiledReason:
-          decisionSource === "protocol_pre_scan" ? PROTOCOL_SPOILED_REASON : null,
-        capturedAt: capture.capturedAt,
+      await persistPendingScanPayload({
+        submissionId,
+        capture,
         queuedAt,
         userId: user.id,
+        selectedLocation,
+        inspectionDecisionSource,
+        isPreScanBypassed,
+        preScanForm,
         analysisResult,
-        modelVersionKey: analysisResult?.model_version_key ?? null,
+        nextCoordinates,
       });
     },
     [
