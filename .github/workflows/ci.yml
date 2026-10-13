@@ -630,6 +630,9 @@ jobs:
         run: npm ci --prefer-offline --no-audit --no-fund
       - name: Generate Capacitor Android project files
         run: npx cap update android
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x ./gradlew
+        working-directory: android
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

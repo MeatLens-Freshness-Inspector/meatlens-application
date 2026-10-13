@@ -24,6 +24,15 @@ test("Android CI generates ignored Capacitor project files before Gradle", () =>
   );
 });
 
+test("Android CI restores the Gradle wrapper executable bit after Capacitor generation", () => {
+  const androidJob = workflow.slice(workflow.indexOf("  android-tests:"));
+
+  assert.match(
+    androidJob,
+    /run: npx cap update android[\s\S]*- name: Ensure Gradle wrapper is executable[\s\S]*run: chmod \+x \.\/gradlew[\s\S]*- uses: actions\/setup-java@v4/,
+  );
+});
+
 test("Android CI runs the bounded JVM and instrumentation compile gate", () => {
   assert.match(
     workflow,
