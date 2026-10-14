@@ -41,3 +41,21 @@ test("renders large responsive radio choices for all regulatory questions", () =
   assert.match(markup, /sm:grid-cols-2/);
   assert.match(markup, /What Color\?/);
 });
+
+test("warns when the meat inspection certificate is expired", () => {
+  const markup = renderToStaticMarkup(
+    <InspectPreScanSection
+      form={{ ...form, meatExpiryDate: "2000-01-01" }}
+      isBypassed={false}
+      isChecklistComplete={true}
+      isLocked={false}
+      onFieldChange={() => undefined}
+    />,
+  );
+
+  assert.match(markup, /role="alert"/);
+  assert.match(
+    markup,
+    /Certificate is expired\. Any captured meat will be automatically classified as spoiled, and AI analysis will be skipped\./,
+  );
+});

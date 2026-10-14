@@ -3,7 +3,7 @@ import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
-import type { InspectionPreScanForm } from "@/entities/inspection";
+import { isCertificateExpired, type InspectionPreScanForm } from "@/entities/inspection";
 
 type InspectPreScanSectionProps = {
   form: InspectionPreScanForm;
@@ -84,6 +84,7 @@ export function InspectPreScanSection({
   onFieldChange,
 }: InspectPreScanSectionProps) {
   const areInputsDisabled = isLocked || isBypassed;
+  const certificateExpired = isCertificateExpired(form.meatExpiryDate);
 
   return (
     <section className="mt-4 rounded-3xl border border-border/70 bg-card/92 p-4">
@@ -107,6 +108,16 @@ export function InspectPreScanSection({
       {isBypassed && (
         <div className="mt-4 rounded-2xl border border-warning/30 bg-[hsl(var(--warning)/0.08)] px-4 py-3 text-xs text-foreground">
           Developer bypass active. Pre-scan answers are optional for this session.
+        </div>
+      )}
+
+      {certificateExpired && (
+        <div
+          role="alert"
+          className="mt-4 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-xs font-medium text-destructive"
+        >
+          Certificate is expired. Any captured meat will be automatically classified as
+          spoiled, and AI analysis will be skipped.
         </div>
       )}
 
