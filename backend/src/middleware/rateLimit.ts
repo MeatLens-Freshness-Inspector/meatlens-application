@@ -65,11 +65,33 @@ export function createRateLimiter(options: RateLimitOptions): RequestHandler {
   };
 }
 
-export const publicAuthRateLimit = createRateLimiter({
-  windowMs: 10 * 60 * 1000,
-  maxRequests: 5,
-  message: "Too many authentication attempts. Please try again later.",
-});
+export function isAuthRateLimitBypassed(env: NodeJS.ProcessEnv = process.env): boolean {
+  return (
+    env.DISABLE_AUTH_RATE_LIMIT?.trim().toLowerCase() === "true" &&
+    env.NODE_ENV?.trim().toLowerCase() !== "production"
+  );
+}
+
+export function createPublicAuthRateLimit(
+  env: NodeJS.ProcessEnv = process.env,
+): RequestHandler {
+  const rateLimiter = createRateLimiter({
+    windowMs: 10 * 60 * 1000,
+    maxRequests: 5,
+    message: "Too many authentication attempts. Please try again later.",
+  });
+
+  return (req, res, next) => {
+    if (isAuthRateLimitBypassed(env)) {
+      next();
+      return;
+    }
+
+    rateLimiter(req, res, next);
+  };
+}
+
+export const publicAuthRateLimit = createPublicAuthRateLimit();
 
 export const chatRateLimit = createRateLimiter({
   windowMs: 60 * 1000,
