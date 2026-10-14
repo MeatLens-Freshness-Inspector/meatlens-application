@@ -174,6 +174,8 @@ On **Inspect**, locate the **Pre-Scan Safety Protocol** card and complete the co
 6. Open **Area Clean** and choose **Yes** or **No**.
 7. Recheck every value before moving to the camera. The card should show **Checklist Complete**.
 
+The certificate date is evaluated as a UTC calendar date. If it is before today, the certificate is expired: the application warns you, skips AI analysis, and automatically records any captured meat as **spoiled** with confidence **100%**, a failed regulatory-compliance result, and the reason **expired_meat_inspection_certificate**. The expiry date itself remains valid through that date. This rule still applies when a developer bypass is active.
+
 The application’s current protocol behavior is explicit: a safety answer of **No** skips AI analysis and records the inspection as spoiled through the protocol path. Do not choose an answer merely to unlock the camera. If an answer is unknown, stop and follow the organization’s escalation procedure.
 
 Meat type is not a rejection gate in this workflow. Non-pork records are allowed and retained for future purposes in line with DTI guidance; do not reject a record solely because the sample is non-pork.
