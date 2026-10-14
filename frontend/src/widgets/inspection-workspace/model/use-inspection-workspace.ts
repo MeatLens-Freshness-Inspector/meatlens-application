@@ -21,12 +21,15 @@ import {
 import { marketLocationClient } from "@/entities/market-location";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import {
+  EXPIRED_CERTIFICATE_REASON,
   PROTOCOL_SPOILED_REASON,
   buildProtocolSpoiledAnalysisResult,
   createEmptyPreScanForm,
   getInspectionDecisionSource,
+  getProtocolSpoiledReason,
   hasProtocolFailure,
   isPreScanChecklistComplete as isPreScanChecklistCompleteHelper,
+  isCertificateExpired,
   type InspectionPreScanForm,
 } from "@/entities/inspection";
 import {
@@ -293,10 +296,22 @@ export function useInspectionWorkspace(): InspectPageViewModel {
 
     const submissionId = createClientSubmissionId();
     const requestId = coordinateRequestIdRef.current + 1;
-    const protocolTriggered = !isPreScanBypassed && hasProtocolFailure(preScanForm);
+    const protocolTriggered =
+      isCertificateExpired(preScanForm.meatExpiryDate) ||
+      (!isPreScanBypassed && hasProtocolFailure(preScanForm));
+    const protocolReason =
+      getProtocolSpoiledReason(preScanForm) ?? PROTOCOL_SPOILED_REASON;
     coordinateRequestIdRef.current = requestId;
     setCapturedInput(capture);
-    setResult(protocolTriggered ? buildProtocolSpoiledAnalysisResult() : null);
+    setResult(
+      protocolTriggered
+        ? buildProtocolSpoiledAnalysisResult(
+            isCertificateExpired(preScanForm.meatExpiryDate)
+              ? EXPIRED_CERTIFICATE_REASON
+              : protocolReason,
+          )
+        : null,
+    );
     setSaveStatus("idle");
     resetDispute();
     saveLockRef.current = false;

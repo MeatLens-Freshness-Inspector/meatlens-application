@@ -5,6 +5,7 @@ import {
   buildInspectionInsert,
   type InspectionSubmissionInput,
 } from "../../../../src/entities/inspection/model/mutations";
+import { EXPIRED_CERTIFICATE_REASON } from "../../../../src/entities/inspection/model/pre-scan";
 
 const submission: InspectionSubmissionInput = {
   userId: "user-1",
@@ -17,7 +18,7 @@ const submission: InspectionSubmissionInput = {
   preScanForm: {
     stallNumber: "12",
     meatInspectionCertificateProof: "certificate.jpg",
-    meatExpiryDate: "2026-08-20",
+    meatExpiryDate: "2099-12-31",
     storageCorrect: "no",
     lightColorCorrect: "yes",
     lightColorObserved: "",
@@ -41,7 +42,7 @@ test("buildInspectionInsert preserves the submission payload and protocol metada
     location_longitude: 120.98,
     stall_number: "12",
     meat_inspection_certificate_proof: "certificate.jpg",
-    meat_expiry_date: "2026-08-20",
+    meat_expiry_date: "2099-12-31",
     storage_correct: false,
     light_color_correct: true,
     light_color_observed: null,
@@ -93,4 +94,34 @@ test("buildInspectionInsert carries the model version key from the analysis resu
   });
 
   assert.equal(result.model_version_key, "mobilenet-primary-2026-08-13");
+});
+
+test("buildInspectionInsert auto-expires meat captured with an expired certificate", () => {
+  const result = buildInspectionInsert({
+    ...submission,
+    todayUtcDate: "2026-10-14",
+    decisionSource: "ai",
+    preScanForm: {
+      ...submission.preScanForm,
+      meatExpiryDate: "2026-10-13",
+      storageCorrect: "yes",
+      lightColorCorrect: "yes",
+      areaClean: "yes",
+    },
+    result: {
+      ...submission.result,
+      classification: "fresh",
+      confidence_score: 94,
+      flagged_deviations: [],
+      explanation: "Model result",
+    },
+  });
+
+  assert.equal(result.inspection_decision_source, "protocol_pre_scan");
+  assert.equal(result.protocol_spoiled_reason, EXPIRED_CERTIFICATE_REASON);
+  assert.equal(result.regulatory_compliance, false);
+  assert.equal(result.classification, "spoiled");
+  assert.equal(result.confidence_score, 100);
+  assert.deepEqual(result.flagged_deviations, [EXPIRED_CERTIFICATE_REASON]);
+  assert.match(result.explanation, /certificate is expired/);
 });

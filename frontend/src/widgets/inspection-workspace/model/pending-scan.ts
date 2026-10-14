@@ -1,5 +1,9 @@
 import {
+  EXPIRED_CERTIFICATE_REASON,
+  buildProtocolSpoiledAnalysisResult,
   getInspectionDecisionSource,
+  getRegulatoryCompliance,
+  isCertificateExpired,
   PROTOCOL_SPOILED_REASON,
   toInspectionPreScanPayload,
   type AnalysisResult,
@@ -21,6 +25,7 @@ export interface BuildPendingScanInput {
   isPreScanBypassed: boolean;
   preScanForm: InspectionPreScanForm;
   analysisResult?: AnalysisResult;
+  todayUtcDate?: string;
   nextCoordinates?: InspectionCoordinates | null;
 }
 
@@ -34,21 +39,22 @@ export async function buildPendingScan({
   isPreScanBypassed,
   preScanForm,
   analysisResult,
+  todayUtcDate,
   nextCoordinates,
 }: BuildPendingScanInput): Promise<PendingScan> {
   const preScanPayload = toInspectionPreScanPayload(preScanForm);
+  const certificateExpired = isCertificateExpired(
+    preScanForm.meatExpiryDate,
+    todayUtcDate,
+  );
   const decisionSource =
-    inspectionDecisionSource ??
-    (isPreScanBypassed ? "ai" : getInspectionDecisionSource(preScanForm));
-  const hasPreScan =
-    preScanPayload.storage_correct != null ||
-    preScanPayload.light_color_correct != null ||
-    preScanPayload.area_clean != null;
-  const regulatoryCompliance = hasPreScan
-    ? preScanPayload.storage_correct === true &&
-      preScanPayload.light_color_correct === true &&
-      preScanPayload.area_clean === true
-    : null;
+    certificateExpired
+      ? "protocol_pre_scan"
+      : inspectionDecisionSource ??
+        (isPreScanBypassed ? "ai" : getInspectionDecisionSource(preScanForm, todayUtcDate));
+  const resolvedAnalysisResult = certificateExpired
+    ? buildProtocolSpoiledAnalysisResult(EXPIRED_CERTIFICATE_REASON)
+    : analysisResult;
 
   return {
     id: submissionId,
@@ -67,15 +73,19 @@ export async function buildPendingScan({
     lightColorCorrect: preScanPayload.light_color_correct ?? null,
     lightColorObserved: preScanPayload.light_color_observed ?? null,
     areaClean: preScanPayload.area_clean ?? null,
-    regulatoryCompliance,
+    regulatoryCompliance: getRegulatoryCompliance(preScanForm, todayUtcDate),
     inspectionDecisionSource: decisionSource,
     protocolSpoiledReason:
-      decisionSource === "protocol_pre_scan" ? PROTOCOL_SPOILED_REASON : null,
+      decisionSource === "protocol_pre_scan"
+        ? certificateExpired
+          ? EXPIRED_CERTIFICATE_REASON
+          : PROTOCOL_SPOILED_REASON
+        : null,
     capturedAt: capture.capturedAt,
     queuedAt,
     userId,
-    analysisResult,
-    modelVersionKey: analysisResult?.model_version_key ?? null,
+    analysisResult: resolvedAnalysisResult,
+    modelVersionKey: resolvedAnalysisResult?.model_version_key ?? null,
   };
 }
 

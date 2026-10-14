@@ -1,6 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import {
+  EXPIRED_CERTIFICATE_REASON,
+  isCertificateExpired,
+} from "@/entities/inspection";
 import type { AnalysisModelSelection } from "@/features/offline-analysis";
 
 const FORCE_RETAKE_CONFIDENCE_THRESHOLD = 80;
@@ -97,7 +101,7 @@ export type OfflineSyncDependencies = {
   getPendingAuditLogs: () => Promise<PendingAuditLog[]>;
   removeAuditLog: (id: string) => Promise<void>;
   protocolSpoiledReason: string;
-  buildProtocolSpoiledAnalysisResult: () => AnalysisResult;
+  buildProtocolSpoiledAnalysisResult: (reason?: string) => AnalysisResult;
   analyzeOffline: (file: File, meatType: MeatType) => Promise<AnalysisResult>;
   prewarmModel: () => void;
   setActiveAnalysisModel: (selection: AnalysisModelSelection) => void;
@@ -133,9 +137,14 @@ async function processScan(
   dependencies: OfflineSyncDependencies,
 ): Promise<void> {
   const imageFile = new File([scan.imageData], scan.imageName, { type: scan.imageType });
+  const expired = isCertificateExpired(scan.meatExpiryDate);
+  const protocolDecision = scan.inspectionDecisionSource === "protocol_pre_scan" || expired;
+  const protocolReason = expired
+    ? EXPIRED_CERTIFICATE_REASON
+    : scan.protocolSpoiledReason ?? dependencies.protocolSpoiledReason;
   const result =
-    scan.inspectionDecisionSource === "protocol_pre_scan"
-      ? dependencies.buildProtocolSpoiledAnalysisResult()
+    protocolDecision
+      ? dependencies.buildProtocolSpoiledAnalysisResult(protocolReason)
       : scan.analysisResult ?? await dependencies.analyzeOffline(imageFile, scan.meatType);
   const shouldRecommendRetake = result.confidence_score < FORCE_RETAKE_CONFIDENCE_THRESHOLD;
 
@@ -153,9 +162,13 @@ async function processScan(
     scan.storageCorrect != null ||
     scan.lightColorCorrect != null ||
     scan.areaClean != null;
-  const regulatoryCompliance = hasPreScan
-    ? (scan.storageCorrect === true && scan.lightColorCorrect === true && scan.areaClean === true)
-    : null;
+  const regulatoryCompliance = expired
+    ? false
+    : hasPreScan
+      ? (scan.storageCorrect === true &&
+        scan.lightColorCorrect === true &&
+        scan.areaClean === true)
+      : null;
 
   await dependencies.createInspection({
     user_id: scan.userId,
@@ -172,10 +185,12 @@ async function processScan(
     light_color_observed: scan.lightColorObserved ?? null,
     area_clean: scan.areaClean ?? null,
     regulatory_compliance: regulatoryCompliance,
-    inspection_decision_source: scan.inspectionDecisionSource,
+    inspection_decision_source: protocolDecision
+      ? "protocol_pre_scan"
+      : scan.inspectionDecisionSource,
     protocol_spoiled_reason:
-      scan.inspectionDecisionSource === "protocol_pre_scan"
-        ? scan.protocolSpoiledReason ?? dependencies.protocolSpoiledReason
+      protocolDecision
+        ? protocolReason
         : null,
     captured_at: scan.capturedAt ?? scan.queuedAt,
     classification: result.classification,

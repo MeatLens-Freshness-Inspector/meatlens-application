@@ -1,6 +1,10 @@
 import type { AnalysisResult, InspectionDecisionSource, InspectionInsert } from "./types";
 import {
+  EXPIRED_CERTIFICATE_REASON,
   PROTOCOL_SPOILED_REASON,
+  buildProtocolSpoiledAnalysisResult,
+  getRegulatoryCompliance,
+  isCertificateExpired,
   toInspectionPreScanPayload,
   type InspectionPreScanForm,
 } from "./pre-scan";
@@ -19,6 +23,7 @@ export interface InspectionSubmissionInput {
   decisionSource: InspectionDecisionSource;
   preScanForm: InspectionPreScanForm;
   result: AnalysisResult;
+  todayUtcDate?: string;
   imageUrl?: string | null;
 }
 
@@ -31,15 +36,21 @@ export function buildInspectionInsert({
   decisionSource,
   preScanForm,
   result,
+  todayUtcDate,
   imageUrl = null,
 }: InspectionSubmissionInput): InspectionInsert {
   const preScanPayload = toInspectionPreScanPayload(preScanForm);
-  const hasPreScan = Object.values(preScanPayload).some((value) => value != null);
-  const regulatoryCompliance = hasPreScan
-    ? (preScanPayload.storage_correct === true &&
-        preScanPayload.light_color_correct === true &&
-        preScanPayload.area_clean === true)
-    : null;
+  const certificateExpired = isCertificateExpired(
+    preScanForm.meatExpiryDate,
+    todayUtcDate,
+  );
+  const resolvedDecisionSource = certificateExpired
+    ? "protocol_pre_scan"
+    : decisionSource;
+  const resolvedResult = certificateExpired
+    ? buildProtocolSpoiledAnalysisResult(EXPIRED_CERTIFICATE_REASON)
+    : result;
+  const regulatoryCompliance = getRegulatoryCompliance(preScanForm, todayUtcDate);
 
   const modelVersionKey = result.model_version_key?.trim() || null;
 
@@ -52,15 +63,21 @@ export function buildInspectionInsert({
     location_longitude: coordinates?.longitude ?? null,
     ...preScanPayload,
     regulatory_compliance: regulatoryCompliance,
-    inspection_decision_source: decisionSource,
+    inspection_decision_source: resolvedDecisionSource,
     protocol_spoiled_reason:
-      decisionSource === "protocol_pre_scan" ? PROTOCOL_SPOILED_REASON : null,
+      resolvedDecisionSource === "protocol_pre_scan"
+        ? certificateExpired
+          ? EXPIRED_CERTIFICATE_REASON
+          : PROTOCOL_SPOILED_REASON
+        : null,
     captured_at: capturedAt,
-    classification: result.classification,
-    confidence_score: result.confidence_score,
-    flagged_deviations: result.flagged_deviations,
-    explanation: result.explanation,
+    classification: resolvedResult.classification,
+    confidence_score: resolvedResult.confidence_score,
+    flagged_deviations: resolvedResult.flagged_deviations,
+    explanation: resolvedResult.explanation,
     image_url: imageUrl,
-    ...(modelVersionKey ? { model_version_key: modelVersionKey } : {}),
+    ...(!certificateExpired && modelVersionKey
+      ? { model_version_key: modelVersionKey }
+      : {}),
   };
 }
