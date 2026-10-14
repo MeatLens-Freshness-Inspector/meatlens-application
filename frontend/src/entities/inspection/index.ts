@@ -13,11 +13,15 @@ export {
   getEffectiveInspectionClassification,
 } from "./model/types";
 export {
+  EXPIRED_CERTIFICATE_REASON,
   PROTOCOL_SPOILED_REASON,
   buildProtocolSpoiledAnalysisResult,
   createEmptyPreScanForm,
   getInspectionDecisionSource,
+  getProtocolSpoiledReason,
+  getRegulatoryCompliance,
   hasProtocolFailure,
+  isCertificateExpired,
   isPreScanChecklistComplete,
   toInspectionPreScanPayload,
   type InspectionPreScanChoice,
