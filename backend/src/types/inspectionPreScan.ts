@@ -2,6 +2,8 @@ import type { InspectionDecisionSource, InspectionInsert } from "./inspection";
 
 export type { InspectionDecisionSource } from "./inspection";
 
+export const EXPIRED_CERTIFICATE_REASON = "expired_meat_inspection_certificate";
+
 export type InspectionPreScanFields = Pick<
   InspectionInsert,
   | "stall_number"
@@ -22,6 +24,27 @@ type InspectionDecisionPayload = {
 };
 
 const DECISION_SOURCES = new Set<InspectionDecisionSource>(["ai", "protocol_pre_scan"]);
+
+function normalizeDateOnly(value: string | null | undefined): string | null {
+  const normalized = value?.trim() ?? "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return null;
+
+  const parsed = Date.parse(`${normalized}T00:00:00.000Z`);
+  if (Number.isNaN(parsed)) return null;
+
+  return new Date(parsed).toISOString().slice(0, 10) === normalized
+    ? normalized
+    : null;
+}
+
+export function isInspectionCertificateExpired(
+  meatExpiryDate: string | null | undefined,
+  todayUtcDate = new Date().toISOString().slice(0, 10),
+): boolean {
+  const expiryDate = normalizeDateOnly(meatExpiryDate);
+  const today = normalizeDateOnly(todayUtcDate);
+  return expiryDate !== null && today !== null && expiryDate < today;
+}
 
 function normalizeOptionalText(value: unknown, fieldName: string): string | null | undefined {
   if (value === undefined) return undefined;
@@ -113,6 +136,32 @@ export function assertInspectionDecisionPayload(input: InspectionDecisionPayload
   if (input.inspection_decision_source === "ai" && input.protocol_spoiled_reason != null) {
     throw new Error("protocol_spoiled_reason must be null when inspection_decision_source is ai");
   }
+}
+
+export function enforceInspectionPreScanSafety<T extends InspectionInsert>(
+  inspection: T,
+  todayUtcDate = new Date().toISOString().slice(0, 10),
+): T {
+  if (!isInspectionCertificateExpired(inspection.meat_expiry_date, todayUtcDate)) {
+    return inspection;
+  }
+
+  const flaggedDeviations = Array.from(
+    new Set([...(inspection.flagged_deviations ?? []), EXPIRED_CERTIFICATE_REASON]),
+  );
+
+  return {
+    ...inspection,
+    classification: "spoiled",
+    manual_classification: "spoiled",
+    confidence_score: 100,
+    flagged_deviations: flaggedDeviations,
+    explanation:
+      "Automatically classified as spoiled because the meat inspection certificate is expired. AI analysis was skipped.",
+    inspection_decision_source: "protocol_pre_scan",
+    protocol_spoiled_reason: EXPIRED_CERTIFICATE_REASON,
+    regulatory_compliance: false,
+  } as T;
 }
 
 export function mergeInspectionPreScanFields<T extends Record<string, unknown>>(

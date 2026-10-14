@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   assertInspectionDecisionPayload,
+  enforceInspectionPreScanSafety,
+  EXPIRED_CERTIFICATE_REASON,
+  isInspectionCertificateExpired,
   mergeInspectionPreScanFields,
   normalizeInspectionPreScan,
 } from "../../../src/types/inspectionPreScan";
@@ -102,4 +105,42 @@ test("mergeInspectionPreScanFields only appends defined fields", () => {
       light_color_observed: "green",
     },
   );
+});
+
+test("isInspectionCertificateExpired uses the UTC date boundary", () => {
+  assert.equal(isInspectionCertificateExpired("2026-10-13", "2026-10-14"), true);
+  assert.equal(isInspectionCertificateExpired("2026-10-14", "2026-10-14"), false);
+  assert.equal(isInspectionCertificateExpired("2026-10-15", "2026-10-14"), false);
+  assert.equal(isInspectionCertificateExpired(null, "2026-10-14"), false);
+});
+
+test("enforceInspectionPreScanSafety overrides expired certificate results", () => {
+  const enforced = enforceInspectionPreScanSafety(
+    {
+      meat_type: "pork",
+      classification: "fresh",
+      manual_classification: "fresh",
+      confidence_score: 96,
+      client_submission_id: "submission-1",
+      meat_expiry_date: "2026-10-13",
+      flagged_deviations: ["model_deviation"],
+      explanation: "Model result",
+      inspection_decision_source: "ai",
+      protocol_spoiled_reason: null,
+      regulatory_compliance: true,
+    },
+    "2026-10-14",
+  );
+
+  assert.equal(enforced.classification, "spoiled");
+  assert.equal(enforced.manual_classification, "spoiled");
+  assert.equal(enforced.confidence_score, 100);
+  assert.deepEqual(enforced.flagged_deviations, [
+    "model_deviation",
+    EXPIRED_CERTIFICATE_REASON,
+  ]);
+  assert.equal(enforced.inspection_decision_source, "protocol_pre_scan");
+  assert.equal(enforced.protocol_spoiled_reason, EXPIRED_CERTIFICATE_REASON);
+  assert.equal(enforced.regulatory_compliance, false);
+  assert.match(enforced.explanation ?? "", /certificate is expired/i);
 });

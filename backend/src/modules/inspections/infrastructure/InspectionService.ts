@@ -8,7 +8,10 @@ import type {
   InAppModelMetrics,
 } from "../../../types/developerDashboard";
 import { mergeInspectionCoordinates } from "../../../types/inspectionCoordinates";
-import { mergeInspectionPreScanFields } from "../../../types/inspectionPreScan";
+import {
+  enforceInspectionPreScanSafety,
+  mergeInspectionPreScanFields,
+} from "../../../types/inspectionPreScan";
 
 export type InspectionScope = "mine" | "all";
 
@@ -116,7 +119,8 @@ export class InspectionService {
     }
 
     const modelVersionId = await this.resolveModelVersionId(inspection.model_version_key);
-    const inspectionPayload = this.buildInsertPayload(inspection, userId, clientSubmissionId, modelVersionId);
+    const safeInspection = enforceInspectionPreScanSafety(inspection);
+    const inspectionPayload = this.buildInsertPayload(safeInspection, userId, clientSubmissionId, modelVersionId);
 
     const { data, error } = await (supabase
       .from(this.tableName) as any)
