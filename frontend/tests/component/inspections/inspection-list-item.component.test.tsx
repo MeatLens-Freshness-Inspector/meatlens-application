@@ -49,3 +49,12 @@ test("renders inline GPS coordinates in the location label", () => {
 
   assert.match(markup, /North Market \| Lat: 14.599500 \| Long: 120.984200/);
 });
+
+test("gives each saved inspection an explicit open record action", () => {
+  const markup = renderToStaticMarkup(
+    <InspectionListItem inspection={buildInspection()} />,
+  );
+
+  assert.match(markup, /data-testid="inspection-open-record"/);
+  assert.match(markup, />Open record</);
+});

@@ -5,6 +5,7 @@ import {
   getEffectiveInspectionClassification,
   getMeatTypeScopeLabel,
 } from "@/entities/inspection";
+import { Button } from "@/shared/ui";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
@@ -106,6 +107,19 @@ export function InspectionListItem({ inspection, onClick, onSelect, className }:
             <Hash className="h-3 w-3" />
             {inspection.id.slice(0, 6)}
           </p>
+          <Button
+            type="button"
+            data-testid="inspection-open-record"
+            variant="outline"
+            size="sm"
+            className="mt-2 h-9 w-full rounded-lg px-3 text-xs sm:w-auto"
+            onClick={(event) => {
+              event.stopPropagation();
+              onSelect?.(inspection);
+            }}
+          >
+            Open record
+          </Button>
         </div>
       </CardContent>
 

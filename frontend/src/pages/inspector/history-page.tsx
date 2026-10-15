@@ -1,41 +1,23 @@
-import {
-  HistoryHeader,
-  HistorySidebar,
-  InspectionTimelineSection,
-} from "@/widgets/history";
+import { HistoryHeader, InspectionTimelineSection } from "@/widgets/history";
 import { InspectionDetailSheet } from "@/widgets/inspection-history/ui/inspection-detail-sheet";
 import { useHistory } from "@/widgets/history/model/use-history";
 
 const HistoryPage = () => {
   const {
     isLoading,
-    isExportingDetailedPdf,
-    exportProgress,
     activeFilter,
     searchText,
-    selectedReportDay,
     selectedInspection,
     totalInspections,
-    avgConfidence,
-    freshRate,
-    spoiledRate,
     filteredInspections,
-    hasValidReportDay,
-    formattedReportDayLabel,
-    selectedDayInspections,
-    selectedDayAverageConfidence,
     pagedInspections,
     totalPages,
     safePage,
-    classificationCounts,
-    monthlyCounts,
     setCurrentPage,
     updateSearchText,
-    updateReportDay,
     updateActiveFilter,
     selectInspection,
     setSelectedInspection,
-    handleExportDetailedPdf,
   } = useHistory();
 
   return (
@@ -43,42 +25,22 @@ const HistoryPage = () => {
       <div className="mx-auto w-full max-w-6xl min-w-0 px-4 pt-4">
         <HistoryHeader
           totalInspections={totalInspections}
-          avgConfidence={avgConfidence}
-          freshRate={freshRate}
-          spoiledRate={spoiledRate}
         />
 
-        <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+        <div className="mt-4 min-w-0 space-y-4">
           <InspectionTimelineSection
             activeFilter={activeFilter}
             filteredCount={filteredInspections.length}
-            formattedReportDayLabel={formattedReportDayLabel}
-            hasValidReportDay={hasValidReportDay}
-            isExportingDetailedPdf={isExportingDetailedPdf}
-            exportProgress={exportProgress}
             isLoading={isLoading}
             pagedInspections={pagedInspections}
             safePage={safePage}
             searchText={searchText}
-            selectedDayCount={selectedDayInspections.length}
-            selectedReportDay={selectedReportDay}
             totalPages={totalPages}
             onActiveFilterChange={updateActiveFilter}
-            onExportDetailedPdf={handleExportDetailedPdf}
             onInspectionSelect={selectInspection}
             onNextPage={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
             onPreviousPage={() => setCurrentPage((page) => Math.max(1, page - 1))}
-            onReportDayChange={updateReportDay}
             onSearchTextChange={updateSearchText}
-          />
-
-          <HistorySidebar
-            classificationCounts={classificationCounts}
-            hasValidReportDay={hasValidReportDay}
-            monthlyCounts={monthlyCounts}
-            selectedDayAverageConfidence={selectedDayAverageConfidence}
-            selectedDayCount={selectedDayInspections.length}
-            totalInspections={totalInspections}
           />
         </div>
       </div>
