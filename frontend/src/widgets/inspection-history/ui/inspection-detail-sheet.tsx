@@ -101,6 +101,101 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
         ? "Non-Compliant"
         : "Not Recorded";
 
+  const disputeSection = (
+    <section
+      data-testid="inspection-detail-dispute"
+      className="rounded-xl border border-primary/25 bg-primary/5 p-3"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="flex items-center gap-1.5 text-[10px] font-display uppercase tracking-widest text-primary">
+            <Scale className="h-3.5 w-3.5" /> Dispute result
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            Submit the result you expect and explain the inspection evidence. An administrator or developer must approve the official change.
+          </p>
+        </div>
+        {pendingDispute ? (
+          <span className="shrink-0 rounded-full bg-warning/15 px-2 py-1 text-[10px] font-semibold text-warning">
+            Pending review
+          </span>
+        ) : (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setExpectedClassification(effectiveClassification);
+              setDisputeReason("");
+              setIsDisputeFormOpen((openState) => !openState);
+            }}
+          >
+            {isDisputeFormOpen ? "Cancel" : "Dispute result"}
+          </Button>
+        )}
+      </div>
+
+      {currentDispute && !pendingDispute && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Latest dispute: <span className="font-semibold capitalize">{currentDispute.status}</span> · expected {currentDispute.expected_classification}
+        </p>
+      )}
+
+      {isDisputeFormOpen && !pendingDispute && (
+        <form
+          className="mt-3 space-y-3 border-t border-primary/15 pt-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void submitDispute.mutateAsync({
+              inspectionId: inspection.id,
+              expectedClassification,
+              reason: disputeReason,
+            }).then(() => {
+              setIsDisputeFormOpen(false);
+              setDisputeReason("");
+            }).catch(() => undefined);
+          }}
+        >
+          <div className="space-y-1.5">
+            <Label htmlFor={`dispute-result-${inspection.id}`}>Expected result</Label>
+            <select
+              id={`dispute-result-${inspection.id}`}
+              value={expectedClassification}
+              onChange={(event) => setExpectedClassification(event.target.value as FreshnessClassification)}
+              className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm capitalize"
+            >
+              {FRESHNESS_CLASSIFICATIONS.map((classification) => (
+                <option key={classification} value={classification}>{classification}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`dispute-reason-${inspection.id}`}>Why is the result incorrect?</Label>
+            <textarea
+              id={`dispute-reason-${inspection.id}`}
+              value={disputeReason}
+              onChange={(event) => setDisputeReason(event.target.value)}
+              minLength={10}
+              maxLength={2000}
+              rows={4}
+              placeholder="Describe the visible evidence or inspection finding."
+              className="w-full resize-y rounded-md border border-input px-3 py-2 text-sm leading-relaxed outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+              required
+            />
+            <p className="text-[10px] text-muted-foreground">{disputeReason.trim().length}/2000 characters; minimum 10.</p>
+          </div>
+          <Button
+            type="submit"
+            size="sm"
+            disabled={submitDispute.isPending || disputeReason.trim().length < 10}
+          >
+            {submitDispute.isPending ? "Submitting..." : "Submit dispute"}
+          </Button>
+        </form>
+      )}
+    </section>
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[80vh] w-[min(96vw,520px)] overflow-hidden rounded-2xl border border-border/70 bg-background p-0">
@@ -129,75 +224,36 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
             </DialogDescription>
           </DialogHeader>
 
-          {/* Image */}
-          {inspection.image_url ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setLightboxOpen(true)}
-                className="group mb-4 block w-full cursor-zoom-in overflow-hidden rounded-xl border border-border/70 bg-muted"
-                aria-label="Enlarge inspection image"
-              >
-                <img
-                  src={inspection.image_url}
-                  alt={`${inspection.meat_type} inspection`}
-                  className="max-h-48 w-full object-contain transition-transform duration-200 group-hover:scale-[1.03]"
-                />
-                <p className="pb-1.5 text-center text-[10px] text-muted-foreground/70">Tap to enlarge</p>
-              </button>
-
-              {/* Lightbox */}
-              <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
-                <DialogContent className="max-w-[95vw] border-none bg-transparent p-0 shadow-none sm:max-w-4xl [&>button]:text-white [&>button]:opacity-80">
-                  <DialogTitle className="sr-only">Enlarged inspection image</DialogTitle>
-                  <DialogDescription className="sr-only">
-                    Full-size image for this {inspection.meat_type} inspection.
-                  </DialogDescription>
-                  <img
-                    src={inspection.image_url}
-                    alt={`${inspection.meat_type} inspection – full size`}
-                    className="max-h-[88vh] w-full rounded-2xl border border-white/10 object-contain shadow-2xl"
-                  />
-                </DialogContent>
-              </Dialog>
-            </>
-          ) : (
-            <div className="mb-4 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/60 bg-card py-7 text-muted-foreground">
-              <ImageOff className="h-7 w-7" />
-              <p className="text-xs">No image captured</p>
-            </div>
-          )}
-
-          {/* Classification banner */}
-          <div className={cn("mb-4 rounded-xl border p-3", classificationColor)}>
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-[10px] font-display uppercase tracking-widest text-muted-foreground">Classification</p>
-              <FreshnessBadge classification={effectiveClassification} size="sm" />
+          <div data-testid="inspection-detail-summary" className="space-y-3">
+            <div className={cn("rounded-xl border p-3", classificationColor)}>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-[10px] font-display uppercase tracking-widest text-muted-foreground">Result</p>
+                <FreshnessBadge classification={effectiveClassification} size="sm" />
+              </div>
               {inspection.official_classification && (
                 <p className="mt-1 text-[10px] text-muted-foreground">Official result</p>
               )}
               {inspection.official_classification && inspection.official_classification !== inspection.classification && (
                 <p className="mt-1 text-[10px] text-muted-foreground">Model result: <span className="capitalize">{inspection.classification}</span></p>
               )}
-            </div>
-            <p className="text-[10px] font-display uppercase tracking-widest text-muted-foreground mt-2">
-              Confidence
-            </p>
-            <div className="mt-1 flex items-center gap-2">
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
-                <div
-                  className={cn("h-full rounded-full transition-all", confidenceFillClass)}
-                  style={{ width: `${inspection.confidence_score}%` }}
-                />
+              <p className="mt-3 text-[10px] font-display uppercase tracking-widest text-muted-foreground">
+                Confidence
+              </p>
+              <div className="mt-1 flex items-center gap-2">
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
+                  <div
+                    className={cn("h-full rounded-full transition-all", confidenceFillClass)}
+                    style={{ width: `${inspection.confidence_score}%` }}
+                  />
+                </div>
+                <span className={cn("font-display text-sm font-bold", confidenceTextClass)}>
+                  {inspection.confidence_score}%
+                </span>
               </div>
-              <span className={cn("font-display text-sm font-bold", confidenceTextClass)}>
-                {inspection.confidence_score}%
-              </span>
             </div>
-          </div>
 
-          {/* Meta grid */}
-          <div className="mb-4 grid grid-cols-2 gap-2">
+            {/* Meta grid */}
+            <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl border border-border/70 bg-card p-3">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 Decision Source
@@ -205,8 +261,8 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
               <p className="mt-1 text-xs font-semibold">{decisionSourceLabel}</p>
             </div>
             <div className="rounded-xl border border-border/70 bg-card p-3">
-              <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
-                <CalendarDays className="h-3 w-3" /> Date
+                <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <CalendarDays className="h-3 w-3" /> When
               </p>
               <p className="mt-1 text-xs font-semibold">
                 {format(new Date(inspection.created_at), "MMM d, yyyy")}
@@ -237,7 +293,7 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
             {locationLabel && (
               <div className="rounded-xl border border-border/70 bg-card p-3">
                 <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
-                  <MapPin className="h-3 w-3" /> Location
+                  <MapPin className="h-3 w-3" /> Where
                 </p>
                 <p className="mt-1 break-words text-xs font-semibold leading-snug">{locationLabel}</p>
               </div>
@@ -257,6 +313,47 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
                 {regulatoryComplianceLabel}
               </p>
             </div>
+          </div>
+
+          {disputeSection}
+
+          {/* Image */}
+          {inspection.image_url ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(true)}
+                className="group mb-4 mt-4 block w-full cursor-zoom-in overflow-hidden rounded-xl border border-border/70 bg-muted"
+                aria-label="Enlarge inspection image"
+              >
+                <img
+                  src={inspection.image_url}
+                  alt={`${inspection.meat_type} inspection`}
+                  className="max-h-48 w-full object-contain transition-transform duration-200 group-hover:scale-[1.03]"
+                />
+                <p className="pb-1.5 text-center text-[10px] text-muted-foreground/70">Tap to enlarge</p>
+              </button>
+
+              <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+                <DialogContent className="max-w-[95vw] border-none bg-transparent p-0 shadow-none sm:max-w-4xl [&>button]:text-white [&>button]:opacity-80">
+                  <DialogTitle className="sr-only">Enlarged inspection image</DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Full-size image for this {inspection.meat_type} inspection.
+                  </DialogDescription>
+                  <img
+                    src={inspection.image_url}
+                    alt={`${inspection.meat_type} inspection – full size`}
+                    className="max-h-[88vh] w-full rounded-2xl border border-white/10 object-contain shadow-2xl"
+                  />
+                </DialogContent>
+              </Dialog>
+            </>
+          ) : (
+            <div className="mb-4 mt-4 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/60 bg-card py-7 text-muted-foreground">
+              <ImageOff className="h-7 w-7" />
+              <p className="text-xs">No image captured</p>
+            </div>
+          )}
           </div>
 
           {hasPreScanMetadata && (
@@ -339,95 +436,7 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
             </section>
           )}
 
-          <section className="mt-5 rounded-xl border border-primary/25 bg-primary/5 p-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="flex items-center gap-1.5 text-[10px] font-display uppercase tracking-widest text-primary">
-                  <Scale className="h-3.5 w-3.5" /> Dispute result
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Submit the result you expect and explain the inspection evidence. An administrator or developer must approve the official change.
-                </p>
-              </div>
-              {pendingDispute ? (
-                <span className="shrink-0 rounded-full bg-warning/15 px-2 py-1 text-[10px] font-semibold text-warning">
-                  Pending review
-                </span>
-              ) : (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setExpectedClassification(effectiveClassification);
-                    setDisputeReason("");
-                    setIsDisputeFormOpen((openState) => !openState);
-                  }}
-                >
-                  {isDisputeFormOpen ? "Cancel" : "Dispute result"}
-                </Button>
-              )}
-            </div>
-
-            {currentDispute && !pendingDispute && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                Latest dispute: <span className="font-semibold capitalize">{currentDispute.status}</span> · expected {currentDispute.expected_classification}
-              </p>
-            )}
-
-            {isDisputeFormOpen && !pendingDispute && (
-              <form
-                className="mt-3 space-y-3 border-t border-primary/15 pt-3"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void submitDispute.mutateAsync({
-                    inspectionId: inspection.id,
-                    expectedClassification,
-                    reason: disputeReason,
-                  }).then(() => {
-                    setIsDisputeFormOpen(false);
-                    setDisputeReason("");
-                  }).catch(() => undefined);
-                }}
-              >
-                <div className="space-y-1.5">
-                  <Label htmlFor={`dispute-result-${inspection.id}`}>Expected result</Label>
-                  <select
-                    id={`dispute-result-${inspection.id}`}
-                    value={expectedClassification}
-                    onChange={(event) => setExpectedClassification(event.target.value as FreshnessClassification)}
-                    className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm capitalize"
-                  >
-                    {FRESHNESS_CLASSIFICATIONS.map((classification) => (
-                      <option key={classification} value={classification}>{classification}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor={`dispute-reason-${inspection.id}`}>Why is the result incorrect?</Label>
-                  <textarea
-                    id={`dispute-reason-${inspection.id}`}
-                    value={disputeReason}
-                    onChange={(event) => setDisputeReason(event.target.value)}
-                    minLength={10}
-                    maxLength={2000}
-                    rows={4}
-                    placeholder="Describe the visible evidence or inspection finding."
-                    className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
-                    required
-                  />
-                  <p className="text-[10px] text-muted-foreground">{disputeReason.trim().length}/2000 characters; minimum 10.</p>
-                </div>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={submitDispute.isPending || disputeReason.trim().length < 10}
-                >
-                  {submitDispute.isPending ? "Submitting..." : "Submit dispute"}
-                </Button>
-              </form>
-            )}
-          </section>
+          
         </div>
       </DialogContent>
     </Dialog>
