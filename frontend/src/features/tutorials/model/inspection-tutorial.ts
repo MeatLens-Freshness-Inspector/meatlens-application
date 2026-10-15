@@ -267,7 +267,7 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
         "Review the freshness result, then tap Save Record to keep the inspection. You can dispute the result after it is saved.",
       sceneTitle: "Inspect",
       sceneSubtitle: "Review and save result",
-      hotspotLabel: "Save result",
+      hotspotLabel: "Save Record",
       blocks: [
         {
           id: "inspect-capture",
@@ -284,7 +284,7 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
           title: "Save result",
           description: "Store the finished inspection record before opening a dispute.",
           tone: "accent",
-          hotspotLabel: "Save result",
+          hotspotLabel: "Save Record",
         },
         {
           id: "inspect-dispute",

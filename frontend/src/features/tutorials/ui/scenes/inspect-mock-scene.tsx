@@ -4,6 +4,7 @@ import { tutorialFixtures } from "../../model/tutorial-fixtures";
 import type { TutorialStepDefinition } from "../../model/inspection-tutorial";
 import { MockHotspot } from "../mock-hotspot";
 import { TutorialAppShell } from "../tutorial-app-shell";
+import { Button } from "@/shared/ui";
 
 interface InspectMockSceneProps {
   step: TutorialStepDefinition;
@@ -18,7 +19,7 @@ export function InspectMockScene({ step, onAdvance }: InspectMockSceneProps) {
   const isCapture = step.id === "inspect-capture";
   const isSave = step.id === "inspect-save";
   const isDispute = step.id === "inspect-dispute";
-  const hasCapture = isSave || isDispute;
+  const hasCapture = isCapture || isSave || isDispute;
   const hasAnalysis = isSave || isDispute;
 
   return (
@@ -64,7 +65,7 @@ export function InspectMockScene({ step, onAdvance }: InspectMockSceneProps) {
 
         {hasAnalysis && <section className="rounded-2xl border border-border/70 bg-card/90 p-3"><div className="flex items-center justify-between"><p className="font-display text-[9px] uppercase tracking-wider text-muted-foreground">Analysis Output</p><span className="rounded-md border border-fresh/40 bg-fresh/20 px-1.5 py-0.5 font-display text-[9px] font-semibold text-fresh">Fresh</span></div><div className="mt-2 flex items-center gap-1.5"><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-secondary"><div className="h-full w-[94%] rounded-full bg-fresh" /></div><span className="font-display text-[10px] font-bold text-fresh">94%</span></div><p className="mt-1.5 text-[9px] leading-relaxed text-muted-foreground">Sample exhibits consistent coloration and firm texture indicative of fresh pork.</p></section>}
         {isSave && <MockHotspot active onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}><div className="flex h-9 items-center justify-center gap-1.5 rounded-xl bg-primary font-display text-[10px] font-semibold uppercase tracking-wider text-primary-foreground"><Save className="h-3.5 w-3.5" />Save Record</div></MockHotspot>}
-        {isSave && <section data-tutorial-dispute-state="before-save" className="rounded-2xl border border-primary/25 bg-[hsl(var(--primary)/0.05)] p-3"><div className="flex items-start justify-between gap-2"><div><p className="flex items-center gap-1.5 text-[9px] font-display uppercase tracking-wider text-primary"><Scale className="h-3.5 w-3.5" />Dispute result</p><p className="mt-1 text-[8px] leading-relaxed text-muted-foreground">Save the inspection first to dispute this result.</p></div><div className="rounded-lg border border-border/70 bg-background/60 px-2 py-1.5 text-[8px] font-semibold text-muted-foreground">Dispute result</div></div></section>}
+        {isSave && <section data-tutorial-dispute-state="before-save" className="rounded-2xl border border-primary/25 bg-[hsl(var(--primary)/0.05)] p-3"><div className="flex items-start justify-between gap-2"><div><p className="flex items-center gap-1.5 text-[9px] font-display uppercase tracking-wider text-primary"><Scale className="h-3.5 w-3.5" />Dispute result</p><p className="mt-1 text-[8px] leading-relaxed text-muted-foreground">Save the inspection first to dispute this result.</p></div><Button type="button" size="sm" variant="outline" disabled>Dispute result</Button></div></section>}
         {isDispute && <section data-tutorial-dispute-state="after-save" className="rounded-2xl border border-primary/25 bg-[hsl(var(--primary)/0.05)] p-3"><div className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 text-fresh" /><div><p className="text-[9px] font-display uppercase tracking-wider text-primary">Saved inspection</p><p className="mt-1 text-[8px] leading-relaxed text-muted-foreground">The result is stored in your inspection history and ready to dispute if needed.</p></div></div><MockHotspot active onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel} className="mt-3"><div className="flex h-9 items-center justify-center gap-1.5 rounded-xl border border-primary/50 bg-[hsl(var(--primary)/0.12)] font-display text-[10px] font-semibold uppercase tracking-wider text-primary"><Scale className="h-3.5 w-3.5" />Dispute result</div></MockHotspot></section>}
       </div>
     </TutorialAppShell>

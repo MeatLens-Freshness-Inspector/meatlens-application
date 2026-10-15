@@ -43,6 +43,8 @@ test("Inspect tutorial mirrors automatic analysis and post-save disputes", () =>
 
   const captureMarkup = renderStep("inspect-capture");
   assert.match(captureMarkup, /analysis starts automatically/i);
+  assert.match(captureMarkup, /Tutorial sample captured/);
+  assert.match(captureMarkup, /data-tutorial-analysis-handoff/);
   assert.doesNotMatch(captureMarkup, /Analyze Sample/);
 
   const preScanMarkup = renderStep("inspect-prescan");
@@ -51,8 +53,12 @@ test("Inspect tutorial mirrors automatic analysis and post-save disputes", () =>
 
   const saveMarkup = renderStep("inspect-save");
   assert.match(saveMarkup, /Save the inspection first to dispute this result/);
+  assert.match(saveMarkup, /data-tutorial-dispute-state="before-save"/);
+  assert.match(saveMarkup, /disabled=""/);
 
   const disputeMarkup = renderStep("inspect-dispute");
   assert.match(disputeMarkup, /Dispute result/);
   assert.match(disputeMarkup, /saved inspection/i);
+  assert.match(disputeMarkup, /data-tutorial-dispute-state="after-save"/);
+  assert.match(disputeMarkup, /aria-label="Dispute result"/);
 });

@@ -174,4 +174,3 @@ git log -4 --oneline
 ```
 
 Expected: no whitespace errors and only the intended tutorial/spec/plan commits are present.
-

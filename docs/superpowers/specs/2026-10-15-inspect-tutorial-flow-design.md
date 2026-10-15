@@ -24,4 +24,3 @@ The mock scene will use the existing fixture data and hotspot system. The pre-sc
 - Add component assertions that the Inspect tutorial has no standalone analysis step.
 - Assert that the capture scene teaches automatic analysis and that the current checklist/dispute states are represented.
 - Run the focused tutorial component tests, frontend typecheck, lint, and production build.
-
