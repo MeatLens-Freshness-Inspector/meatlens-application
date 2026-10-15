@@ -14,6 +14,12 @@ test("history tutorial mirrors the simplified saved-record flow", () => {
   assert.match(markup, /Saved inspections/);
   assert.match(markup, /Find a record by meat or place/);
   assert.match(markup, /Open record/);
+  assert.match(markup, /Export a report/);
+  assert.match(markup, /Without a date, this includes all saved inspections/);
+  assert.match(markup, /Choose a date to export one day/);
+  assert.match(markup, /Export all inspections as PDF/);
+  assert.match(markup, /Inspection totals/);
+  assert.doesNotMatch(markup, /More options/);
 
   const detailMarkup = renderToStaticMarkup(
     <HistoryMockScene step={tutorialDefinitions.history[1]} onAdvance={() => {}} />,

@@ -326,7 +326,7 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
       sectionTitle: "History demo",
       stepTitle: "Find a saved inspection",
       instruction:
-        "Use the search if needed, then tap Open record to review a saved inspection.",
+        "Use the search if needed, then tap Open record to review a saved inspection. Report tools stay visible below the list: without a date, export all saved inspections.",
       sceneTitle: "History",
       sceneSubtitle: "Saved inspections",
       hotspotLabel: "Open record",
@@ -347,6 +347,16 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
           id: "history-back",
           title: "Result filter",
           description: "Use Show results only when you need a freshness status filter.",
+        },
+        {
+          id: "history-report",
+          title: "Export a report",
+          description: "Without a date, export all saved inspections. Choose a date when you only need one day.",
+        },
+        {
+          id: "history-totals",
+          title: "Inspection totals",
+          description: "Review the saved-inspection totals below the report controls.",
         },
       ],
     },

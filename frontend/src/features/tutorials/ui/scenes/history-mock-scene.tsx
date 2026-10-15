@@ -63,6 +63,24 @@ export function HistoryMockScene({ step, onAdvance }: HistoryMockSceneProps) {
               </div>
             </div>
           </MockHotspot>
+
+          <section className="rounded-2xl border border-border/70 bg-card/90 p-3">
+            <p className="font-display text-[10px] font-semibold">Export a report</p>
+            <p className="mt-1 text-[8px] leading-relaxed text-muted-foreground">
+              Without a date, this includes all saved inspections.
+            </p>
+            <div className="mt-2 rounded-xl border border-border/70 bg-background/70 px-2 py-2 text-[9px] text-muted-foreground">
+              Choose a date to export one day
+            </div>
+            <div className="mt-2 flex h-8 items-center justify-center rounded-xl bg-primary px-2 text-[9px] font-semibold text-primary-foreground">
+              Export all inspections as PDF
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-border/70 bg-card/90 p-3">
+            <p className="font-display text-[10px] font-semibold">Inspection totals</p>
+            <p className="mt-1 text-[8px] text-muted-foreground">Fresh, warning, and spoiled results are summarized here.</p>
+          </section>
         </div>
       ) : (
         <div className="flex flex-col gap-2 p-3">
