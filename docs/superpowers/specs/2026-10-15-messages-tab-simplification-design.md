@@ -1,6 +1,6 @@
 # Messages Tab Simplification Design
 
-**Date:** 2026-10-15  
+**Date:** 2026-10-15
 **Status:** Approved for implementation
 
 ## Goal
