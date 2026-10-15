@@ -14,7 +14,7 @@ Make the inspector History tab fast and understandable for meat inspectors who a
 - Reframe the History page around a plain-language saved-record list.
 - Make the action on each record explicit: **Open record**.
 - Replace the dense filter surface with one simple search field and a plain-language status filter. Keep the existing classification values available from that filter.
-- Move date filtering, PDF export, and analytics into a secondary **More options** area.
+- Keep date filtering, PDF export, and analytics in an always-visible report and totals area below the primary list.
 - Make PDF behavior explicit:
   - no date selected: export all saved inspections;
   - date selected: export only inspections from that day;
@@ -38,7 +38,7 @@ Make the inspector History tab fast and understandable for meat inspectors who a
 4. The inspector taps **Open record** on a record card.
 5. The detail view leads with the classification, confidence, date/location, and **Dispute result** action. Technical metadata, protocol information, analysis, deviations, and notes remain below for review.
 6. The inspector closes the detail view to return to the list.
-7. If reporting is needed, the inspector opens **More options**. The section says whether export is for **all saved inspections** or **inspections from [date]**. The export button uses the matching scope.
+7. If reporting is needed, the inspector scrolls to **Export a report**. The section says whether export is for **all saved inspections** or **inspections from [date]**. The export button uses the matching scope.
 
 ## UI design
 
@@ -51,11 +51,12 @@ Make the inspector History tab fast and understandable for meat inspectors who a
 - Add a prominent, accessible **Open record** button to each record. Clicking the card may remain a convenience, but the button is the documented action and must not be nested inside another interactive element.
 - Preserve clear loading, no-results, and pagination states.
 
-### More options
+### Report and totals area
 
-- Collapse date filtering, date-specific PDF export, classification counts, and monthly activity under **More options**.
+- Keep report export and inspection totals visible without requiring the inspector to open a hidden menu.
+- Label the report section **Export a report** and explain that no date means all saved inspections.
 - Date filter remains optional and clearable.
-- Export helper text is always visible when the section is open and changes with the selected date.
+- Export helper text is always visible and changes with the selected date.
 - Analytics keep their existing values and calculations but are secondary to record lookup.
 
 ### Detail view
@@ -68,7 +69,7 @@ Make the inspector History tab fast and understandable for meat inspectors who a
 
 - Use the same fixture data as the live flow.
 - Teach: open a saved record, review the result and dispute action, then return to the list.
-- Show the new search/filter/report controls only as secondary tools when they are relevant; do not make the tutorial require navigating the analytics panels.
+- Show the new search/filter/report controls only as secondary tools when they are relevant; do not make the tutorial require navigating the analytics panels or opening a collapsed menu.
 
 ## Data and behavior
 

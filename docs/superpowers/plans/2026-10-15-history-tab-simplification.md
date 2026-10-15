@@ -4,7 +4,7 @@
 
 **Goal:** Make inspector History record lookup fast and plain-language while preserving reporting, filtering, detail review, and dispute capabilities.
 
-**Architecture:** Keep `useHistory` as the single owner of inspection selection, filtering, pagination, and PDF export state. Refactor the History page into a primary saved-record list plus a collapsed `More options` panel for date filtering, export, and analytics. Keep the existing inspection detail sheet and report adapter contracts, passing an explicit all-record scope when no date is selected.
+**Architecture:** Keep `useHistory` as the single owner of inspection selection, filtering, pagination, and PDF export state. Refactor the History page into a primary saved-record list plus an always-visible report and totals area for date filtering, export, and analytics. Keep the existing inspection detail sheet and report adapter contracts, passing an explicit all-record scope when no date is selected.
 
 **Tech Stack:** React 18, TypeScript, Tailwind CSS, Radix/shared UI primitives, date-fns, Node test runner through `tsx`, Vite.
 
@@ -174,7 +174,7 @@ git add frontend/src/widgets/history/ui/history-header.tsx frontend/src/widgets/
 git commit -m "feat: make saved inspections the history primary task"
 ```
 
-### Task 3: Move reporting and analytics into More options
+### Task 3: Make reporting and analytics easy to find
 
 **Files:**
 - Create: `frontend/src/widgets/history/ui/history-more-options.tsx`
@@ -186,17 +186,17 @@ git commit -m "feat: make saved inspections the history primary task"
 
 **Interfaces:**
 - `HistoryMoreOptions` accepts the existing date, export progress, export callback, day-summary, classification-count, and monthly-count values from `useHistory`.
-- It renders a native `<details>` section with summary `More options`, an export scope sentence, optional date filter, export button, and the existing analytics cards.
+- It renders always-visible `Export a report` and `Inspection totals` sections with an export scope sentence, optional date filter, export button, and the existing analytics cards.
 
 - [ ] **Step 1: Write the failing tests**
 
 Render `HistoryMoreOptions` with no selected date and with a selected date. Assert:
 
 ```ts
-assert.match(allMarkup, /More options/);
-assert.match(allMarkup, /PDF will include all saved inspections/);
+assert.match(allMarkup, /Export a report/);
+assert.match(allMarkup, /Without a date, this includes all saved inspections/);
 assert.match(allMarkup, /Export all inspections as PDF/);
-assert.match(dayMarkup, /PDF will include inspections from August 5, 2026/);
+assert.match(dayMarkup, /This report will include inspections from August 5, 2026/);
 assert.match(dayMarkup, /Export this day as PDF/);
 ```
 
@@ -208,16 +208,16 @@ Also assert the existing classification and monthly summary labels remain availa
 npm exec -- tsx --test tests/component/history/history-more-options.component.test.tsx
 ```
 
-Expected: FAIL because the component does not exist.
+Expected: FAIL because the component does not yet expose the always-visible report controls.
 
 - [ ] **Step 3: Implement the secondary options panel**
 
-Use a native `<details>` element so the panel is keyboard accessible without adding state. Put date input, clear action, scope helper text, and export button at the top. Use the exact copy:
+Render the report controls as a visible section so the inspector does not have to discover or open a hidden menu. Put date input, clear action, scope helper text, and export button at the top. Use the exact copy:
 
 ```tsx
 {hasValidReportDay
-  ? `PDF will include inspections from ${formattedReportDayLabel}.`
-  : "PDF will include all saved inspections. Choose a date to export one day."}
+  ? `This report will include inspections from ${formattedReportDayLabel}.`
+  : "Without a date, this includes all saved inspections."}
 ```
 
 Button text must be `Export all inspections as PDF` without a date and `Export this day as PDF` with a valid date. Keep the existing loading overlay around the options panel and render `HistorySidebar`’s analytics content beneath the export controls. Remove date/export controls from `InspectionTimelineSection`.
@@ -236,7 +236,7 @@ Expected: PASS.
 
 ```powershell
 git add frontend/src/widgets/history/ui/history-more-options.tsx frontend/src/widgets/history/index.ts frontend/src/pages/inspector/history-page.tsx frontend/src/widgets/history/ui/history-sidebar.tsx frontend/src/widgets/history/ui/inspection-timeline-section.tsx frontend/tests/component/history/history-more-options.component.test.tsx
-git commit -m "feat: tuck history reporting tools into more options"
+git commit -m "feat: make history reporting tools easy to find"
 ```
 
 ### Task 4: Put saved result and dispute action first in record details
