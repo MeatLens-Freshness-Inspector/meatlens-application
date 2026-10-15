@@ -10,12 +10,12 @@
  * needing a real camera or specific pixel values.
  *
  * Invariants under test:
- *   1. Good image â†’ "Use Photo" is enabled, no quality banner shown.
- *   2. FAIL quality â†’ "Use Photo" is disabled, error banner shown, retake only.
+ *   1. Good image â†’ "Analyze Sample" is enabled, no quality banner shown.
+ *   2. FAIL quality â†’ "Analyze Sample" is disabled, error banner shown, retake only.
  *   3. WARNING quality â†’ amber warning banner shown, both "Retake" and
- *      "Use Photo" remain available.
- *   4. Warning: clicking "Use Photo" still calls onCapture (proceeds to analyze).
- *   5. Fail: clicking "Use Photo" is blocked; only retake resets the flow.
+ *      "Analyze Sample" remain available.
+ *   4. Warning: clicking "Analyze Sample" captures and proceeds to analysis.
+ *   5. Fail: clicking "Analyze Sample" is blocked; only retake resets the flow.
  */
 
 import { test, expect, type Page } from "@playwright/test";
@@ -164,7 +164,7 @@ async function completePreScanChecklist(page: Page): Promise<void> {
 // ---------------------------------------------------------------------------
 
 test.describe("Camera quality integration", () => {
-  test("good quality: Use Photo is enabled and no quality banner is shown", async ({ page }) => {
+  test("good quality: Analyze Sample is enabled and no quality banner is shown", async ({ page }) => {
     await installQualityMock(page, "pass");
     await seedSignedInSession(page, { userId: "user-1" });
     await mockCommonApi(page, { userId: "user-1" });
@@ -179,12 +179,12 @@ test.describe("Camera quality integration", () => {
     // No quality warning banner
     await expect(page.getByTestId("quality-banner")).not.toBeVisible();
 
-    // Use Photo button is enabled
-    const usePhotoBtn = page.getByRole("button", { name: /use photo/i });
-    await expect(usePhotoBtn).toBeEnabled();
+    // Analyze Sample button is enabled
+    const analyzeSampleBtn = page.getByRole("button", { name: /analyze sample/i });
+    await expect(analyzeSampleBtn).toBeEnabled();
   });
 
-  test("warning quality: amber warning banner is shown but Use Photo remains enabled", async ({ page }) => {
+  test("warning quality: amber warning banner is shown but Analyze Sample remains enabled", async ({ page }) => {
     await installQualityMock(page, "warning");
     await seedSignedInSession(page, { userId: "user-1" });
     await mockCommonApi(page, { userId: "user-1" });
@@ -201,7 +201,7 @@ test.describe("Camera quality integration", () => {
 
     // Both action buttons are present and enabled
     await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
-    await expect(page.getByRole("button", { name: /use photo/i })).toBeEnabled();
+    await expect(page.getByRole("button", { name: /analyze sample/i })).toBeEnabled();
   });
 
   test("warning quality: light mode keeps banner text readable while preserving warning accent", async ({ page }) => {
@@ -224,7 +224,7 @@ test.describe("Camera quality integration", () => {
     await expect(banner.getByText("Quality Warning", { exact: true })).toHaveCSS("color", expectedAccentColor);
   });
 
-  test("warning quality: Use Photo proceeds to analyze step", async ({ page }) => {
+  test("warning quality: Analyze Sample starts the analysis transition", async ({ page }) => {
     await installQualityMock(page, "warning");
     await seedSignedInSession(page, { userId: "user-1" });
     await mockCommonApi(page, { userId: "user-1" });
@@ -235,14 +235,14 @@ test.describe("Camera quality integration", () => {
 
     await expect(page.getByTestId("quality-banner")).toBeVisible();
 
-    // Clicking Use Photo should accept the capture and show the analyze button
-    await page.getByRole("button", { name: /use photo/i }).click();
-    await expect(page.getByRole("button", { name: /analyze sample|preparing/i })).toBeVisible({
+    // Clicking Analyze Sample should accept the capture and start the existing analysis flow
+    await page.getByRole("button", { name: /analyze sample/i }).click();
+    await expect(page.getByRole("button", { name: /analyzing sample|preparing|analyze sample/i })).toBeVisible({
       timeout: 8_000,
     });
   });
 
-  test("fail quality: Use Photo button is disabled and only Retake is actionable", async ({ page }) => {
+  test("fail quality: Analyze Sample button is disabled and only Retake is actionable", async ({ page }) => {
     await installQualityMock(page, "fail");
     await seedSignedInSession(page, { userId: "user-1" });
     await mockCommonApi(page, { userId: "user-1" });
@@ -259,9 +259,9 @@ test.describe("Camera quality integration", () => {
       /resolution|dark|blurry|bright|quality/i
     );
 
-    // Use Photo should be disabled
-    const usePhotoBtn = page.getByRole("button", { name: /use photo/i });
-    await expect(usePhotoBtn).toBeDisabled();
+    // Analyze Sample should be disabled
+    const analyzeSampleBtn = page.getByRole("button", { name: /analyze sample/i });
+    await expect(analyzeSampleBtn).toBeDisabled();
 
     // Retake should remain enabled
     await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
@@ -295,8 +295,8 @@ test.describe("Camera quality integration", () => {
     await completePreScanChecklist(page);
     await uploadViaCameraApp(page);
 
-    // The Use Photo button must be disabled so onCapture is never called
-    await expect(page.getByRole("button", { name: /use photo/i })).toBeDisabled();
+    // The Analyze Sample button must be disabled so onCapture is never called
+    await expect(page.getByRole("button", { name: /analyze sample/i })).toBeDisabled();
 
     // Therefore the Analyze Sample button should not appear
     await expect(page.getByRole("button", { name: /analyze sample/i })).not.toBeVisible();

@@ -75,7 +75,8 @@ test("warning quality keeps the banner visible while leaving both actions availa
   assert.match(markup, /Quality Warning/);
   assert.match(markup, /Image is underexposed/);
   assert.match(markup, /Retake/);
-  assert.match(markup, /Use Photo/);
+  assert.match(markup, /Analyze Sample/);
+  assert.doesNotMatch(markup, /Use Photo/);
   assert.doesNotMatch(markup, /disabled=""/);
 });
 
@@ -102,6 +103,7 @@ test("failed quality disables the confirm action and keeps retake available", ()
   assert.match(markup, /Quality Check Failed/);
   assert.match(markup, /Image resolution is too low/);
   assert.match(markup, /Retake/);
-  assert.match(markup, /Use Photo/);
+  assert.match(markup, /Analyze Sample/);
+  assert.doesNotMatch(markup, /Use Photo/);
   assert.match(markup, /disabled=""/);
 });

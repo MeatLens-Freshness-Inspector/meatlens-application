@@ -75,7 +75,7 @@ test("prevents saving the same analyzed record more than once", async ({ page })
   await page.goto("/inspect");
   await completePreScanChecklist(page);
   await uploadSamplePhoto(page);
-  await page.getByRole("button", { name: "Use Photo" }).click();
+  await page.getByRole("button", { name: "Analyze Sample" }).click();
   await expect.poll(() => uploadCalls).toBe(1);
   await expect.poll(() => createCalls).toBe(1);
   expect(JSON.parse(createPayload)).toMatchObject({ location: "Old Market" });
@@ -177,7 +177,7 @@ test("waits for the in-flight GPS capture before auto-saving the inspection payl
   ).toBeVisible();
 
   await uploadSamplePhoto(page);
-  await page.getByRole("button", { name: "Use Photo" }).click();
+  await page.getByRole("button", { name: "Analyze Sample" }).click();
   await expect.poll(() => createCalls, { timeout: 15_000 }).toBe(1);
   await expect(
     page.getByText("Old Market | Lat: 14.599500 | Long: 120.984200", { exact: true }),
@@ -243,7 +243,7 @@ test("protocol failure auto-classifies the capture as spoiled and skips analyze"
   await page.getByRole("radio", { name: "Area Clean: Yes" }).click();
 
   await uploadSamplePhoto(page);
-  await page.getByRole("button", { name: "Use Photo" }).click();
+  await page.getByRole("button", { name: "Analyze Sample" }).click();
 
   await expect(page.getByText(/protocol result: spoiled/i)).toBeVisible();
   await expect(

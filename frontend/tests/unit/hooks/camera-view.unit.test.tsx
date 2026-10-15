@@ -91,6 +91,7 @@ test("CameraCaptureView renders the captured warning state without losing action
   assert.match(markup, /Quality Warning/);
   assert.match(markup, /Image is underexposed/);
   assert.match(markup, /Retake/);
-  assert.match(markup, /Use Photo/);
+  assert.match(markup, /Analyze Sample/);
+  assert.doesNotMatch(markup, /Use Photo/);
   assert.match(markup, /224x224 model input/);
 });
