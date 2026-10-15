@@ -19,7 +19,6 @@ import {
   saveDeveloperAnalysisSnapshot,
   type DeveloperOptionsFlags,
 } from "@/features/developer-tools";
-import { marketLocationClient } from "@/entities/market-location";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import {
   EXPIRED_CERTIFICATE_REASON,
@@ -56,28 +55,14 @@ import { resolveInspectionModelSelection } from "./analysis-model-selection";
 import { persistPendingScan as persistPendingScanPayload } from "./pending-scan";
 import { resolveInspectionSegmentationDisabled } from "./segmentation-selection";
 import {
-  readRememberedMarketLocation,
-  resolveRememberedMarketLocation,
-  writeRememberedMarketLocation,
-} from "./location-memory";
-import {
   createClientSubmissionId,
   DEFAULT_MEAT_TYPE,
-  FALLBACK_MARKET_LOCATIONS,
   FORCE_RETAKE_CONFIDENCE_THRESHOLD,
   getCaptureStatusText,
   getConfidenceText,
   getSaveButtonLabel,
-  normalizeMarketLocationNames,
 } from "./inspect-page";
-
-function getLocationStorage(): Storage | null {
-  try {
-    return typeof window === "undefined" ? null : window.localStorage;
-  } catch {
-    return null;
-  }
-}
+import { useInspectionLocation } from "./use-inspection-location";
 
 // Inspection workflow: pre-scan/capture -> local inference -> online save or offline queue.
 export function useInspectionWorkspace(): InspectPageViewModel {
@@ -87,8 +72,6 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   const [preScanForm, setPreScanForm] = useState<InspectionPreScanForm>(() =>
     createEmptyPreScanForm(),
   );
-  const [marketLocations, setMarketLocations] = useState<string[]>(FALLBACK_MARKET_LOCATIONS);
-  const [selectedLocation, setSelectedLocation] = useState<string>(FALLBACK_MARKET_LOCATIONS[0] ?? "");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isImmediateAnalysisPending, setIsImmediateAnalysisPending] = useState(false);
   const [isModelReady, setIsModelReady] = useState<boolean>(() => !navigator.onLine || getAnalysisReady());
@@ -107,6 +90,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   const queuedAtRef = useRef<string | null>(null);
   const createInspection = useSubmitInspection();
   const { savedInspectionId, isSubmitDisputePending, isDisputeSubmitted, setSavedInspectionId, reset: resetDispute, onSubmit: handleSubmitDispute } = useInspectionDispute();
+  const { marketLocations, selectedLocation, handleSelectedLocationChange } = useInspectionLocation(user?.id ?? null);
 
   useEffect(() => {
     if (!user || !isDeveloper) {
@@ -207,52 +191,6 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     };
   }, [selectedAnalysisModel]);
 
-  useEffect(() => {
-    let isCancelled = false;
-
-    const loadMarketLocations = async () => {
-      try {
-        const locationRows = await marketLocationClient.getAll();
-        if (isCancelled) return;
-
-        const nextLocations = normalizeMarketLocationNames(locationRows);
-        setMarketLocations(nextLocations);
-        setSelectedLocation((current) =>
-          resolveRememberedMarketLocation(
-            user ? readRememberedMarketLocation(getLocationStorage(), user.id) : null,
-            current,
-            nextLocations,
-          ),
-        );
-      } catch {
-        if (isCancelled) return;
-        setMarketLocations(FALLBACK_MARKET_LOCATIONS);
-        setSelectedLocation((current) =>
-          resolveRememberedMarketLocation(
-            user ? readRememberedMarketLocation(getLocationStorage(), user.id) : null,
-            current,
-            FALLBACK_MARKET_LOCATIONS,
-          ),
-        );
-      }
-    };
-
-    void loadMarketLocations();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [user]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const rememberedLocation = readRememberedMarketLocation(getLocationStorage(), user.id);
-    setSelectedLocation((current) =>
-      resolveRememberedMarketLocation(rememberedLocation, current, marketLocations),
-    );
-  }, [marketLocations, user]);
-
   const isPreScanBypassed = Boolean(
     user &&
     isAdmin &&
@@ -310,16 +248,6 @@ export function useInspectionWorkspace(): InspectPageViewModel {
       }));
     },
     [],
-  );
-
-  const handleSelectedLocationChange = useCallback(
-    (value: string) => {
-      setSelectedLocation(value);
-      if (user) {
-        writeRememberedMarketLocation(getLocationStorage(), user.id, value);
-      }
-    },
-    [user],
   );
 
   const handleCapture = useCallback((capture: CapturedImagePayload) => {
