@@ -197,11 +197,6 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
           description: "Open the guided camera flow to frame the meat sample.",
         },
         {
-          id: "inspect-analysis",
-          title: "Run analysis",
-          description: "Review the classification and confidence after capture.",
-        },
-        {
           id: "inspect-save",
           title: "Save result",
           description: "Store the finished inspection record after review.",
@@ -231,23 +226,18 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
           title: "Capture sample",
           description: "Open the guided camera flow after the checklist is complete.",
         },
-        {
-          id: "inspect-analysis",
-          title: "Run analysis",
-          description: "Review the classification and confidence after capture.",
-        },
       ],
     },
     {
       id: "inspect-capture",
       tutorialId: "inspect",
       sectionTitle: "Inspect demo",
-      stepTitle: "Open capture",
+      stepTitle: "Capture and start analysis",
       instruction:
-        "Tap the highlighted capture action to continue through the simulated inspection flow.",
+        "Tap the highlighted capture action. After you accept the photo, MeatLens starts analysis automatically—there is no second analysis button.",
       sceneTitle: "Inspect",
       sceneSubtitle: "Field capture workflow",
-      hotspotLabel: "Open capture",
+      hotspotLabel: "Capture sample",
       blocks: [
         {
           id: "inspect-market",
@@ -257,54 +247,14 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
         {
           id: "inspect-capture",
           title: "Capture sample",
-          description: "Open the guided camera flow to frame the meat sample.",
+          description: "Frame the meat sample and accept the photo. Analysis starts automatically after capture.",
           tone: "accent",
-          hotspotLabel: "Open capture",
-        },
-        {
-          id: "inspect-analysis",
-          title: "Run analysis",
-          description: "Review the classification and confidence after capture.",
+          hotspotLabel: "Capture sample",
         },
         {
           id: "inspect-save",
           title: "Save result",
-          description: "Store the finished inspection record after review.",
-        },
-      ],
-    },
-    {
-      id: "inspect-analysis",
-      tutorialId: "inspect",
-      sectionTitle: "Inspect demo",
-      stepTitle: "Run analysis",
-      instruction:
-        "Tap the highlighted analysis step to review the simulated freshness result.",
-      sceneTitle: "Inspect",
-      sceneSubtitle: "Field capture workflow",
-      hotspotLabel: "Run analysis",
-      blocks: [
-        {
-          id: "inspect-market",
-          title: "Market selector",
-          description: "Set the active inspection location before capture.",
-        },
-        {
-          id: "inspect-capture",
-          title: "Capture sample",
-          description: "Open the guided camera flow to frame the meat sample.",
-        },
-        {
-          id: "inspect-analysis",
-          title: "Run analysis",
-          description: "Review the classification and confidence after capture.",
-          tone: "accent",
-          hotspotLabel: "Run analysis",
-        },
-        {
-          id: "inspect-save",
-          title: "Save result",
-          description: "Store the finished inspection record after review.",
+          description: "Store the finished inspection record after reviewing the result.",
         },
       ],
     },
@@ -314,32 +264,57 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
       sectionTitle: "Inspect demo",
       stepTitle: "Save the result",
       instruction:
-        "Tap the highlighted save action to complete the simulated inspection run.",
+        "Review the freshness result, then tap Save Record to keep the inspection. You can dispute the result after it is saved.",
       sceneTitle: "Inspect",
-      sceneSubtitle: "Field capture workflow",
+      sceneSubtitle: "Review and save result",
       hotspotLabel: "Save result",
       blocks: [
         {
-          id: "inspect-market",
-          title: "Market selector",
-          description: "Set the active inspection location before capture.",
-        },
-        {
           id: "inspect-capture",
-          title: "Capture sample",
-          description: "Open the guided camera flow to frame the meat sample.",
+          title: "Captured sample",
+          description: "The accepted photo has already been analyzed automatically.",
         },
         {
-          id: "inspect-analysis",
-          title: "Run analysis",
-          description: "Review the classification and confidence after capture.",
+          id: "inspect-result",
+          title: "Review result",
+          description: "Check the classification, confidence, and explanation before saving.",
         },
         {
           id: "inspect-save",
           title: "Save result",
-          description: "Store the finished inspection record after review.",
+          description: "Store the finished inspection record before opening a dispute.",
           tone: "accent",
           hotspotLabel: "Save result",
+        },
+        {
+          id: "inspect-dispute",
+          title: "Dispute result",
+          description: "This action becomes available after the inspection is saved.",
+        },
+      ],
+    },
+    {
+      id: "inspect-dispute",
+      tutorialId: "inspect",
+      sectionTitle: "Inspect demo",
+      stepTitle: "Dispute a saved result",
+      instruction:
+        "After saving, use Dispute result if the classification does not match your field evidence. An administrator or developer will review it.",
+      sceneTitle: "Inspect",
+      sceneSubtitle: "Saved result review",
+      hotspotLabel: "Dispute result",
+      blocks: [
+        {
+          id: "inspect-saved-result",
+          title: "Saved inspection",
+          description: "The result is now stored in your inspection history.",
+        },
+        {
+          id: "inspect-dispute",
+          title: "Dispute result",
+          description: "Explain the evidence when the result does not match your field judgment.",
+          tone: "accent",
+          hotspotLabel: "Dispute result",
         },
       ],
     },
