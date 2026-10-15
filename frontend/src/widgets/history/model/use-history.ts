@@ -12,6 +12,7 @@ import type { FreshnessClassification, Inspection } from "@/entities/inspection"
 import type { FilterOption, HistoryMonthlyCount } from "./types";
 import {
   buildDetailedHistoryReportPdfModel,
+  buildHistoryExportScope,
   buildHistorySearchText,
 } from "./history-page";
 
@@ -174,13 +175,21 @@ export function useHistory() {
   }, []);
 
   const handleExportDetailedPdf = useCallback(async () => {
-    if (!hasValidReportDay) {
-      toast.error("Please choose a valid inspection day");
-      return;
-    }
+    const exportScope = buildHistoryExportScope({
+      allInspections: inspections ?? [],
+      selectedDayInspections,
+      selectedReportDay,
+      formattedReportDayLabel,
+      averageConfidence: avgConfidence,
+      selectedDayAverageConfidence,
+    });
 
-    if (selectedDayInspections.length === 0) {
-      toast.error("No inspections found for the selected day");
+    if (exportScope.inspections.length === 0) {
+      toast.error(
+        exportScope.hasSelectedDay
+          ? "No inspections found for the selected day"
+          : "No saved inspections to export",
+      );
       return;
     }
 
@@ -189,18 +198,18 @@ export function useHistory() {
       try {
         const generatedAt = format(new Date(), "MMM d, yyyy h:mm a");
         const model = buildDetailedHistoryReportPdfModel({
-            averageConfidence: selectedDayAverageConfidence,
-            generatedAt,
-            inspections: selectedDayInspections,
-            selectedReportDay,
-            reportOrganization: profile?.report_organization ?? null,
-            modelAccuracyHistory: modelAccuracyHistory ?? [],
-          });
+          averageConfidence: exportScope.averageConfidence,
+          generatedAt,
+          inspections: exportScope.inspections,
+          selectedReportDay: exportScope.reportDayLabel,
+          reportOrganization: profile?.report_organization ?? null,
+          modelAccuracyHistory: modelAccuracyHistory ?? [],
+        });
 
         report({ current: 2, total: 3 });
         await composeReportPdf(
           model,
-          `MeatLens-inspector-detailed-${selectedReportDay}.pdf`,
+          `MeatLens-inspector-${exportScope.filenameScope}.pdf`,
         );
         report({ current: 3, total: 3 });
         toast.success("Inspector PDF report exported");
@@ -210,7 +219,9 @@ export function useHistory() {
       }
     });
   }, [
-    hasValidReportDay,
+    avgConfidence,
+    formattedReportDayLabel,
+    inspections,
     profile?.report_organization,
     selectedDayAverageConfidence,
     selectedDayInspections,

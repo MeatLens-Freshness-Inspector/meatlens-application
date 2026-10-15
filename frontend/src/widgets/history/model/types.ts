@@ -22,3 +22,21 @@ export type DetailedHistoryReportInput = {
   reportOrganization: ReportOrganization | null | undefined;
   modelAccuracyHistory?: ModelAccuracySnapshot[];
 };
+
+export type HistoryExportScopeInput = {
+  allInspections: Inspection[];
+  selectedDayInspections: Inspection[];
+  selectedReportDay: string;
+  formattedReportDayLabel: string | null;
+  averageConfidence: number;
+  selectedDayAverageConfidence: number;
+};
+
+export type HistoryExportScope = {
+  hasSelectedDay: boolean;
+  inspections: Inspection[];
+  reportDayLabel: string;
+  filenameScope: string;
+  scopeLabel: string;
+  averageConfidence: number;
+};

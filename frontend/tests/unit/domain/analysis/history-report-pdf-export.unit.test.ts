@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { formatDateTime as formatReportDateTime } from "../../../../src/shared/lib/date-time";
-import { buildDetailedHistoryReportPdfModel } from "../../../../src/widgets/history/model/history-page";
+import {
+  buildDetailedHistoryReportPdfModel,
+  buildHistoryExportScope,
+} from "../../../../src/widgets/history/model/history-page";
 import type { Inspection } from "../../../../src/entities/inspection";
 
 const sampleInspection: Inspection = {
@@ -88,4 +91,54 @@ test("buildDetailedHistoryReportPdfModel carries captured_at fallback and image_
     detailSection?.inspectionEvidence?.[0].imageUrl,
     "https://example.com/city-vet-sample.jpg",
   );
+});
+
+test("history export defaults to all saved inspections without a date", () => {
+  const spoiledInspection: Inspection = {
+    ...sampleInspection,
+    id: "inspection-2",
+    classification: "spoiled",
+    confidence_score: 88,
+  };
+
+  const scope = buildHistoryExportScope({
+    allInspections: [sampleInspection, spoiledInspection],
+    selectedDayInspections: [],
+    selectedReportDay: "",
+    formattedReportDayLabel: null,
+    averageConfidence: 90,
+    selectedDayAverageConfidence: 0,
+  });
+
+  assert.equal(scope.hasSelectedDay, false);
+  assert.deepEqual(scope.inspections, [sampleInspection, spoiledInspection]);
+  assert.equal(scope.scopeLabel, "all saved inspections");
+  assert.equal(scope.reportDayLabel, "All saved inspections");
+  assert.equal(scope.filenameScope, "all-inspections");
+  assert.equal(scope.averageConfidence, 90);
+});
+
+test("history export uses only the selected day when a date is present", () => {
+  const spoiledInspection: Inspection = {
+    ...sampleInspection,
+    id: "inspection-2",
+    classification: "spoiled",
+    confidence_score: 88,
+  };
+
+  const scope = buildHistoryExportScope({
+    allInspections: [sampleInspection, spoiledInspection],
+    selectedDayInspections: [spoiledInspection],
+    selectedReportDay: "2026-08-05",
+    formattedReportDayLabel: "August 5, 2026",
+    averageConfidence: 90,
+    selectedDayAverageConfidence: 88,
+  });
+
+  assert.equal(scope.hasSelectedDay, true);
+  assert.deepEqual(scope.inspections, [spoiledInspection]);
+  assert.equal(scope.scopeLabel, "inspections from August 5, 2026");
+  assert.equal(scope.reportDayLabel, "August 5, 2026");
+  assert.equal(scope.filenameScope, "2026-08-05");
+  assert.equal(scope.averageConfidence, 88);
 });

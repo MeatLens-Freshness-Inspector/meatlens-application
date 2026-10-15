@@ -8,6 +8,8 @@ import type {
 } from "@/entities/inspection";
 import type {
   DetailedHistoryReportInput,
+  HistoryExportScope,
+  HistoryExportScopeInput,
   HistoryFilterOption,
 } from "./types";
 
@@ -27,6 +29,30 @@ export const HISTORY_CLASSIFICATIONS: FreshnessClassification[] = [
   "warning",
   "spoiled",
 ];
+
+export function buildHistoryExportScope(input: HistoryExportScopeInput): HistoryExportScope {
+  const hasSelectedDay = Boolean(input.selectedReportDay && input.formattedReportDayLabel);
+
+  if (!hasSelectedDay) {
+    return {
+      hasSelectedDay: false,
+      inspections: input.allInspections,
+      reportDayLabel: "All saved inspections",
+      filenameScope: "all-inspections",
+      scopeLabel: "all saved inspections",
+      averageConfidence: input.averageConfidence,
+    };
+  }
+
+  return {
+    hasSelectedDay: true,
+    inspections: input.selectedDayInspections,
+    reportDayLabel: input.formattedReportDayLabel,
+    filenameScope: input.selectedReportDay,
+    scopeLabel: `inspections from ${input.formattedReportDayLabel}`,
+    averageConfidence: input.selectedDayAverageConfidence,
+  };
+}
 
 export function buildDetailedHistoryReportPdfModel(
   input: DetailedHistoryReportInput,
