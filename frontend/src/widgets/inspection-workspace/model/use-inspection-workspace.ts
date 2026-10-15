@@ -39,7 +39,6 @@ import {
   hasMockOfflineAnalysisResult,
   isModelReady as getAnalysisReady,
   loadActiveAnalysisModel,
-  prewarmModel,
   setActiveAnalysisModel,
 } from "@/features/offline-analysis";
 import {
@@ -143,26 +142,16 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     });
   }, [isDeveloper, user]);
 
-  useEffect(() => {
-    const selectedModel = resolveInspectionModelSelection(
-      user ? { id: user.id } : null,
-      isAdmin,
-      isDeveloper,
-      isDeveloperUnlocked,
-      developerFlags.selectedModel,
-    );
-    setActiveAnalysisModel(selectedModel);
-    setIsModelReady(!navigator.onLine || getAnalysisReady());
-
-    if (!navigator.onLine) {
-      return;
-    }
-
-    prewarmModel();
-    setIsModelReady(getAnalysisReady());
-  }, [developerFlags.selectedModel, isAdmin, isDeveloper, isDeveloperUnlocked, user]);
+  const selectedAnalysisModel = resolveInspectionModelSelection(
+    user ? { id: user.id } : null,
+    isAdmin,
+    isDeveloper,
+    isDeveloperUnlocked,
+    developerFlags.selectedModel,
+  );
 
   useEffect(() => {
+    setActiveAnalysisModel(selectedAnalysisModel);
     let isCancelled = false;
     let retryTimerId: number | null = null;
 
@@ -216,7 +205,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, []);
+  }, [selectedAnalysisModel]);
 
   useEffect(() => {
     let isCancelled = false;
