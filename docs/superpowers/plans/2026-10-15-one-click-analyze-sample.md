@@ -104,6 +104,8 @@ git commit -m "feat: rename capture confirmation to analyze sample"
 
 **Files:**
 - Modify: `frontend/src/widgets/inspection-workspace/model/use-inspection-workspace.ts:around handleCapture, handleAnalyze, and returned view model`
+- Create: `frontend/src/widgets/inspection-workspace/model/use-immediate-analysis.ts`
+- Modify: the capture view types, camera session, and inspection capture section to hide the committed preview confirmation action
 
 **Interfaces:**
 - Consumes: `CapturedImagePayload`, the existing `handleCapture`, `handleAnalyze`, `inspectionDecisionSource`, and the protocol result state.
@@ -117,17 +119,18 @@ Add a boolean state next to the existing analysis state:
 const [isImmediateAnalysisPending, setIsImmediateAnalysisPending] = useState(false);
 ```
 
-In `handleCapture`, return early without setting the pending flag when saving is active or the pre-scan checklist is incomplete. After the existing `protocolTriggered` value is computed and capture state is registered, set:
+In `handleCapture`, return early without setting the pending flag when saving is active or the pre-scan checklist is incomplete. After the existing `protocolTriggered` value is computed and capture state is registered, set the flag only for real analysis work:
 
 ```ts
-setIsImmediateAnalysisPending(!protocolTriggered);
+const mockAnalysisResult = getMockOfflineAnalysisResult();
+setIsImmediateAnalysisPending(!protocolTriggered && !mockAnalysisResult);
 ```
 
-This keeps protocol failures out of the model path.
+This keeps protocol failures and existing deterministic mock fixtures out of the model path.
 
 - [ ] **Step 2: Trigger the existing analysis callback after capture state is committed**
 
-Add an effect after `handleAnalyze` is declared so it uses the newly committed `capturedInput` and the current submission state:
+Add `useImmediateAnalysis` after `handleAnalyze` is declared so it uses the newly committed `capturedInput` and the current submission state. The helper clears the pending flag before invoking the existing callback and returns without analysis when a protocol result is already present.
 
 ```ts
 useEffect(() => {
@@ -143,7 +146,7 @@ useEffect(() => {
 }, [capturedInput, handleAnalyze, inspectionDecisionSource, isImmediateAnalysisPending, result]);
 ```
 
-The effect must run only after `setCapturedInput` has committed. It must not duplicate analysis when the protocol result is already present, and it must use the existing `handleAnalyze` error/loading behavior rather than duplicating inference logic.
+The helper must run only after `setCapturedInput` has committed. It must not duplicate analysis when a protocol result or mock result is already present, and it must use the existing `handleAnalyze` error/loading behavior rather than duplicating inference logic.
 
 - [ ] **Step 3: Hide the retry action during the automatic transition**
 
@@ -160,6 +163,8 @@ showAnalyzeAction: Boolean(
 ```
 
 Keep `onAnalyze: handleAnalyze` unchanged so the existing action remains a retry path when needed.
+
+Pass `showCaptureConfirmAction={!Boolean(capturedInput)}` into `CameraCapture` so the preview-level confirmation action disappears after the workspace accepts the capture; keep Retake available.
 
 - [ ] **Step 4: Reset the pending state with the capture workflow**
 
@@ -224,4 +229,3 @@ git status --short
 ```
 
 Expected: only the approved design/plan and one-click capture changes are present, with no whitespace errors or unrelated worktree edits.
-
