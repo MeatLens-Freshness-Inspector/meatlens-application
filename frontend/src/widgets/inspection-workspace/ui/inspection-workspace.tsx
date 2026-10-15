@@ -3,7 +3,6 @@ import { InspectionDisputeSection } from "@/features/inspection-disputes/ui/insp
 import { InspectActionsSection } from "./InspectActionsSection";
 import { InspectAnalysisSection } from "./InspectAnalysisSection";
 import { InspectCaptureSection } from "./InspectCaptureSection";
-import { InspectCaptureModeSection } from "./InspectCaptureModeSection";
 import { InspectHeroSection } from "./InspectHeroSection";
 import { InspectPreScanSection } from "./InspectPreScanSection";
 import { InspectScopeReminder } from "./InspectScopeReminder";
@@ -18,13 +17,6 @@ const InspectPageView = () => {
           locationDisplayLabel={inspectPage.locationDisplayLabel}
         />
 
-        {inspectPage.showCaptureModePicker && (
-          <InspectCaptureModeSection
-            mode={inspectPage.captureMode}
-            onModeChange={inspectPage.onCaptureModeChange}
-          />
-        )}
-
         {inspectPage.captureMode === "analyze" && <InspectPreScanSection
             form={inspectPage.preScanForm}
             isBypassed={inspectPage.isPreScanBypassed}
@@ -33,7 +25,7 @@ const InspectPageView = () => {
             onFieldChange={inspectPage.onPreScanFieldChange}
           />}
 
-        {inspectPage.captureMode && <div className={`mt-4 grid min-w-0 gap-4 ${inspectPage.isPhotoOnlyMode ? "lg:grid-cols-1" : "lg:grid-cols-[1.05fr_0.95fr]"}`}>
+        <div className={`mt-4 grid min-w-0 gap-4 ${inspectPage.isPhotoOnlyMode ? "lg:grid-cols-1" : "lg:grid-cols-[1.05fr_0.95fr]"}`}>
           <InspectCaptureSection
             mode={inspectPage.captureMode}
             selectedLocation={inspectPage.selectedLocation}
@@ -54,6 +46,7 @@ const InspectPageView = () => {
             skipQualityChecks={inspectPage.captureMode === "photo-only"}
             disableRoiSegmentation={inspectPage.disableRoiSegmentation && inspectPage.captureMode === "analyze"}
             captureResetKey={inspectPage.captureResetKey}
+            onModeChange={inspectPage.onCaptureModeChange}
             onSelectedLocationChange={inspectPage.onSelectedLocationChange}
             onCapture={inspectPage.onCapture}
           />
@@ -63,7 +56,7 @@ const InspectPageView = () => {
             inspectionDecisionSource={inspectPage.inspectionDecisionSource}
             showDetailedResults={inspectPage.showDetailedResults}
           />}
-        </div>}
+        </div>
 
         {inspectPage.showSaveActions && (
           <InspectActionsSection

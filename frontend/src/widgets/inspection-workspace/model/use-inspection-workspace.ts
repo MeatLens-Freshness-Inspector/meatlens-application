@@ -73,7 +73,7 @@ import { useInspectionLocation } from "./use-inspection-location";
 export function useInspectionWorkspace(): InspectPageViewModel {
   const { user, profile, isAdmin, isDeveloper } = useAuth();
   const [capturedInput, setCapturedInput] = useState<CapturedImagePayload | null>(null);
-  const [captureMode, setCaptureMode] = useState<InspectionCaptureMode | null>(null);
+  const [captureMode, setCaptureMode] = useState<InspectionCaptureMode>("analyze");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [preScanForm, setPreScanForm] = useState<InspectionPreScanForm>(() =>
     createEmptyPreScanForm(),
@@ -278,7 +278,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   );
 
   const handleCapture = useCallback((capture: CapturedImagePayload) => {
-    if (saveStatus === "saving" || !captureMode) return;
+    if (saveStatus === "saving") return;
     if (captureMode === "analyze" && !isPreScanChecklistComplete) return;
 
     const submissionId = createClientSubmissionId();
@@ -631,7 +631,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     coordinateRequestIdRef.current += 1;
     setCaptureResetKey((current) => current + 1);
     setCapturedInput(null);
-    setCaptureMode(null);
+    setCaptureMode("analyze");
     setResult(null);
     setIsImmediateAnalysisPending(false);
     setPreScanForm(createEmptyPreScanForm());
@@ -709,7 +709,6 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     isPreScanChecklistComplete,
     isLocationSelectionDisabled:
       saveStatus === "saving" || createInspection.isPending || marketLocations.length === 0,
-    showCaptureModePicker: !capturedInput,
     isPhotoOnlyMode: captureMode === "photo-only",
     saveStatus,
     savedInspectionId,

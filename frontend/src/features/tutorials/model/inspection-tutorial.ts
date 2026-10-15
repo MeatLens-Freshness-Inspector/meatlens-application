@@ -147,19 +147,19 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
       id: "inspect-mode",
       tutorialId: "inspect",
       sectionTitle: "Inspect demo",
-      stepTitle: "Choose what you want to do",
+      stepTitle: "Start with the Analyze sample camera",
       instruction:
-        "Choose Analyze sample to check freshness, or Take photo only to document a stall without a result. Take photo only also works offline and syncs later.",
+        "Inspect opens ready to Analyze sample. If you only need a stall photo, tap Take photo only in the camera header; it saves without a result and syncs later when you are offline.",
       sceneTitle: "Inspect",
-      sceneSubtitle: "Choose a simple camera task",
-      hotspotLabel: "Choose a camera task",
+      sceneSubtitle: "Camera opens ready for field work",
+      hotspotLabel: "Show the camera mode action",
       blocks: [
         {
           id: "inspect-mode",
-          title: "Choose a camera task",
-          description: "Analyze sample checks freshness. Take photo only saves a stall photo without analysis.",
+          title: "Camera mode action",
+          description: "Analyze sample is ready by default. Tap Take photo only only when documenting a stall without analysis.",
           tone: "accent",
-          hotspotLabel: "Choose a camera task",
+          hotspotLabel: "Show the camera mode action",
         },
         {
           id: "inspect-market",

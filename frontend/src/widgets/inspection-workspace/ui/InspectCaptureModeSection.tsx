@@ -8,40 +8,45 @@ type InspectCaptureModeSectionProps = {
 };
 
 export function InspectCaptureModeSection({ mode, onModeChange }: InspectCaptureModeSectionProps) {
+  const nextMode = mode === "photo-only" ? "analyze" : "photo-only";
+
   return (
-    <section className="mt-4 rounded-3xl border border-primary/20 bg-card/95 p-4 shadow-sm" aria-labelledby="capture-mode-heading">
-      <div className="mb-3">
-        <h2 id="capture-mode-heading" className="font-display text-base font-semibold">
-          What do you want to do?
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">Choose one. You can change this for each new capture.</p>
+    <div
+      className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-[hsl(var(--primary)/0.06)] px-3 py-3"
+      aria-label="Capture mode"
+    >
+      <div className="flex min-w-0 items-center gap-2">
+        {mode === "photo-only" ? (
+          <Camera className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+        ) : (
+          <ScanLine className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+        )}
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Capture mode
+          </p>
+          <p className="truncate font-display text-sm font-semibold">
+            {mode === "photo-only" ? "Take photo only" : "Analyze sample"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {mode === "photo-only" ? "Saves a photo without a result." : "Checks freshness after capture."}
+          </p>
+        </div>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Button
-          type="button"
-          variant={mode === "analyze" ? "default" : "outline"}
-          className="h-auto min-h-24 justify-start gap-3 rounded-2xl px-4 py-4 text-left"
-          onClick={() => onModeChange("analyze")}
-        >
-          <ScanLine className="h-7 w-7 shrink-0" aria-hidden="true" />
-          <span>
-            <span className="block text-base font-semibold">Analyze sample</span>
-            <span className="mt-1 block text-xs font-normal opacity-80">Check freshness and get a result.</span>
-          </span>
-        </Button>
-        <Button
-          type="button"
-          variant={mode === "photo-only" ? "default" : "outline"}
-          className="h-auto min-h-24 justify-start gap-3 rounded-2xl px-4 py-4 text-left"
-          onClick={() => onModeChange("photo-only")}
-        >
-          <Camera className="h-7 w-7 shrink-0" aria-hidden="true" />
-          <span>
-            <span className="block text-base font-semibold">Take photo only</span>
-            <span className="mt-1 block text-xs font-normal opacity-80">Save a stall photo. No result or analysis.</span>
-          </span>
-        </Button>
-      </div>
-    </section>
+      <Button
+        type="button"
+        variant="outline"
+        className="h-11 shrink-0 gap-2 rounded-xl px-3 text-sm"
+        onClick={() => onModeChange(nextMode)}
+        aria-label={nextMode === "photo-only" ? "Take photo only" : "Analyze sample"}
+      >
+        {nextMode === "photo-only" ? (
+          <Camera className="h-4 w-4" aria-hidden="true" />
+        ) : (
+          <ScanLine className="h-4 w-4" aria-hidden="true" />
+        )}
+        {nextMode === "photo-only" ? "Take photo only" : "Analyze sample"}
+      </Button>
+    </div>
   );
 }

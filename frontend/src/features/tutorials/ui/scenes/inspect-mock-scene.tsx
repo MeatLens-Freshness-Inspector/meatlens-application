@@ -39,17 +39,6 @@ export function InspectMockScene({ step, onAdvance }: InspectMockSceneProps) {
           </div>
         </section>
 
-        <MockHotspot active={isMode} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
-          <section className="rounded-2xl border border-primary/40 bg-[hsl(var(--primary)/0.08)] p-3">
-            <p className="font-display text-[10px] font-semibold uppercase tracking-wider">What do you want to do?</p>
-            <p className="mt-1 text-[9px] leading-relaxed text-muted-foreground">Choose the task before opening the camera.</p>
-            <div className="mt-2 grid grid-cols-2 gap-1.5">
-              <div className="rounded-lg border border-primary/60 bg-primary px-2 py-2 text-[8px] font-semibold text-primary-foreground">Analyze sample<br /><span className="font-normal opacity-80">Check freshness</span></div>
-              <div className="rounded-lg border border-input bg-background px-2 py-2 text-[8px] font-semibold">Take photo only<br /><span className="font-normal text-muted-foreground">No result or analysis</span></div>
-            </div>
-          </section>
-        </MockHotspot>
-
         <MockHotspot active={isScope} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
           <section className="rounded-2xl border border-border/70 bg-card/90 p-3">
             <div className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-warning" /><p className="font-display text-[10px] font-semibold uppercase tracking-wider">{fixture.scopeTitle}</p></div>
@@ -67,6 +56,12 @@ export function InspectMockScene({ step, onAdvance }: InspectMockSceneProps) {
 
         <section className="rounded-2xl border border-border/70 bg-card/90 p-3">
           <div className="mb-2 flex items-center gap-2"><TestTube2 className="h-4 w-4 text-muted-foreground" /><p className="font-display text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Capture Station</p></div>
+          <MockHotspot active={isMode} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
+            <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-primary/50 bg-[hsl(var(--primary)/0.08)] px-2 py-2">
+              <div className="min-w-0"><p className="text-[8px] uppercase tracking-widest text-muted-foreground">Capture mode</p><p className="text-[10px] font-semibold">Analyze sample</p><p className="text-[8px] text-muted-foreground">The camera opens ready to check freshness.</p></div>
+              <div className="shrink-0 rounded-lg border border-input bg-background px-2 py-2 text-[8px] font-semibold">Take photo only</div>
+            </div>
+          </MockHotspot>
           <MockHotspot active={isMarket} onAdvance={onAdvance} label={isMarket ? "Choose market" : "Tap here"} ariaLabel={step.hotspotLabel}>
             <div className="rounded-xl border border-input bg-background/60 p-2"><div className="flex items-center justify-between"><p className="text-[8px] uppercase tracking-widest text-muted-foreground">Location Selection</p>{isMarket && <span className="rounded-full border border-primary/50 bg-[hsl(var(--primary)/0.14)] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wider text-primary">Choose market</span>}</div><div data-tutorial-market-selector role="combobox" aria-label="Select market location" className={`mt-1 flex min-h-10 items-center justify-between rounded-lg border px-2 ${isMarket ? "border-primary/70 bg-[hsl(var(--primary)/0.12)]" : "border-input"}`}><span className="flex items-center gap-1.5"><MapPin className="h-3 w-3 shrink-0 text-muted-foreground" /><span className="flex flex-col text-left"><span className="text-[8px] uppercase tracking-wider text-muted-foreground">Select market location</span><span className="text-[9px] font-medium text-foreground">{fixture.locationLabel}</span></span></span><ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" /></div><p className="mt-1 text-[8px] text-muted-foreground">Manual location is saved; {fixture.gpsStatus.toLowerCase()}.</p><p className="mt-1 text-[8px] font-medium text-foreground">Saved to report: {fixture.locationLabel}</p></div>
           </MockHotspot>

@@ -12,7 +12,7 @@ export type InspectionSaveStatus = "idle" | "saving" | "saved" | "queued";
 
 export interface InspectPageViewModel {
   capturedInput: CapturedImagePayload | null;
-  captureMode: InspectionCaptureMode | null;
+  captureMode: InspectionCaptureMode;
   result: AnalysisResult | null;
   preScanForm: InspectionPreScanForm;
   marketLocations: string[];
@@ -31,7 +31,6 @@ export interface InspectPageViewModel {
   isPreScanBypassed: boolean;
   isPreScanChecklistComplete: boolean;
   isLocationSelectionDisabled: boolean;
-  showCaptureModePicker: boolean;
   isPhotoOnlyMode: boolean;
   saveStatus: InspectionSaveStatus;
   savedInspectionId: string | null;
