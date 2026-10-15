@@ -13,6 +13,7 @@ interface InspectMockSceneProps {
 
 export function InspectMockScene({ step, onAdvance }: InspectMockSceneProps) {
   const fixture = tutorialFixtures.inspect;
+  const isMode = step.id === "inspect-mode";
   const isScope = step.id === "inspect-scope";
   const isMarket = step.id === "inspect-market";
   const isPreScan = step.id === "inspect-prescan";
@@ -37,6 +38,17 @@ export function InspectMockScene({ step, onAdvance }: InspectMockSceneProps) {
             <div className="rounded-xl border border-border/70 bg-background/65 px-2 py-2"><p className="text-[8px] uppercase tracking-widest text-muted-foreground">Confidence</p><p className="mt-1 font-display text-sm font-semibold text-fresh">{hasAnalysis ? "94%" : fixture.confidenceLabel}</p></div>
           </div>
         </section>
+
+        <MockHotspot active={isMode} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
+          <section className="rounded-2xl border border-primary/40 bg-[hsl(var(--primary)/0.08)] p-3">
+            <p className="font-display text-[10px] font-semibold uppercase tracking-wider">What do you want to do?</p>
+            <p className="mt-1 text-[9px] leading-relaxed text-muted-foreground">Choose the task before opening the camera.</p>
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              <div className="rounded-lg border border-primary/60 bg-primary px-2 py-2 text-[8px] font-semibold text-primary-foreground">Analyze sample<br /><span className="font-normal opacity-80">Check freshness</span></div>
+              <div className="rounded-lg border border-input bg-background px-2 py-2 text-[8px] font-semibold">Take photo only<br /><span className="font-normal text-muted-foreground">No result or analysis</span></div>
+            </div>
+          </section>
+        </MockHotspot>
 
         <MockHotspot active={isScope} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
           <section className="rounded-2xl border border-border/70 bg-card/90 p-3">

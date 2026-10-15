@@ -144,6 +144,31 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
   ],
   inspect: [
     {
+      id: "inspect-mode",
+      tutorialId: "inspect",
+      sectionTitle: "Inspect demo",
+      stepTitle: "Choose what you want to do",
+      instruction:
+        "Choose Analyze sample to check freshness, or Take photo only to document a stall without a result. Take photo only also works offline and syncs later.",
+      sceneTitle: "Inspect",
+      sceneSubtitle: "Choose a simple camera task",
+      hotspotLabel: "Choose a camera task",
+      blocks: [
+        {
+          id: "inspect-mode",
+          title: "Choose a camera task",
+          description: "Analyze sample checks freshness. Take photo only saves a stall photo without analysis.",
+          tone: "accent",
+          hotspotLabel: "Choose a camera task",
+        },
+        {
+          id: "inspect-market",
+          title: "Market selector",
+          description: "The selected market is saved with the photo or inspection.",
+        },
+      ],
+    },
+    {
       id: "inspect-scope",
       tutorialId: "inspect",
       sectionTitle: "Inspect demo",

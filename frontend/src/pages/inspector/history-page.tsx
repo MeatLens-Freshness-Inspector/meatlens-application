@@ -2,6 +2,7 @@ import {
   HistoryHeader,
   HistoryMoreOptions,
   InspectionTimelineSection,
+  DocumentationPhotoSection,
 } from "@/widgets/history";
 import { InspectionDetailSheet } from "@/widgets/inspection-history/ui/inspection-detail-sheet";
 import { useHistory } from "@/widgets/history/model/use-history";
@@ -33,6 +34,8 @@ const HistoryPage = () => {
     selectInspection,
     setSelectedInspection,
     handleExportDetailedPdf,
+    documentationPhotos,
+    pendingDocumentationPhotos,
   } = useHistory();
 
   return (
@@ -56,6 +59,10 @@ const HistoryPage = () => {
             onNextPage={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
             onPreviousPage={() => setCurrentPage((page) => Math.max(1, page - 1))}
             onSearchTextChange={updateSearchText}
+          />
+          <DocumentationPhotoSection
+            photos={documentationPhotos}
+            pendingPhotos={pendingDocumentationPhotos}
           />
           <HistoryMoreOptions
             classificationCounts={classificationCounts}

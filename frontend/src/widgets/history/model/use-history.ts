@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
 import { useModelAccuracyHistory } from "@/entities/model-accuracy";
 import { useInspections } from "@/features/inspection-history";
+import { useDocumentationPhotos } from "@/features/documentation-photos";
 import { composeReportPdf } from "@/features/reports";
 import { getEffectiveInspectionClassification } from "@/entities/inspection";
 import { useExportTask } from "@/shared/lib/use-export-task";
@@ -23,6 +24,11 @@ export function useHistory() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { data: inspections, isLoading } = useInspections();
+  const {
+    photos: documentationPhotos,
+    pendingPhotos: pendingDocumentationPhotos,
+    isLoading: isDocumentationPhotosLoading,
+  } = useDocumentationPhotos();
   const [activeFilter, setActiveFilter] = useState<FilterOption>("all");
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -232,6 +238,9 @@ export function useHistory() {
 
   return {
     isLoading,
+    isDocumentationPhotosLoading,
+    documentationPhotos,
+    pendingDocumentationPhotos,
     isExportingDetailedPdf: reportExport.activeTask !== null,
     exportProgress: reportExport.progress,
     activeFilter,

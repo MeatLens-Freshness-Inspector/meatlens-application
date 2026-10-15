@@ -20,8 +20,8 @@ test("tutorial feature publishes onboarding and profile definitions", () => {
   assert.ok(helpCards.some((card) => card.id === "messages"));
   assert.deepEqual(
     tutorialDefinitions.inspect.slice(0, 3).map((step) => step.id),
-    ["inspect-scope", "inspect-market", "inspect-prescan"],
+    ["inspect-mode", "inspect-scope", "inspect-market"],
   );
   assert.equal(tutorialDefinitions.messages[0].hotspotLabel, "Message");
-  assert.equal(tutorialDefinitions.inspect[0].id, "inspect-scope");
+  assert.equal(tutorialDefinitions.inspect[0].id, "inspect-mode");
 });
