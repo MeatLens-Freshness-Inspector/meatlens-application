@@ -7,6 +7,7 @@ import {
   useSubmitInspection,
 } from "@/features/inspection-submission";
 import { useInspectionDispute } from "@/features/inspection-disputes/model/use-inspection-dispute";
+import { useImmediateAnalysis } from "./use-immediate-analysis";
 import { removeScan } from "@/features/offline-sync";
 import {
   clearDeveloperOptionsSession,
@@ -48,10 +49,7 @@ import {
   type CoordinateCaptureStatus,
   type InspectionCoordinates,
 } from "@/entities/inspection";
-import type {
-  AnalysisResult,
-  InspectionDecisionSource,
-} from "@/entities/inspection";
+import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
 import type { CapturedImagePayload } from "@/features/inspection-capture";
 import type { InspectPageViewModel, InspectionSaveStatus } from "./types";
 import { useInspectionAnalysis } from "./use-inspection-analysis";
@@ -450,17 +448,14 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     user,
   ]);
 
-  useEffect(() => {
-    if (!isImmediateAnalysisPending || !capturedInput) return;
-
-    if (inspectionDecisionSource === "protocol_pre_scan" || result) {
-      setIsImmediateAnalysisPending(false);
-      return;
-    }
-
-    setIsImmediateAnalysisPending(false);
-    void handleAnalyze();
-  }, [capturedInput, handleAnalyze, inspectionDecisionSource, isImmediateAnalysisPending, result]);
+  useImmediateAnalysis(
+    isImmediateAnalysisPending,
+    capturedInput,
+    inspectionDecisionSource,
+    result,
+    handleAnalyze,
+    () => setIsImmediateAnalysisPending(false),
+  );
 
   const handleSave = useCallback(async () => {
     if (!result || !capturedInput?.file || saveLockRef.current || saveStatus === "saved" || saveStatus === "queued") {
@@ -642,13 +637,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     showModelInputPreview: developerFlags.showModelInputPreview,
     disableRoiSegmentation,
     captureResetKey,
-    showAnalyzeAction: Boolean(
-      capturedInput &&
-        !result &&
-        !isImmediateAnalysisPending &&
-        !isAnalyzing &&
-        inspectionDecisionSource !== "protocol_pre_scan",
-    ),
+    showAnalyzeAction: Boolean(capturedInput && !result && !isImmediateAnalysisPending && !isAnalyzing && inspectionDecisionSource !== "protocol_pre_scan"),
     showSaveActions: Boolean(result),
     captureStatusText: getCaptureStatusText(capturedInput),
     analysisStatusText: analysisState.analysisStatusText,
