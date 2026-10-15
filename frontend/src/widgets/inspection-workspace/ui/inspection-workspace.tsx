@@ -15,14 +15,7 @@ const InspectPageView = () => {
       <div className="mx-auto w-full max-w-6xl min-w-0 px-4 pt-4">
         <InspectHeroSection
           locationDisplayLabel={inspectPage.locationDisplayLabel}
-          coordinateStatusText={inspectPage.coordinateStatusText}
-          captureStatusText={inspectPage.captureStatusText}
-          analysisStatusText={inspectPage.analysisStatusText}
-          confidenceText={inspectPage.confidenceText}
-          confidenceSummaryClass={inspectPage.confidenceSummaryClass}
         />
-
-        <InspectScopeReminder />
 
         <InspectPreScanSection
           form={inspectPage.preScanForm}
@@ -73,6 +66,8 @@ const InspectPageView = () => {
             onSave={inspectPage.onSave}
           />
         )}
+
+        <InspectScopeReminder />
 
         <InspectionDisputeSection
           inspectionId={inspectPage.savedInspectionId}

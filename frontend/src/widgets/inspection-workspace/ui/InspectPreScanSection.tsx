@@ -92,10 +92,10 @@ export function InspectPreScanSection({
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm font-display uppercase tracking-wider text-muted-foreground">
             <ShieldAlert className="h-4 w-4" />
-            Pre-Scan Safety Protocol
+            Before you scan
           </div>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Complete this checklist before opening the camera. Any safety answer marked
+            Check the stall details and safety conditions before taking a photo. Any safety answer marked
             <span className="font-semibold text-foreground"> No </span>
             will skip AI and record the inspection as spoiled.
           </p>

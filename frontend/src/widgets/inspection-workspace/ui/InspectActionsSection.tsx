@@ -19,11 +19,13 @@ export function InspectActionsSection({
   onReset,
   onSave,
 }: InspectActionsSectionProps) {
+  const hasCompletedSave = saveStatus === "saved" || saveStatus === "queued";
+
   return (
     <section className="mt-4 rounded-3xl border border-border/70 bg-card/92 p-4">
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button
-          variant="outline"
+          variant={hasCompletedSave ? "default" : "outline"}
           onClick={onReset}
           disabled={saveStatus === "saving" || isCreateInspectionPending || isDisputePending}
           className="flex-1 gap-2 rounded-xl"
@@ -32,6 +34,7 @@ export function InspectActionsSection({
           New Scan
         </Button>
         <Button
+          variant={hasCompletedSave ? "outline" : "default"}
           onClick={onSave}
           disabled={saveStatus !== "idle" || isCreateInspectionPending}
           className="flex-1 gap-2 rounded-xl"

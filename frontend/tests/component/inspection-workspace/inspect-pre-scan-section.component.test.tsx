@@ -40,6 +40,8 @@ test("renders large responsive radio choices for all regulatory questions", () =
   assert.match(markup, /grid-cols-1/);
   assert.match(markup, /sm:grid-cols-2/);
   assert.match(markup, /What Color\?/);
+  assert.match(markup, /Before you scan/);
+  assert.match(markup, /Check the stall details and safety conditions before taking a photo/);
 });
 
 test("warns when the meat inspection certificate is expired", () => {

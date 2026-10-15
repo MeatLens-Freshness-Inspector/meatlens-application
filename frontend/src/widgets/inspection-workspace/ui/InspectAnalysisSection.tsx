@@ -46,11 +46,11 @@ export function InspectAnalysisSection({
           />
         </div>
       ) : (
-        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-border/70 bg-background/50 text-center text-muted-foreground">
+        <div className="flex min-h-[150px] flex-col items-center justify-center rounded-2xl border border-border/70 bg-background/50 text-center text-muted-foreground lg:min-h-[260px]">
           <Camera className="mb-3 h-10 w-10" />
-          <p className="font-display text-sm uppercase tracking-wider">No analysis yet</p>
+          <p className="font-display text-sm uppercase tracking-wider">Waiting for a photo</p>
           <p className="mt-1 max-w-xs text-xs">
-            Capture a sample and run analysis to view freshness classification and metrics.
+            Analysis will appear here after the photo is checked.
           </p>
         </div>
       )}

@@ -57,6 +57,11 @@ import { resolveInspectionModelSelection } from "./analysis-model-selection";
 import { persistPendingScan as persistPendingScanPayload } from "./pending-scan";
 import { resolveInspectionSegmentationDisabled } from "./segmentation-selection";
 import {
+  readRememberedMarketLocation,
+  resolveRememberedMarketLocation,
+  writeRememberedMarketLocation,
+} from "./location-memory";
+import {
   createClientSubmissionId,
   DEFAULT_MEAT_TYPE,
   FALLBACK_MARKET_LOCATIONS,
@@ -65,8 +70,15 @@ import {
   getConfidenceText,
   getSaveButtonLabel,
   normalizeMarketLocationNames,
-  resolveSelectedLocation,
 } from "./inspect-page";
+
+function getLocationStorage(): Storage | null {
+  try {
+    return typeof window === "undefined" ? null : window.localStorage;
+  } catch {
+    return null;
+  }
+}
 
 // Inspection workflow: pre-scan/capture -> local inference -> online save or offline queue.
 export function useInspectionWorkspace(): InspectPageViewModel {
@@ -216,11 +228,23 @@ export function useInspectionWorkspace(): InspectPageViewModel {
 
         const nextLocations = normalizeMarketLocationNames(locationRows);
         setMarketLocations(nextLocations);
-        setSelectedLocation((current) => resolveSelectedLocation(current, nextLocations));
+        setSelectedLocation((current) =>
+          resolveRememberedMarketLocation(
+            user ? readRememberedMarketLocation(getLocationStorage(), user.id) : null,
+            current,
+            nextLocations,
+          ),
+        );
       } catch {
         if (isCancelled) return;
         setMarketLocations(FALLBACK_MARKET_LOCATIONS);
-        setSelectedLocation((current) => resolveSelectedLocation(current, FALLBACK_MARKET_LOCATIONS));
+        setSelectedLocation((current) =>
+          resolveRememberedMarketLocation(
+            user ? readRememberedMarketLocation(getLocationStorage(), user.id) : null,
+            current,
+            FALLBACK_MARKET_LOCATIONS,
+          ),
+        );
       }
     };
 
@@ -229,7 +253,16 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const rememberedLocation = readRememberedMarketLocation(getLocationStorage(), user.id);
+    setSelectedLocation((current) =>
+      resolveRememberedMarketLocation(rememberedLocation, current, marketLocations),
+    );
+  }, [marketLocations, user]);
 
   const isPreScanBypassed = Boolean(
     user &&
@@ -288,6 +321,16 @@ export function useInspectionWorkspace(): InspectPageViewModel {
       }));
     },
     [],
+  );
+
+  const handleSelectedLocationChange = useCallback(
+    (value: string) => {
+      setSelectedLocation(value);
+      if (user) {
+        writeRememberedMarketLocation(getLocationStorage(), user.id, value);
+      }
+    },
+    [user],
   );
 
   const handleCapture = useCallback((capture: CapturedImagePayload) => {

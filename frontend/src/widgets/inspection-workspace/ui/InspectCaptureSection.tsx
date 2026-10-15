@@ -64,14 +64,14 @@ export function InspectCaptureSection({
 
       <div className="mb-4 space-y-1">
         <Label className="text-xs uppercase tracking-widest text-muted-foreground">
-          Location Selection
+          Change location
         </Label>
         <Select
           value={selectedLocation}
           onValueChange={onSelectedLocationChange}
           disabled={isLocationSelectionDisabled}
         >
-          <SelectTrigger className="h-10 rounded-xl bg-background/60">
+          <SelectTrigger aria-label="Change location" className="h-10 rounded-xl bg-background/60">
             <SelectValue placeholder="Select market location" />
           </SelectTrigger>
           <SelectContent>
@@ -82,9 +82,6 @@ export function InspectCaptureSection({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-[11px] leading-relaxed text-muted-foreground">
-          Manual location is saved, and real-time GPS coordinates are captured when available.
-        </p>
         <p className="text-xs font-medium text-foreground">
           Saved to report: {locationDisplayLabel || selectedLocation || "--"}
         </p>
