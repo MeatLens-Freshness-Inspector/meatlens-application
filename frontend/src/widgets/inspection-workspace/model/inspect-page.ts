@@ -3,6 +3,7 @@ import { DEFAULT_MARKET_LOCATIONS } from "@/entities/market-location";
 import type {
   AnalysisResult,
   InspectionDecisionSource,
+  InspectionPreScanForm,
   MeatType,
 } from "@/entities/inspection";
 import type { InspectionSaveStatus } from "../types";
@@ -10,6 +11,12 @@ import type { InspectionSaveStatus } from "../types";
 export const DEFAULT_MEAT_TYPE: MeatType = "pork";
 export const FALLBACK_MARKET_LOCATIONS = [...DEFAULT_MARKET_LOCATIONS];
 export const FORCE_RETAKE_CONFIDENCE_THRESHOLD = 80;
+
+export function getDocumentationPhotoStallNumber(
+  form: Pick<InspectionPreScanForm, "stallNumber">,
+): string | null {
+  return form.stallNumber.trim() || null;
+}
 
 export function normalizeMarketLocationNames(locationRows: Array<{ name: string }>): string[] {
   const normalizedNames = locationRows

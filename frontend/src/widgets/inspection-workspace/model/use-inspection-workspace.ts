@@ -63,6 +63,7 @@ import {
   createClientSubmissionId,
   DEFAULT_MEAT_TYPE,
   FORCE_RETAKE_CONFIDENCE_THRESHOLD,
+  getDocumentationPhotoStallNumber,
   getCaptureStatusText,
   getConfidenceText,
   getSaveButtonLabel,
@@ -258,13 +259,13 @@ export function useInspectionWorkspace(): InspectPageViewModel {
         location: selectedLocation.trim() || null,
         locationLatitude: coordinates?.latitude ?? null,
         locationLongitude: coordinates?.longitude ?? null,
-        stallNumber: null,
+        stallNumber: getDocumentationPhotoStallNumber(preScanForm),
         capturedAt: capture.capturedAt,
         queuedAt,
         userId: user.id,
       });
     },
-    [coordinates, selectedLocation, user],
+    [coordinates, preScanForm, selectedLocation, user],
   );
 
   const handlePreScanFieldChange = useCallback(
@@ -515,7 +516,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
           location: selectedLocation.trim() || null,
           location_latitude: coordinates?.latitude ?? null,
           location_longitude: coordinates?.longitude ?? null,
-          stall_number: null,
+          stall_number: getDocumentationPhotoStallNumber(preScanForm),
           captured_at: capturedInput.capturedAt,
         });
         setSaveStatus("saved");
