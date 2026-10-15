@@ -1,23 +1,38 @@
-import { HistoryHeader, InspectionTimelineSection } from "@/widgets/history";
+import {
+  HistoryHeader,
+  HistoryMoreOptions,
+  InspectionTimelineSection,
+} from "@/widgets/history";
 import { InspectionDetailSheet } from "@/widgets/inspection-history/ui/inspection-detail-sheet";
 import { useHistory } from "@/widgets/history/model/use-history";
 
 const HistoryPage = () => {
   const {
     isLoading,
+    isExportingDetailedPdf,
+    exportProgress,
     activeFilter,
     searchText,
+    selectedReportDay,
     selectedInspection,
     totalInspections,
     filteredInspections,
+    hasValidReportDay,
+    formattedReportDayLabel,
+    selectedDayInspections,
+    selectedDayAverageConfidence,
     pagedInspections,
     totalPages,
     safePage,
+    classificationCounts,
+    monthlyCounts,
     setCurrentPage,
     updateSearchText,
+    updateReportDay,
     updateActiveFilter,
     selectInspection,
     setSelectedInspection,
+    handleExportDetailedPdf,
   } = useHistory();
 
   return (
@@ -41,6 +56,20 @@ const HistoryPage = () => {
             onNextPage={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
             onPreviousPage={() => setCurrentPage((page) => Math.max(1, page - 1))}
             onSearchTextChange={updateSearchText}
+          />
+          <HistoryMoreOptions
+            classificationCounts={classificationCounts}
+            exportProgress={exportProgress}
+            formattedReportDayLabel={formattedReportDayLabel}
+            hasValidReportDay={hasValidReportDay}
+            isExportingDetailedPdf={isExportingDetailedPdf}
+            monthlyCounts={monthlyCounts}
+            selectedDayAverageConfidence={selectedDayAverageConfidence}
+            selectedDayCount={selectedDayInspections.length}
+            selectedReportDay={selectedReportDay}
+            totalInspections={totalInspections}
+            onExportDetailedPdf={handleExportDetailedPdf}
+            onReportDayChange={updateReportDay}
           />
         </div>
       </div>
