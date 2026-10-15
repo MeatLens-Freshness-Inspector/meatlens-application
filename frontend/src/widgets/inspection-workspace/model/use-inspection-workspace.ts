@@ -484,7 +484,6 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     coordinates,
     createInspection,
     inspectionDecisionSource,
-    isPreScanBypassed,
     persistPendingScan,
     preScanForm,
     result,

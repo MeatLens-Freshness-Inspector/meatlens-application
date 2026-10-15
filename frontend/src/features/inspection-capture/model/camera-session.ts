@@ -35,6 +35,19 @@ import {
   stopCameraStream,
 } from "./camera-device";
 
+function createLegacyQualityFailure(reasons: string[]): ImageQualityResult {
+  return {
+    status: "fail",
+    issues: reasons.map((message) => ({
+      code: "LEGACY_CAPTURE_CHECK",
+      message,
+      severity: "fail",
+    })),
+    metrics: { width: 0, height: 0 },
+    canProceed: false,
+  };
+}
+
 export function useCameraCapture({
   onCapture,
   className,
@@ -381,7 +394,7 @@ export function useCameraCapture({
     if (
       autoConfirmCapture &&
       qualitySource === "cameraApp" &&
-      captureQualityResult?.canProceed
+      (captureQualityResult === null || captureQualityResult.canProceed)
     ) {
       emitCapture(uploadedFile, "camera", guideBox);
     }
@@ -469,18 +482,6 @@ export function useCameraCapture({
       captureCommittedRef.current = false;
       const legacyBypass = (window as Window & { __mockLegacyQualityAccepted?: boolean })
         .__mockLegacyQualityAccepted;
-      if (!legacyBypass) {
-        const legacyQuality = await assessFileQuality(file);
-        if (!legacyQuality.accepted) {
-          toast.error(legacyQuality.reasons.join(" "));
-          inputElement.value = "";
-          return;
-        }
-      }
-
-      const qualityResult = await resolveFileImageQuality(file);
-      setCaptureQualityResult(qualityResult);
-
       setUploadedFile(file);
       setModelPreviewSourceFile(file);
       setQualitySource(source);
@@ -488,6 +489,19 @@ export function useCameraCapture({
       setModelInputPreview(null);
       setIsPreparingModelPreview(false);
       previewRequestIdRef.current += 1;
+
+      let qualityResult: ImageQualityResult | null = null;
+      if (!legacyBypass) {
+        const legacyQuality = await assessFileQuality(file);
+        if (!legacyQuality.accepted) {
+          qualityResult = createLegacyQualityFailure(legacyQuality.reasons);
+          toast.error(legacyQuality.reasons.join(" "));
+        }
+      }
+
+      qualityResult ??= await resolveFileImageQuality(file);
+      setCaptureQualityResult(qualityResult);
+
       const reader = new FileReader();
       reader.onload = (ev) => setCapturedImage(ev.target?.result as string);
       reader.readAsDataURL(file);

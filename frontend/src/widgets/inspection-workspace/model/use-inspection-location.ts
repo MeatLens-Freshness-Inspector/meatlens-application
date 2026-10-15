@@ -7,7 +7,7 @@ import {
 } from "./inspect-page";
 import {
   readRememberedMarketLocation,
-  resolveRememberedMarketLocation,
+  resolveActiveInspectionLocation,
   writeRememberedMarketLocation,
 } from "./location-memory";
 
@@ -20,36 +20,59 @@ function getLocationStorage(): Storage | null {
 }
 
 export function useInspectionLocation(userId: string | null) {
-  const [marketLocations, setMarketLocations] = useState<string[]>(FALLBACK_MARKET_LOCATIONS);
-  const [selectedLocation, setSelectedLocation] = useState<string>(FALLBACK_MARKET_LOCATIONS[0] ?? "");
+  const [locationState, setLocationState] = useState(() => ({
+    ownerId: userId,
+    marketLocations: FALLBACK_MARKET_LOCATIONS,
+    selectedLocation: FALLBACK_MARKET_LOCATIONS[0] ?? "",
+  }));
+
+  const activeLocationState = locationState.ownerId === userId
+    ? locationState
+    : {
+        ownerId: userId,
+        marketLocations: FALLBACK_MARKET_LOCATIONS,
+        selectedLocation: FALLBACK_MARKET_LOCATIONS[0] ?? "",
+      };
 
   useEffect(() => {
     let isCancelled = false;
 
+    if (!userId) {
+      setLocationState({
+        ownerId: null,
+        marketLocations: FALLBACK_MARKET_LOCATIONS,
+        selectedLocation: FALLBACK_MARKET_LOCATIONS[0] ?? "",
+      });
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    const applyLocations = (nextLocations: string[]) => {
+      if (isCancelled) return;
+
+      setLocationState((current) => {
+        const rememberedLocation = readRememberedMarketLocation(getLocationStorage(), userId);
+        return {
+          ownerId: userId,
+          marketLocations: nextLocations,
+          selectedLocation: resolveActiveInspectionLocation(
+            current.ownerId,
+            userId,
+            rememberedLocation,
+            current.selectedLocation,
+            nextLocations,
+          ),
+        };
+      });
+    };
+
     const loadMarketLocations = async () => {
       try {
         const locationRows = await marketLocationClient.getAll();
-        if (isCancelled) return;
-
-        const nextLocations = normalizeMarketLocationNames(locationRows);
-        setMarketLocations(nextLocations);
-        setSelectedLocation((current) =>
-          resolveRememberedMarketLocation(
-            userId ? readRememberedMarketLocation(getLocationStorage(), userId) : null,
-            current,
-            nextLocations,
-          ),
-        );
+        applyLocations(normalizeMarketLocationNames(locationRows));
       } catch {
-        if (isCancelled) return;
-        setMarketLocations(FALLBACK_MARKET_LOCATIONS);
-        setSelectedLocation((current) =>
-          resolveRememberedMarketLocation(
-            userId ? readRememberedMarketLocation(getLocationStorage(), userId) : null,
-            current,
-            FALLBACK_MARKET_LOCATIONS,
-          ),
-        );
+        applyLocations(FALLBACK_MARKET_LOCATIONS);
       }
     };
 
@@ -60,24 +83,25 @@ export function useInspectionLocation(userId: string | null) {
     };
   }, [userId]);
 
-  useEffect(() => {
-    if (!userId) return;
-
-    const rememberedLocation = readRememberedMarketLocation(getLocationStorage(), userId);
-    setSelectedLocation((current) =>
-      resolveRememberedMarketLocation(rememberedLocation, current, marketLocations),
-    );
-  }, [marketLocations, userId]);
-
   const handleSelectedLocationChange = useCallback(
     (value: string) => {
-      setSelectedLocation(value);
       if (userId) {
         writeRememberedMarketLocation(getLocationStorage(), userId, value);
       }
+      setLocationState((current) => ({
+        ownerId: userId,
+        marketLocations: current.ownerId === userId
+          ? current.marketLocations
+          : FALLBACK_MARKET_LOCATIONS,
+        selectedLocation: value,
+      }));
     },
     [userId],
   );
 
-  return { marketLocations, selectedLocation, handleSelectedLocationChange };
+  return {
+    marketLocations: activeLocationState.marketLocations,
+    selectedLocation: activeLocationState.selectedLocation,
+    handleSelectedLocationChange,
+  };
 }

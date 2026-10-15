@@ -41,7 +41,12 @@ const SHARPNESS_WARN = 70;
 export type ImageQualityStatus = "pass" | "warning" | "fail";
 
 export interface ImageQualityIssue {
-  code: "LOW_RESOLUTION" | "BLURRY_IMAGE" | "TOO_DARK" | "TOO_BRIGHT";
+  code:
+    | "LOW_RESOLUTION"
+    | "BLURRY_IMAGE"
+    | "TOO_DARK"
+    | "TOO_BRIGHT"
+    | "LEGACY_CAPTURE_CHECK";
   message: string;
   severity: "warning" | "fail";
 }

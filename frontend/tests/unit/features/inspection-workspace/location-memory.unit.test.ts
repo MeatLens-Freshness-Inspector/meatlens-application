@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   getInspectionLocationStorageKey,
   readRememberedMarketLocation,
+  resolveActiveInspectionLocation,
   resolveRememberedMarketLocation,
   writeRememberedMarketLocation,
 } from "../../../../src/widgets/inspection-workspace/model/location-memory";
@@ -48,6 +49,29 @@ test("keeps a valid remembered location and falls back safely", () => {
   assert.equal(
     resolveRememberedMarketLocation(null, "Old Market", []),
     "",
+  );
+});
+
+test("does not carry the previous inspector's current market into a new user", () => {
+  assert.equal(
+    resolveActiveInspectionLocation(
+      "user-1",
+      "user-2",
+      null,
+      "Old Market",
+      ["New Market", "Other Market"],
+    ),
+    "New Market",
+  );
+  assert.equal(
+    resolveActiveInspectionLocation(
+      "user-2",
+      "user-2",
+      "Other Market",
+      "New Market",
+      ["New Market", "Other Market"],
+    ),
+    "Other Market",
   );
 });
 

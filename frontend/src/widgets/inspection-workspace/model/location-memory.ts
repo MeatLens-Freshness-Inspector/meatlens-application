@@ -53,3 +53,17 @@ export function resolveRememberedMarketLocation(
 
   return validLocations[0] ?? "";
 }
+
+export function resolveActiveInspectionLocation(
+  currentOwnerId: string | null,
+  requestedOwnerId: string | null,
+  rememberedLocation: string | null,
+  currentLocation: string,
+  validLocations: readonly string[],
+): string {
+  return resolveRememberedMarketLocation(
+    rememberedLocation,
+    currentOwnerId === requestedOwnerId ? currentLocation : "",
+    validLocations,
+  );
+}

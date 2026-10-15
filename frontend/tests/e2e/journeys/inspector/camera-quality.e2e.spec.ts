@@ -2,10 +2,10 @@
  * camera-quality-integration.spec.ts
  *
  * Tests for the ImageQualityResult integration in the CameraCapture UI.
- * Written BEFORE implementation (TDD).
+ * These scenarios protect the field capture flow while quality checks evolve.
  *
  * These are E2E-style Playwright tests that exercise the camera capture
- * component via the /inspect page. They mock validateImageQuality via
+ * component via the /inspect page. They mock image quality via
  * addInitScript so we can inject controlled quality outcomes without
  * needing a real camera or specific pixel values.
  *
@@ -164,7 +164,7 @@ async function completePreScanChecklist(page: Page): Promise<void> {
 // ---------------------------------------------------------------------------
 
 test.describe("Camera quality integration", () => {
-  test("good quality: Analyze Sample is enabled and no quality banner is shown", async ({ page }) => {
+  test("good quality: capture is accepted without a second Analyze Sample tap", async ({ page }) => {
     await installQualityMock(page, "pass");
     await seedSignedInSession(page, { userId: "user-1" });
     await mockCommonApi(page, { userId: "user-1" });
@@ -179,12 +179,11 @@ test.describe("Camera quality integration", () => {
     // No quality warning banner
     await expect(page.getByTestId("quality-banner")).not.toBeVisible();
 
-    // Analyze Sample button is enabled
-    const analyzeSampleBtn = page.getByRole("button", { name: /analyze sample/i });
-    await expect(analyzeSampleBtn).toBeEnabled();
+    // Native phone-camera captures start analysis automatically.
+    await expect(page.getByRole("button", { name: /analyze sample/i })).toHaveCount(0);
   });
 
-  test("warning quality: amber warning banner is shown but Analyze Sample remains enabled", async ({ page }) => {
+  test("warning quality: amber warning banner is shown while the capture proceeds automatically", async ({ page }) => {
     await installQualityMock(page, "warning");
     await seedSignedInSession(page, { userId: "user-1" });
     await mockCommonApi(page, { userId: "user-1" });
@@ -199,9 +198,9 @@ test.describe("Camera quality integration", () => {
     // Banner should indicate this is a warning
     await expect(page.getByTestId("quality-banner")).toContainText(/warning|quality|lighting/i);
 
-    // Both action buttons are present and enabled
+    // Retake remains available, but the old second Analyze Sample tap is gone.
     await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
-    await expect(page.getByRole("button", { name: /analyze sample/i })).toBeEnabled();
+    await expect(page.getByRole("button", { name: /analyze sample/i })).toHaveCount(0);
   });
 
   test("warning quality: light mode keeps banner text readable while preserving warning accent", async ({ page }) => {
@@ -224,7 +223,7 @@ test.describe("Camera quality integration", () => {
     await expect(banner.getByText("Quality Warning", { exact: true })).toHaveCSS("color", expectedAccentColor);
   });
 
-  test("warning quality: Analyze Sample starts the analysis transition", async ({ page }) => {
+  test("warning quality: capture starts the analysis transition automatically", async ({ page }) => {
     await installQualityMock(page, "warning");
     await seedSignedInSession(page, { userId: "user-1" });
     await mockCommonApi(page, { userId: "user-1" });
@@ -235,14 +234,14 @@ test.describe("Camera quality integration", () => {
 
     await expect(page.getByTestId("quality-banner")).toBeVisible();
 
-    // Clicking Analyze Sample should accept the capture and start the existing analysis flow
-    await page.getByRole("button", { name: /analyze sample/i }).click();
-    await expect(page.getByRole("button", { name: /analyzing sample|preparing|analyze sample/i })).toBeVisible({
+    // The native capture itself should accept the sample and start the existing analysis flow.
+    await expect(page.getByRole("button", { name: /analyze sample/i })).toHaveCount(0);
+    await expect(page.getByRole("status")).toContainText(/getting the scan ready|analyzing sample/i, {
       timeout: 8_000,
     });
   });
 
-  test("fail quality: Analyze Sample button is disabled and only Retake is actionable", async ({ page }) => {
+  test("fail quality: rejected native capture stays visible and only Retake is actionable", async ({ page }) => {
     await installQualityMock(page, "fail");
     await seedSignedInSession(page, { userId: "user-1" });
     await mockCommonApi(page, { userId: "user-1" });
@@ -259,9 +258,9 @@ test.describe("Camera quality integration", () => {
       /resolution|dark|blurry|bright|quality/i
     );
 
-    // Analyze Sample should be disabled
-    const analyzeSampleBtn = page.getByRole("button", { name: /analyze sample/i });
-    await expect(analyzeSampleBtn).toBeDisabled();
+    // The rejected native image remains visible so the inspector can understand and retake it.
+    await expect(page.locator("img[alt='Captured']")).toBeVisible();
+    await expect(page.getByRole("button", { name: /analyze sample/i })).toHaveCount(0);
 
     // Retake should remain enabled
     await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
@@ -286,7 +285,7 @@ test.describe("Camera quality integration", () => {
     await expect(page.getByTestId("quality-banner")).not.toBeVisible();
   });
 
-  test("fail quality: only Retake remains actionable while Analyze Sample stays disabled", async ({ page }) => {
+  test("fail quality: only Retake remains actionable after automatic quality rejection", async ({ page }) => {
     await installQualityMock(page, "fail");
     await seedSignedInSession(page, { userId: "user-1" });
     await mockCommonApi(page, { userId: "user-1" });
@@ -295,10 +294,8 @@ test.describe("Camera quality integration", () => {
     await completePreScanChecklist(page);
     await uploadViaCameraApp(page);
 
-    // The single Analyze Sample action must remain disabled so onCapture is never called.
-    const analyzeSampleBtn = page.getByRole("button", { name: /analyze sample/i });
-    await expect(analyzeSampleBtn).toHaveCount(1);
-    await expect(analyzeSampleBtn).toBeDisabled();
+    // A rejected native capture never exposes a second analysis action.
+    await expect(page.getByRole("button", { name: /analyze sample/i })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
   });
 
@@ -322,5 +319,7 @@ test.describe("Camera quality integration", () => {
 
     // Quality banner should show for a warning result
     await expect(page.getByTestId("quality-banner")).toBeVisible({ timeout: 3_000 });
+    await expect(page.getByRole("button", { name: /analyze sample/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
   });
 });
