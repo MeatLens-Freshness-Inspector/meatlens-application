@@ -19,6 +19,8 @@ export interface CameraCaptureProps {
   allowFileUpload?: boolean;
   allowInAppCamera?: boolean;
   showModelInputPreview?: boolean;
+  showCaptureGuide?: boolean;
+  skipQualityChecks?: boolean;
   disableRoiSegmentation?: boolean;
   showCaptureConfirmAction?: boolean;
   autoConfirmCapture?: boolean;
@@ -32,6 +34,7 @@ export interface CameraCaptureViewProps {
   allowFileUpload: boolean;
   allowInAppCamera: boolean;
   showModelInputPreview: boolean;
+  showCaptureGuide?: boolean;
   showCaptureConfirmAction: boolean;
   capturedImage: string | null;
   capturedImageRef: RefObject<HTMLImageElement | null>;

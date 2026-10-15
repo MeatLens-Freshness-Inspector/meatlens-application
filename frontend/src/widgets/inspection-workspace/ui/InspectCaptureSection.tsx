@@ -8,9 +8,11 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Loader2, TestTube2 } from "lucide-react";
+import type { InspectionCaptureMode } from "../model/types";
 
 type InspectCaptureSectionProps = {
   selectedLocation: string;
+  mode?: InspectionCaptureMode;
   locationDisplayLabel: string;
   coordinateStatusText: string | null;
   marketLocations: string[];
@@ -24,6 +26,8 @@ type InspectCaptureSectionProps = {
   isDebugFileUploadEnabled: boolean;
   isInAppCameraEnabled: boolean;
   showModelInputPreview: boolean;
+  showCaptureGuide?: boolean;
+  skipQualityChecks?: boolean;
   disableRoiSegmentation: boolean;
   captureResetKey: number;
   onSelectedLocationChange: (value: string) => void;
@@ -32,6 +36,7 @@ type InspectCaptureSectionProps = {
 
 export function InspectCaptureSection({
   selectedLocation,
+  mode = "analyze",
   locationDisplayLabel,
   coordinateStatusText,
   marketLocations,
@@ -45,6 +50,8 @@ export function InspectCaptureSection({
   isDebugFileUploadEnabled,
   isInAppCameraEnabled,
   showModelInputPreview,
+  showCaptureGuide = true,
+  skipQualityChecks = false,
   disableRoiSegmentation,
   captureResetKey,
   onSelectedLocationChange,
@@ -85,7 +92,7 @@ export function InspectCaptureSection({
         )}
       </div>
 
-      {!isPreScanChecklistComplete && (
+      {mode === "analyze" && !isPreScanChecklistComplete && (
         <div className="mb-4 rounded-2xl border border-warning/30 bg-[hsl(var(--warning)/0.08)] px-4 py-3 text-xs text-foreground">
           Complete the required pre-scan checklist before opening the camera.
         </div>
@@ -98,6 +105,8 @@ export function InspectCaptureSection({
         allowFileUpload={isDebugFileUploadEnabled}
         allowInAppCamera={isInAppCameraEnabled}
         showModelInputPreview={showModelInputPreview}
+        showCaptureGuide={showCaptureGuide && mode === "analyze"}
+        skipQualityChecks={skipQualityChecks || mode === "photo-only"}
         disableRoiSegmentation={disableRoiSegmentation}
         showCaptureConfirmAction={!isCaptureCommitted}
         autoConfirmCapture

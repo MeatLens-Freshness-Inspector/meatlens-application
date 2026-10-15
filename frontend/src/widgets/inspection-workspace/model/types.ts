@@ -1,4 +1,6 @@
 import type { CapturedImagePayload } from "@/features/inspection-capture";
+
+export type InspectionCaptureMode = "analyze" | "photo-only";
 import type { InspectionPreScanForm } from "@/entities/inspection";
 import type {
   AnalysisResult,
@@ -10,6 +12,7 @@ export type InspectionSaveStatus = "idle" | "saving" | "saved" | "queued";
 
 export interface InspectPageViewModel {
   capturedInput: CapturedImagePayload | null;
+  captureMode: InspectionCaptureMode | null;
   result: AnalysisResult | null;
   preScanForm: InspectionPreScanForm;
   marketLocations: string[];
@@ -28,6 +31,8 @@ export interface InspectPageViewModel {
   isPreScanBypassed: boolean;
   isPreScanChecklistComplete: boolean;
   isLocationSelectionDisabled: boolean;
+  showCaptureModePicker: boolean;
+  isPhotoOnlyMode: boolean;
   saveStatus: InspectionSaveStatus;
   savedInspectionId: string | null;
   isSubmitDisputePending: boolean;
@@ -42,6 +47,8 @@ export interface InspectPageViewModel {
   confidenceText: string;
   confidenceSummaryClass: string;
   saveButtonLabel: string;
+  resetButtonLabel: string;
+  onCaptureModeChange: (mode: InspectionCaptureMode) => void;
   onPreScanFieldChange: (field: keyof InspectionPreScanForm, value: string) => void;
   onSelectedLocationChange: (value: string) => void;
   onCapture: (capture: CapturedImagePayload) => void;

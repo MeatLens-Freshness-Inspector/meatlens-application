@@ -18,6 +18,7 @@ export function CameraCaptureView({
   allowFileUpload,
   allowInAppCamera,
   showModelInputPreview,
+  showCaptureGuide = true,
   showCaptureConfirmAction,
   capturedImage,
   capturedImageRef,
@@ -60,7 +61,7 @@ export function CameraCaptureView({
               className="h-full w-full object-cover"
               onLoad={onCapturedImageLoad}
             />
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            {showCaptureGuide && <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div
                 className="rounded-2xl border-2 border-dashed border-primary/75 shadow-[0_0_0_9999px_rgba(0,0,0,0.14)]"
                 style={{
@@ -71,7 +72,7 @@ export function CameraCaptureView({
               <p className="absolute bottom-4 rounded-full border border-primary/40 bg-background/80 px-3 py-1 text-[10px] uppercase tracking-wide text-primary">
                 {modelInputLabel}
               </p>
-            </div>
+            </div>}
 
             {showModelInputPreview && (
               <div className="absolute right-3 top-3 rounded-lg border border-primary/30 bg-background/86 p-1.5 shadow-md">
@@ -110,7 +111,7 @@ export function CameraCaptureView({
               </div>
             )}
 
-            {isVideoReady && (
+            {isVideoReady && showCaptureGuide && (
               <>
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                   <div

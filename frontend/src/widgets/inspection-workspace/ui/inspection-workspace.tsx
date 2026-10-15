@@ -3,6 +3,7 @@ import { InspectionDisputeSection } from "@/features/inspection-disputes/ui/insp
 import { InspectActionsSection } from "./InspectActionsSection";
 import { InspectAnalysisSection } from "./InspectAnalysisSection";
 import { InspectCaptureSection } from "./InspectCaptureSection";
+import { InspectCaptureModeSection } from "./InspectCaptureModeSection";
 import { InspectHeroSection } from "./InspectHeroSection";
 import { InspectPreScanSection } from "./InspectPreScanSection";
 import { InspectScopeReminder } from "./InspectScopeReminder";
@@ -17,16 +18,24 @@ const InspectPageView = () => {
           locationDisplayLabel={inspectPage.locationDisplayLabel}
         />
 
-        <InspectPreScanSection
-          form={inspectPage.preScanForm}
-          isBypassed={inspectPage.isPreScanBypassed}
-          isChecklistComplete={inspectPage.isPreScanChecklistComplete}
-          isLocked={Boolean(inspectPage.capturedInput) || inspectPage.saveStatus === "saving"}
-          onFieldChange={inspectPage.onPreScanFieldChange}
-        />
+        {inspectPage.showCaptureModePicker && (
+          <InspectCaptureModeSection
+            mode={inspectPage.captureMode}
+            onModeChange={inspectPage.onCaptureModeChange}
+          />
+        )}
 
-        <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+        {inspectPage.captureMode === "analyze" && <InspectPreScanSection
+            form={inspectPage.preScanForm}
+            isBypassed={inspectPage.isPreScanBypassed}
+            isChecklistComplete={inspectPage.isPreScanChecklistComplete}
+            isLocked={Boolean(inspectPage.capturedInput) || inspectPage.saveStatus === "saving"}
+            onFieldChange={inspectPage.onPreScanFieldChange}
+          />}
+
+        {inspectPage.captureMode && <div className={`mt-4 grid min-w-0 gap-4 ${inspectPage.isPhotoOnlyMode ? "lg:grid-cols-1" : "lg:grid-cols-[1.05fr_0.95fr]"}`}>
           <InspectCaptureSection
+            mode={inspectPage.captureMode}
             selectedLocation={inspectPage.selectedLocation}
             locationDisplayLabel={inspectPage.locationDisplayLabel}
             coordinateStatusText={inspectPage.coordinateStatusText}
@@ -40,19 +49,21 @@ const InspectPageView = () => {
             isAnalysisPending={inspectPage.isAnalysisPending}
             isDebugFileUploadEnabled={inspectPage.isDebugFileUploadEnabled}
             isInAppCameraEnabled={inspectPage.isInAppCameraEnabled}
-            showModelInputPreview={inspectPage.showModelInputPreview}
-            disableRoiSegmentation={inspectPage.disableRoiSegmentation}
+            showModelInputPreview={inspectPage.showModelInputPreview && inspectPage.captureMode === "analyze"}
+            showCaptureGuide={inspectPage.captureMode === "analyze"}
+            skipQualityChecks={inspectPage.captureMode === "photo-only"}
+            disableRoiSegmentation={inspectPage.disableRoiSegmentation && inspectPage.captureMode === "analyze"}
             captureResetKey={inspectPage.captureResetKey}
             onSelectedLocationChange={inspectPage.onSelectedLocationChange}
             onCapture={inspectPage.onCapture}
           />
 
-          <InspectAnalysisSection
+          {!inspectPage.isPhotoOnlyMode && <InspectAnalysisSection
             result={inspectPage.result}
             inspectionDecisionSource={inspectPage.inspectionDecisionSource}
             showDetailedResults={inspectPage.showDetailedResults}
-          />
-        </div>
+          />}
+        </div>}
 
         {inspectPage.showSaveActions && (
           <InspectActionsSection
@@ -60,6 +71,7 @@ const InspectPageView = () => {
             isCreateInspectionPending={inspectPage.isCreateInspectionPending}
             isDisputePending={inspectPage.isSubmitDisputePending}
             saveButtonLabel={inspectPage.saveButtonLabel}
+            resetButtonLabel={inspectPage.resetButtonLabel}
             onReset={inspectPage.onReset}
             onSave={inspectPage.onSave}
           />

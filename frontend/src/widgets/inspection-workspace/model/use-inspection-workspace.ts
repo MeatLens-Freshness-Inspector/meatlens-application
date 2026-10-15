@@ -8,7 +8,8 @@ import {
 } from "@/features/inspection-submission";
 import { useInspectionDispute } from "@/features/inspection-disputes/model/use-inspection-dispute";
 import { useImmediateAnalysis } from "./use-immediate-analysis";
-import { removeScan } from "@/features/offline-sync";
+import { queueDocumentationPhoto, removeScan } from "@/features/offline-sync";
+import { documentationPhotoClient } from "@/entities/documentation-photo";
 import {
   clearDeveloperOptionsSession,
   DEFAULT_DEVELOPER_OPTIONS_FLAGS,
@@ -49,7 +50,11 @@ import {
 } from "@/entities/inspection";
 import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
 import type { CapturedImagePayload } from "@/features/inspection-capture";
-import type { InspectPageViewModel, InspectionSaveStatus } from "./types";
+import type {
+  InspectPageViewModel,
+  InspectionCaptureMode,
+  InspectionSaveStatus,
+} from "./types";
 import { useInspectionAnalysis } from "./use-inspection-analysis";
 import { resolveInspectionModelSelection } from "./analysis-model-selection";
 import { persistPendingScan as persistPendingScanPayload } from "./pending-scan";
@@ -68,6 +73,7 @@ import { useInspectionLocation } from "./use-inspection-location";
 export function useInspectionWorkspace(): InspectPageViewModel {
   const { user, profile, isAdmin, isDeveloper } = useAuth();
   const [capturedInput, setCapturedInput] = useState<CapturedImagePayload | null>(null);
+  const [captureMode, setCaptureMode] = useState<InspectionCaptureMode | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [preScanForm, setPreScanForm] = useState<InspectionPreScanForm>(() =>
     createEmptyPreScanForm(),
@@ -240,6 +246,27 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     ],
   );
 
+  const persistPendingDocumentationPhoto = useCallback(
+    async (submissionId: string, capture: CapturedImagePayload, queuedAt: string) => {
+      if (!user) return;
+
+      await queueDocumentationPhoto({
+        id: submissionId,
+        imageData: await capture.file.arrayBuffer(),
+        imageType: capture.file.type,
+        imageName: capture.file.name,
+        location: selectedLocation.trim() || null,
+        locationLatitude: coordinates?.latitude ?? null,
+        locationLongitude: coordinates?.longitude ?? null,
+        stallNumber: null,
+        capturedAt: capture.capturedAt,
+        queuedAt,
+        userId: user.id,
+      });
+    },
+    [coordinates, selectedLocation, user],
+  );
+
   const handlePreScanFieldChange = useCallback(
     (field: keyof InspectionPreScanForm, value: string) => {
       setPreScanForm((current) => ({
@@ -251,10 +278,34 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   );
 
   const handleCapture = useCallback((capture: CapturedImagePayload) => {
-    if (saveStatus === "saving" || !isPreScanChecklistComplete) return;
+    if (saveStatus === "saving" || !captureMode) return;
+    if (captureMode === "analyze" && !isPreScanChecklistComplete) return;
 
     const submissionId = createClientSubmissionId();
     const requestId = coordinateRequestIdRef.current + 1;
+    if (captureMode === "photo-only") {
+      coordinateRequestIdRef.current = requestId;
+      setCapturedInput(capture);
+      setResult(null);
+      setIsImmediateAnalysisPending(false);
+      setSaveStatus("idle");
+      resetDispute();
+      saveLockRef.current = false;
+      autoSaveAttemptedRef.current = false;
+      setClientSubmissionId(submissionId);
+      setCoordinates(null);
+      setCoordinateStatus("capturing");
+      setInspectionDecisionSource(null);
+      queuedAtRef.current = null;
+
+      void requestCurrentCoordinates().then((nextCoordinates) => {
+        if (coordinateRequestIdRef.current !== requestId) return;
+        setCoordinates(nextCoordinates);
+        setCoordinateStatus(nextCoordinates ? "captured" : "unavailable");
+      });
+      return;
+    }
+
     const protocolTriggered =
       isCertificateExpired(preScanForm.meatExpiryDate) ||
       (!isPreScanBypassed && hasProtocolFailure(preScanForm));
@@ -322,6 +373,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     resetDispute,
     saveStatus,
     user,
+    captureMode,
   ]);
 
   useEffect(() => {
@@ -343,6 +395,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   }, [capturedInput, clientSubmissionId, coordinates, persistPendingScan, result]);
 
   const handleAnalyze = useCallback(async () => {
+    if (captureMode !== "analyze") return;
     if (!capturedInput?.file) return;
     if (inspectionDecisionSource === "protocol_pre_scan") return;
     if (navigator.onLine && !isModelReady && !hasMockOfflineAnalysisResult()) {
@@ -406,6 +459,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     isModelReady,
     selectedLocation,
     user,
+    captureMode,
   ]);
 
   useImmediateAnalysis(
@@ -419,17 +473,72 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   );
 
   const handleSave = useCallback(async () => {
-    if (!result || !capturedInput?.file || saveLockRef.current || saveStatus === "saved" || saveStatus === "queued") {
+    if (!capturedInput?.file || saveLockRef.current || saveStatus === "saved" || saveStatus === "queued") {
       return;
     }
     if (!user) {
-      toast.error("Please sign in to save inspections");
+      toast.error(captureMode === "photo-only" ? "Please sign in to save photos" : "Please sign in to save inspections");
       return;
     }
 
     const submissionId = clientSubmissionId ?? createClientSubmissionId();
-    const decisionSource = inspectionDecisionSource ?? getInspectionDecisionSource(preScanForm);
     setClientSubmissionId(submissionId);
+
+    if (captureMode === "photo-only") {
+      saveLockRef.current = true;
+      setSaveStatus("saving");
+      try {
+        if (!navigator.onLine) {
+          const queuedAt = queuedAtRef.current ?? new Date().toISOString();
+          queuedAtRef.current = queuedAt;
+          await persistPendingDocumentationPhoto(submissionId, capturedInput, queuedAt);
+          setSaveStatus("queued");
+          toast.info("Photo saved on this phone. It will sync when you reconnect.");
+          return;
+        }
+
+        let imageUrl: string;
+        try {
+          imageUrl = await uploadClient.uploadInspectionImage(capturedInput.file);
+        } catch {
+          const queuedAt = queuedAtRef.current ?? new Date().toISOString();
+          queuedAtRef.current = queuedAt;
+          await persistPendingDocumentationPhoto(submissionId, capturedInput, queuedAt);
+          setSaveStatus("queued");
+          toast.info("Photo saved on this phone. It will sync when the connection is ready.");
+          return;
+        }
+
+        await documentationPhotoClient.create({
+          client_submission_id: submissionId,
+          image_url: imageUrl,
+          location: selectedLocation.trim() || null,
+          location_latitude: coordinates?.latitude ?? null,
+          location_longitude: coordinates?.longitude ?? null,
+          stall_number: null,
+          captured_at: capturedInput.capturedAt,
+        });
+        setSaveStatus("saved");
+        toast.success("Photo saved");
+      } catch (error) {
+        try {
+          const queuedAt = queuedAtRef.current ?? new Date().toISOString();
+          queuedAtRef.current = queuedAt;
+          await persistPendingDocumentationPhoto(submissionId, capturedInput, queuedAt);
+          setSaveStatus("queued");
+          toast.info("Photo saved on this phone. It will sync when the connection is ready.");
+        } catch (queueError) {
+          saveLockRef.current = false;
+          setSaveStatus("idle");
+          console.error("Documentation photo save error:", error, queueError);
+          toast.error("Could not save the photo. Please try again.");
+        }
+      }
+      return;
+    }
+
+    if (!result) return;
+    const decisionSource = inspectionDecisionSource ?? getInspectionDecisionSource(preScanForm);
 
     if (!navigator.onLine) {
       try {
@@ -483,7 +592,9 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     clientSubmissionId,
     coordinates,
     createInspection,
+    captureMode,
     inspectionDecisionSource,
+    persistPendingDocumentationPhoto,
     persistPendingScan,
     preScanForm,
     result,
@@ -520,6 +631,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     coordinateRequestIdRef.current += 1;
     setCaptureResetKey((current) => current + 1);
     setCapturedInput(null);
+    setCaptureMode(null);
     setResult(null);
     setIsImmediateAnalysisPending(false);
     setPreScanForm(createEmptyPreScanForm());
@@ -533,6 +645,11 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     setClientSubmissionId(null);
     queuedAtRef.current = null;
   }, [resetDispute]);
+
+  const handleCaptureModeChange = useCallback((mode: InspectionCaptureMode) => {
+    if (capturedInput || saveStatus === "saving") return;
+    setCaptureMode(mode);
+  }, [capturedInput, saveStatus]);
 
   const isDebugFileUploadEnabled = Boolean(
     user &&
@@ -567,6 +684,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
 
   return {
     capturedInput,
+    captureMode,
     result,
     preScanForm,
     marketLocations,
@@ -583,7 +701,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
       createInspection.isPending ||
       isImmediateAnalysisPending ||
       isAnalyzing ||
-      !isPreScanChecklistComplete,
+      (captureMode === "analyze" && !isPreScanChecklistComplete),
     isCreateInspectionPending: createInspection.isPending,
     isDebugFileUploadEnabled,
     isInAppCameraEnabled,
@@ -591,6 +709,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     isPreScanChecklistComplete,
     isLocationSelectionDisabled:
       saveStatus === "saving" || createInspection.isPending || marketLocations.length === 0,
+    showCaptureModePicker: !capturedInput,
+    isPhotoOnlyMode: captureMode === "photo-only",
     saveStatus,
     savedInspectionId,
     isSubmitDisputePending,
@@ -599,12 +719,16 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     showModelInputPreview: developerFlags.showModelInputPreview,
     disableRoiSegmentation,
     captureResetKey,
-    showSaveActions: Boolean(result),
+    showSaveActions: Boolean(result) || (captureMode === "photo-only" && Boolean(capturedInput)),
     captureStatusText: getCaptureStatusText(capturedInput),
     analysisStatusText: analysisState.analysisStatusText,
     confidenceText: getConfidenceText(result),
     confidenceSummaryClass,
-    saveButtonLabel: getSaveButtonLabel(saveStatus),
+    saveButtonLabel: captureMode === "photo-only"
+      ? saveStatus === "queued" ? "Saved on phone" : "Save photo"
+      : getSaveButtonLabel(saveStatus),
+    resetButtonLabel: captureMode === "photo-only" ? "New photo" : "New scan",
+    onCaptureModeChange: handleCaptureModeChange,
     onPreScanFieldChange: handlePreScanFieldChange,
     onSelectedLocationChange: handleSelectedLocationChange,
     onCapture: handleCapture,

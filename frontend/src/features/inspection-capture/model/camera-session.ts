@@ -55,6 +55,8 @@ export function useCameraCapture({
   allowFileUpload = false,
   allowInAppCamera = false,
   showModelInputPreview = true,
+  showCaptureGuide = true,
+  skipQualityChecks = false,
   disableRoiSegmentation = false,
   showCaptureConfirmAction = true,
   autoConfirmCapture = false,
@@ -328,7 +330,7 @@ export function useCameraCapture({
     setQualitySource("canvas");
     setUploadedFile(null);
 
-    const qualityResult = resolveCanvasImageQuality(canvas);
+    const qualityResult = skipQualityChecks ? null : resolveCanvasImageQuality(canvas);
     setCaptureQualityResult(qualityResult);
 
     const guideBox: SquareGuideBox = resolveCenteredObjectCoverGuideBox({
@@ -349,7 +351,7 @@ export function useCameraCapture({
         const previewSourceFile = new File([blob], `preview-${Date.now()}.jpg`, { type: "image/jpeg" });
         setModelPreviewSourceFile(previewSourceFile);
 
-        if (autoConfirmCapture && qualityResult.canProceed) {
+        if (autoConfirmCapture && (qualityResult === null || qualityResult.canProceed)) {
           const captureFile = new File([blob], `inspection-${Date.now()}.jpg`, { type: "image/jpeg" });
           emitCapture(captureFile, "camera", guideBox);
         }
@@ -363,7 +365,7 @@ export function useCameraCapture({
     setIsStreaming(false);
     setIsVideoReady(false);
     resetCameraControls();
-  }, [autoConfirmCapture, disabled, emitCapture, resetCameraControls, stream]);
+  }, [autoConfirmCapture, disabled, emitCapture, resetCameraControls, skipQualityChecks, stream]);
 
   const handleCapturedImageLoad = useCallback(() => {
     if ((qualitySource !== "file" && qualitySource !== "cameraApp") || !uploadedFile || !capturedImageRef.current) {
@@ -389,7 +391,9 @@ export function useCameraCapture({
     });
 
     setCaptureGuideBox(guideBox);
-    void updateModelInputPreview(uploadedFile, guideBox);
+    if (!skipQualityChecks) {
+      void updateModelInputPreview(uploadedFile, guideBox);
+    }
 
     if (
       autoConfirmCapture &&
@@ -403,14 +407,15 @@ export function useCameraCapture({
     captureQualityResult,
     emitCapture,
     qualitySource,
+    skipQualityChecks,
     updateModelInputPreview,
     uploadedFile,
   ]);
 
   useEffect(() => {
-    if (!modelPreviewSourceFile) return;
+    if (!modelPreviewSourceFile || skipQualityChecks) return;
     void updateModelInputPreview(modelPreviewSourceFile, captureGuideBox);
-  }, [captureGuideBox, modelPreviewSourceFile, updateModelInputPreview]);
+  }, [captureGuideBox, modelPreviewSourceFile, skipQualityChecks, updateModelInputPreview]);
 
   useEffect(() => {
     if (allowFileUpload) return;
@@ -492,7 +497,7 @@ export function useCameraCapture({
 
       let qualityResult: ImageQualityResult | null = null;
       try {
-        if (!legacyBypass) {
+        if (!skipQualityChecks && !legacyBypass) {
           const legacyQuality = await assessFileQuality(file);
           if (!legacyQuality.accepted) {
             qualityResult = createLegacyQualityFailure(legacyQuality.reasons);
@@ -500,7 +505,9 @@ export function useCameraCapture({
           }
         }
 
-        qualityResult ??= await resolveFileImageQuality(file);
+        if (!skipQualityChecks) {
+          qualityResult ??= await resolveFileImageQuality(file);
+        }
       } catch {
         qualityResult = createLegacyQualityFailure([
           "Unable to check image quality. Please retake the photo.",
@@ -514,7 +521,7 @@ export function useCameraCapture({
       reader.readAsDataURL(file);
       inputElement.value = "";
     },
-    []
+    [skipQualityChecks]
   );
 
   const handleFileInput = useCallback(
@@ -571,6 +578,7 @@ export function useCameraCapture({
     allowFileUpload,
     allowInAppCamera,
     showModelInputPreview,
+    showCaptureGuide,
     showCaptureConfirmAction: showCaptureConfirmAction && !(autoConfirmCapture && qualitySource !== "file"),
     capturedImage,
     capturedImageRef,

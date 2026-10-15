@@ -7,6 +7,7 @@ type InspectActionsSectionProps = {
   isCreateInspectionPending: boolean;
   isDisputePending: boolean;
   saveButtonLabel: string;
+  resetButtonLabel: string;
   onReset: () => void;
   onSave: () => void;
 };
@@ -16,6 +17,7 @@ export function InspectActionsSection({
   isCreateInspectionPending,
   isDisputePending,
   saveButtonLabel,
+  resetButtonLabel,
   onReset,
   onSave,
 }: InspectActionsSectionProps) {
@@ -31,7 +33,7 @@ export function InspectActionsSection({
           className="flex-1 gap-2 rounded-xl"
         >
           <RotateCcw className="h-4 w-4" />
-          New Scan
+          {resetButtonLabel}
         </Button>
         <Button
           variant={hasCompletedSave ? "outline" : "default"}
