@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import test from "node:test";
-import { DocumentationPhotoSection } from "../../../../src/widgets/history/ui/documentation-photo-section";
+import {
+  DocumentationPhotoDetails,
+  DocumentationPhotoSection,
+} from "../../../../src/widgets/history/ui/documentation-photo-section";
 
 Object.assign(globalThis, { React });
 
@@ -39,4 +42,61 @@ test("documentation photos use compact inspection-style cards", () => {
   assert.match(markup, /View details/);
   assert.match(markup, /Show all documentation photos/);
   assert.doesNotMatch(markup, /grid-cols-3/);
+});
+
+test("View details contains the complete documentation photo details", () => {
+  const savedPhoto = { ...photo("photo-1", "2026-10-15T08:00:00.000Z"), stall_number: "A-12" };
+  const markup = renderToStaticMarkup(
+    <DocumentationPhotoDetails
+      entry={{
+        kind: "saved",
+        key: "saved-photo-1",
+        capturedAt: savedPhoto.captured_at,
+        location: savedPhoto.location,
+        photo: savedPhoto,
+      }}
+      imageUrl={savedPhoto.image_url}
+    />,
+  );
+
+  assert.match(markup, /Documentation photo details/);
+  assert.match(markup, /Enlarge documentation photo/);
+  assert.match(markup, /Tap to enlarge/);
+  assert.match(markup, /Photo type/);
+  assert.match(markup, /No analysis performed/);
+  assert.match(markup, /Captured/);
+  assert.match(markup, /Ikot Palengke/);
+  assert.match(markup, /A-12/);
+  assert.match(markup, /Saved to history/);
+});
+
+test("View details identifies an offline photo waiting to sync", () => {
+  const capturedAt = "2026-10-15T08:00:00.000Z";
+  const markup = renderToStaticMarkup(
+    <DocumentationPhotoDetails
+      entry={{
+        kind: "pending",
+        key: "pending-photo-1",
+        capturedAt,
+        location: "Ikot Palengke",
+        photo: {
+          id: "pending-photo-1",
+          imageData: new ArrayBuffer(0),
+          imageType: "image/jpeg",
+          imageName: "stall.jpg",
+          location: "Ikot Palengke",
+          locationLatitude: null,
+          locationLongitude: null,
+          stallNumber: "B-04",
+          capturedAt,
+          queuedAt: capturedAt,
+          userId: "user-1",
+        },
+      }}
+      imageUrl="blob:pending-photo-1"
+    />,
+  );
+
+  assert.match(markup, /Waiting to sync/);
+  assert.match(markup, /B-04/);
 });

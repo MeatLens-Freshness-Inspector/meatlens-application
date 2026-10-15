@@ -44,6 +44,92 @@ function formatCaptureTime(value: string): string {
   return Number.isNaN(date.getTime()) ? "Unknown time" : format(date, "h:mm a");
 }
 
+type DocumentationPhotoDetailsProps = {
+  entry: DocumentationPhotoEntry;
+  imageUrl: string;
+};
+
+export function DocumentationPhotoDetails({ entry, imageUrl }: DocumentationPhotoDetailsProps) {
+  const isPending = entry.kind === "pending";
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+
+  return (
+    <div className="space-y-5 px-5 pb-6 pt-5">
+      <div>
+        <h2 className="font-display text-xl font-semibold">
+          Documentation photo details
+        </h2>
+        <p className="mt-1 text-left text-base text-muted-foreground">
+          This photo was saved without running an analysis.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setIsImagePreviewOpen(true)}
+        className="group block w-full cursor-zoom-in overflow-hidden rounded-2xl border border-border/70 bg-muted"
+        aria-label="Enlarge documentation photo"
+      >
+        <img
+          src={imageUrl}
+          alt="Documentation photo"
+          className="max-h-[52vh] min-h-56 w-full object-contain transition-transform duration-200 group-hover:scale-[1.03]"
+        />
+        <p className="pb-2 text-center text-sm text-muted-foreground">Tap to enlarge</p>
+      </button>
+
+      <Dialog open={isImagePreviewOpen} onOpenChange={setIsImagePreviewOpen}>
+        <DialogContent className="max-w-[95vw] border-none bg-transparent p-0 shadow-none sm:max-w-4xl [&>button]:text-white [&>button]:opacity-80">
+          <DialogTitle className="sr-only">Enlarged documentation photo</DialogTitle>
+          <DialogDescription className="sr-only">
+            Full-size documentation photo.
+          </DialogDescription>
+          <img
+            src={imageUrl}
+            alt="Documentation photo - full size"
+            className="max-h-[88vh] w-full rounded-2xl border border-white/10 object-contain shadow-2xl"
+          />
+        </DialogContent>
+      </Dialog>
+
+      <dl className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl border border-border/70 bg-card p-4">
+          <dt className="text-xs uppercase tracking-widest text-muted-foreground">Photo type</dt>
+          <dd className="mt-1 text-base font-semibold">Documentation photo</dd>
+        </div>
+        <div className="rounded-xl border border-border/70 bg-card p-4">
+          <dt className="text-xs uppercase tracking-widest text-muted-foreground">Result</dt>
+          <dd className="mt-1 text-base font-semibold text-warning">No analysis performed</dd>
+        </div>
+        <div className="rounded-xl border border-border/70 bg-card p-4">
+          <dt className="text-xs uppercase tracking-widest text-muted-foreground">Captured</dt>
+          <dd className="mt-1 text-base font-semibold">
+            {formatCaptureDate(entry.capturedAt)} at {formatCaptureTime(entry.capturedAt)}
+          </dd>
+        </div>
+        <div className="rounded-xl border border-border/70 bg-card p-4">
+          <dt className="text-xs uppercase tracking-widest text-muted-foreground">Sync status</dt>
+          <dd className="mt-1 text-base font-semibold">
+            {isPending ? "Waiting to sync" : "Saved to history"}
+          </dd>
+        </div>
+        <div className="rounded-xl border border-border/70 bg-card p-4 sm:col-span-2">
+          <dt className="text-xs uppercase tracking-widest text-muted-foreground">Location</dt>
+          <dd className="mt-1 break-words text-base font-semibold">
+            {entry.location || "Not recorded"}
+          </dd>
+        </div>
+        <div className="rounded-xl border border-border/70 bg-card p-4 sm:col-span-2">
+          <dt className="text-xs uppercase tracking-widest text-muted-foreground">Stall number</dt>
+          <dd className="mt-1 text-base font-semibold">
+            {isPending ? entry.photo.stallNumber || "Not recorded" : entry.photo.stall_number || "Not recorded"}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  );
+}
+
 function DocumentationPhotoListItem({ entry }: { entry: DocumentationPhotoEntry }) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
@@ -75,9 +161,9 @@ function DocumentationPhotoListItem({ entry }: { entry: DocumentationPhotoEntry 
         {imageUrl ? (
           <button
             type="button"
-            className="h-14 w-14 flex-shrink-0 cursor-zoom-in touch-manipulation overflow-hidden rounded-xl border border-border/70 sm:h-16 sm:w-16"
+            className="h-14 w-14 flex-shrink-0 cursor-pointer touch-manipulation overflow-hidden rounded-xl border border-border/70 sm:h-16 sm:w-16"
             onClick={() => setIsPreviewOpen(true)}
-            aria-label="View full documentation photo"
+            aria-label="View documentation photo details"
           >
             <img
               src={imageUrl}
@@ -148,16 +234,12 @@ function DocumentationPhotoListItem({ entry }: { entry: DocumentationPhotoEntry 
 
       {imageUrl && (
         <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-          <DialogContent className="w-[min(96vw,980px)] max-w-5xl border-none bg-transparent p-0 shadow-none">
-            <DialogTitle className="sr-only">Documentation photo preview</DialogTitle>
+          <DialogContent className="max-h-[90vh] w-[min(96vw,680px)] overflow-y-auto rounded-2xl border border-border/70 bg-background p-0">
+            <DialogTitle className="sr-only">Documentation photo details</DialogTitle>
             <DialogDescription className="sr-only">
-              Full-size documentation photo for this stall.
+              Documentation photo, capture information, location, and sync status.
             </DialogDescription>
-            <img
-              src={imageUrl}
-              alt="Full documentation photo"
-              className="max-h-[85vh] w-full rounded-2xl border border-border/70 bg-black/60 object-contain"
-            />
+            <DocumentationPhotoDetails entry={entry} imageUrl={imageUrl} />
           </DialogContent>
         </Dialog>
       )}
