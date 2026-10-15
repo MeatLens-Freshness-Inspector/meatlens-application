@@ -36,3 +36,33 @@ test("renders a compact location change affordance and plain capture progress co
   assert.match(markup, /Change location/);
   assert.doesNotMatch(markup, /MobileNetV3/);
 });
+
+test("announces automatic analysis progress in plain language", () => {
+  const markup = renderToStaticMarkup(
+    <InspectCaptureSection
+      selectedLocation="Old Market"
+      locationDisplayLabel="Old Market"
+      coordinateStatusText={null}
+      marketLocations={["Old Market", "New Market"]}
+      isPreScanChecklistComplete={true}
+      isLocationSelectionDisabled={false}
+      isCaptureDisabled={false}
+      isCaptureCommitted={true}
+      isAnalyzeBlockedByModel={true}
+      isAnalyzing={false}
+      isAnalysisPending={true}
+      isDebugFileUploadEnabled={false}
+      isInAppCameraEnabled={false}
+      showModelInputPreview={false}
+      disableRoiSegmentation={false}
+      captureResetKey={0}
+      onSelectedLocationChange={() => undefined}
+      onCapture={() => undefined}
+    />,
+  );
+
+  assert.match(markup, /role="status"/);
+  assert.match(markup, /aria-live="polite"/);
+  assert.match(markup, /Getting the scan ready/);
+  assert.doesNotMatch(markup, /model/i);
+});

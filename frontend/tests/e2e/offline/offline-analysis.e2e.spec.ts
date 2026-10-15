@@ -63,6 +63,8 @@ test("online analysis uses MobileNetV3 ONNX and exposes model confidence metadat
   await expect(page.getByText(/Source:\s*MobileNetV3 ONNX/i)).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/Model confidence:/i)).toBeVisible();
   await expect(page.getByText(/Rules Fallback/i)).toHaveCount(0);
+  await expect(page.getByText(/Analysis will appear here after the photo is checked/i)).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /New Scan/i })).toBeVisible();
 });
 
 test("offline analysis allows rules-only fallback", async ({ context, page }) => {
@@ -102,6 +104,11 @@ test("offline protocol failure queues a spoiled protocol result without AI analy
   await expect(page.getByText(/protocol result: spoiled/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /Analyze Sample/i })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Queued for Sync" })).toBeDisabled({ timeout: 15_000 });
+  await expect(page.getByRole("button", { name: /New Scan/i })).toBeVisible();
+
+  await page.getByRole("button", { name: /New Scan/i }).click();
+  await expect(page.getByText(/Analysis will appear here after the photo is checked/i)).toBeVisible();
+  await expect(page.getByText(/Saved to report:\s*Old Market/i)).toBeVisible();
 
   const queuedScan = await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {

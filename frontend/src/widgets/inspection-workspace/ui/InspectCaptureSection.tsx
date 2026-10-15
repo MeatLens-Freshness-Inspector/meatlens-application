@@ -104,7 +104,12 @@ export function InspectCaptureSection({
       />
 
       {isAnalysisPending && (
-        <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl border border-primary/30 bg-[hsl(var(--primary)/0.08)] px-4 py-3 text-sm font-medium text-foreground">
+        <div
+          className="mt-4 flex items-center justify-center gap-2 rounded-2xl border border-primary/30 bg-[hsl(var(--primary)/0.08)] px-4 py-3 text-sm font-medium text-foreground"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
           <Loader2 className="h-4 w-4 animate-spin text-primary" />
           {isAnalyzeBlockedByModel && !isAnalyzing
             ? "Getting the scan ready..."
