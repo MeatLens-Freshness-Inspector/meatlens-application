@@ -28,4 +28,12 @@ test("history tutorial mirrors the simplified saved-record flow", () => {
   assert.match(detailMarkup, /Result/);
   assert.match(detailMarkup, /Confidence/);
   assert.match(detailMarkup, /Dispute result/);
+
+  const exportMarkup = renderToStaticMarkup(
+    <HistoryMockScene step={tutorialDefinitions.history[3]} onAdvance={() => {}} />,
+  );
+
+  assert.match(exportMarkup, /Export a report/);
+  assert.match(exportMarkup, /aria-label="Export all inspections as PDF"/);
+  assert.match(exportMarkup, /Export all inspections as PDF/);
 });

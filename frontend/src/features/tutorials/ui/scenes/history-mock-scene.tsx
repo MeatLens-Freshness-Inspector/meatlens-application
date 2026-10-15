@@ -12,10 +12,12 @@ interface HistoryMockSceneProps {
 
 export function HistoryMockScene({ step, onAdvance }: HistoryMockSceneProps) {
   const fixture = tutorialFixtures.history;
-  const isDetail = step.id !== "history-open-record";
+  const isList = step.id === "history-open-record" || step.id === "history-export-report";
+  const isDetail = !isList;
   const isOpenRecord = step.id === "history-open-record";
   const isReviewDetails = step.id === "history-review-details";
   const isBack = step.id === "history-back-to-list";
+  const isExport = step.id === "history-export-report";
 
   return (
     <TutorialAppShell
@@ -72,9 +74,16 @@ export function HistoryMockScene({ step, onAdvance }: HistoryMockSceneProps) {
             <div className="mt-2 rounded-xl border border-border/70 bg-background/70 px-2 py-2 text-[9px] text-muted-foreground">
               Choose a date to export one day
             </div>
-            <div className="mt-2 flex h-8 items-center justify-center rounded-xl bg-primary px-2 text-[9px] font-semibold text-primary-foreground">
-              Export all inspections as PDF
-            </div>
+            <MockHotspot
+              active={isExport}
+              onAdvance={onAdvance}
+              label="Export all inspections as PDF"
+              ariaLabel={step.hotspotLabel}
+            >
+              <div className="flex h-8 items-center justify-center rounded-xl bg-primary px-2 text-[9px] font-semibold text-primary-foreground">
+                Export all inspections as PDF
+              </div>
+            </MockHotspot>
           </section>
 
           <section className="rounded-2xl border border-border/70 bg-card/90 p-3">

@@ -420,6 +420,36 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
         },
       ],
     },
+    {
+      id: "history-export-report",
+      tutorialId: "history",
+      sectionTitle: "History demo",
+      stepTitle: "Export all saved inspections",
+      instruction:
+        "The report tools stay visible below the saved records. Tap Export all inspections as PDF to include every saved inspection, or choose a date first when you only need one day.",
+      sceneTitle: "History",
+      sceneSubtitle: "Report and totals",
+      hotspotLabel: "Export all inspections as PDF",
+      blocks: [
+        {
+          id: "history-report",
+          title: "Export a report",
+          description: "Without a date, the report includes all saved inspections.",
+          tone: "accent",
+          hotspotLabel: "Export all inspections as PDF",
+        },
+        {
+          id: "history-date",
+          title: "Choose a date",
+          description: "Choose a date when you only need inspections from one day.",
+        },
+        {
+          id: "history-totals",
+          title: "Inspection totals",
+          description: "Review the saved-inspection totals below the report controls.",
+        },
+      ],
+    },
   ],
   messages: [
     {
