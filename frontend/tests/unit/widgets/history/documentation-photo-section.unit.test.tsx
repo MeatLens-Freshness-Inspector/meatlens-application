@@ -36,6 +36,7 @@ test("documentation photos use compact inspection-style cards", () => {
   assert.equal((markup.match(/data-testid="documentation-photo-card-layout"/g) ?? []).length, 3);
   assert.match(markup, /Documentation photo/);
   assert.match(markup, /No analysis result/);
+  assert.match(markup, /View details/);
   assert.match(markup, /Show all documentation photos/);
   assert.doesNotMatch(markup, /grid-cols-3/);
 });

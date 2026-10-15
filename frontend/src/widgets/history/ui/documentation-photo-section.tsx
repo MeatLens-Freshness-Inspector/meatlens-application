@@ -141,7 +141,7 @@ function DocumentationPhotoListItem({ entry }: { entry: DocumentationPhotoEntry 
             onClick={() => setIsPreviewOpen(true)}
             disabled={!imageUrl}
           >
-            View photo
+            View details
           </Button>
         </div>
       </CardContent>
