@@ -20,3 +20,10 @@ export {
   removeScan,
   type PendingScan,
 } from "./model/inspection-queue";
+export {
+  clearPendingDocumentationPhotos,
+  getPendingDocumentationPhotos,
+  queueDocumentationPhoto,
+  removeDocumentationPhoto,
+  type PendingDocumentationPhoto,
+} from "./model/documentation-photo-queue";

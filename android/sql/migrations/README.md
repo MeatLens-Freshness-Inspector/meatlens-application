@@ -33,6 +33,7 @@ Run migrations in this exact order:
 | 3rd | `002_create_pending_audit_logs.sql` | Offline audit log queue |
 | 4th | `003_create_offline_auth_envelope.sql` | Offline session / auth cache |
 | 5th | `004_create_inspection_history_cache.sql` | Inspection list + stats cache |
+| 6th | `008_create_pending_documentation_photos.sql` | Offline documentation-photo queue |
 
 > **Why 005 first?** Migrations 001–004 each do an `INSERT INTO schema_migrations`
 > to self-register. The `schema_migrations` table must exist before they run.

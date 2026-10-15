@@ -14,3 +14,9 @@ export {
   removeAuditLog,
   type PendingAuditLog,
 } from "./sqlite-audit-queue";
+export {
+  clearPendingDocumentationPhotos,
+  getPendingDocumentationPhotos,
+  queueDocumentationPhoto,
+  removeDocumentationPhoto,
+} from "./sqlite-documentation-photo-queue";

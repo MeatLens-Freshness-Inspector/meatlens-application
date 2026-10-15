@@ -9,8 +9,9 @@ import * as sqliteImpl from "../api/sqlite-offline-queue";
 const isNative = () => Capacitor.isNativePlatform();
 
 const DB_NAME = "meatlens-offline";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = "pending-scans";
+const DOCUMENTATION_STORE_NAME = "pending-documentation-photos";
 
 /**
  * A scan that was captured while offline.
@@ -52,6 +53,9 @@ function openDb(): Promise<IDBDatabase> {
       const db = (event.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains(DOCUMENTATION_STORE_NAME)) {
+        db.createObjectStore(DOCUMENTATION_STORE_NAME, { keyPath: "id" });
       }
     };
     request.onsuccess = () => resolve(request.result);

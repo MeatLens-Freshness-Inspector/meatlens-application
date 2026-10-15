@@ -6,6 +6,7 @@ import {
   isCertificateExpired,
 } from "@/entities/inspection";
 import type { AnalysisModelSelection } from "@/features/offline-analysis";
+import type { PendingDocumentationPhoto } from "../model/documentation-photo-queue";
 
 const FORCE_RETAKE_CONFIDENCE_THRESHOLD = 80;
 
@@ -80,6 +81,16 @@ type OfflineInspectionInsert = {
   model_version_key?: string | null;
 };
 
+type OfflineDocumentationPhotoInsert = {
+  client_submission_id: string;
+  image_url: string;
+  location: string | null;
+  location_latitude: number | null;
+  location_longitude: number | null;
+  stall_number: string | null;
+  captured_at: string;
+};
+
 type DeveloperOptionsFlags = {
   selectedModel: AnalysisModelSelection;
   verboseOfflineSyncLogs: boolean;
@@ -89,6 +100,7 @@ type DeveloperOptionsFlags = {
 export type OfflineSyncDependencies = {
   uploadInspectionImage: (file: File) => Promise<string>;
   createInspection: (inspection: OfflineInspectionInsert) => Promise<unknown>;
+  createDocumentationPhoto: (photo: OfflineDocumentationPhotoInsert) => Promise<unknown>;
   createAuditBatch: (events: Array<{
     client_event_id: string;
     event_type: string;
@@ -98,6 +110,8 @@ export type OfflineSyncDependencies = {
   }>) => Promise<number>;
   getPendingScans: () => Promise<PendingScan[]>;
   removeScan: (id: string) => Promise<void>;
+  getPendingDocumentationPhotos: () => Promise<PendingDocumentationPhoto[]>;
+  removeDocumentationPhoto: (id: string) => Promise<void>;
   getPendingAuditLogs: () => Promise<PendingAuditLog[]>;
   removeAuditLog: (id: string) => Promise<void>;
   protocolSpoiledReason: string;
@@ -217,6 +231,29 @@ async function processScan(
   toast.success(`Synced offline scan: ${label}${locationSuffix} - ${result.classification}`);
 }
 
+async function processDocumentationPhoto(
+  photo: PendingDocumentationPhoto,
+  queryClient: ReturnType<typeof useQueryClient>,
+  dependencies: OfflineSyncDependencies,
+): Promise<void> {
+  const imageFile = new File([photo.imageData], photo.imageName, { type: photo.imageType });
+  const imageUrl = await dependencies.uploadInspectionImage(imageFile);
+
+  await dependencies.createDocumentationPhoto({
+    client_submission_id: photo.id,
+    image_url: imageUrl,
+    location: photo.location,
+    location_latitude: photo.locationLatitude,
+    location_longitude: photo.locationLongitude,
+    stall_number: photo.stallNumber,
+    captured_at: photo.capturedAt,
+  });
+
+  await dependencies.removeDocumentationPhoto(photo.id);
+  queryClient.invalidateQueries({ queryKey: ["documentation-photos"] });
+  toast.success("Synced documentation photo");
+}
+
 async function processAuditLogs(logs: PendingAuditLog[], dependencies: OfflineSyncDependencies): Promise<void> {
   if (logs.length === 0) return;
 
@@ -295,6 +332,26 @@ export function OfflineSyncManager({
           console.info("[OfflineSyncManager] Syncing pending audit logs", { count: mineAuditLogs.length });
         }
         await processAuditLogs(mineAuditLogs, dependencies);
+      }
+
+      const pendingDocumentationPhotos = await dependencies.getPendingDocumentationPhotos();
+      const mineDocumentationPhotos = pendingDocumentationPhotos.filter((photo) => photo.userId === user.id);
+      if (mineDocumentationPhotos.length > 0) {
+        toast.info(
+          `Syncing ${mineDocumentationPhotos.length} documentation photo${mineDocumentationPhotos.length > 1 ? "s" : ""}...`,
+        );
+        for (const photo of mineDocumentationPhotos) {
+          try {
+            if (developerFlags.verboseOfflineSyncLogs) {
+              console.info("[OfflineSyncManager] Syncing documentation photo", { id: photo.id });
+            }
+            await processDocumentationPhoto(photo, queryClient, dependencies);
+          } catch (err) {
+            console.error("[OfflineSyncManager] Failed to sync documentation photo:", err);
+            toast.error("A documentation photo failed to sync - it will retry when reconnected.");
+            break;
+          }
+        }
       }
 
       const pending = await dependencies.getPendingScans();

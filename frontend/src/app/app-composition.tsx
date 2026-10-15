@@ -22,12 +22,15 @@ import { PublicLayout } from "@/app/layouts/public-layout";
 import { hasSkippedOnboardingForSession } from "@/features/onboarding";
 import { uploadClient } from "@/features/inspection-submission";
 import { inspectionClient } from "@/entities/inspection";
+import { documentationPhotoClient } from "@/entities/documentation-photo";
 import { auditLogClient } from "@/entities/audit-log";
 import {
   getPendingAuditLogs,
   getPendingScans,
   removeAuditLog,
   removeScan,
+  getPendingDocumentationPhotos,
+  removeDocumentationPhoto,
 } from "@/features/offline-sync";
 import { PROTOCOL_SPOILED_REASON, buildProtocolSpoiledAnalysisResult } from "@/entities/inspection";
 import { analyzeOffline, prewarmModel, setActiveAnalysisModel } from "@/features/offline-analysis";
@@ -60,9 +63,12 @@ import NotFound from "@/pages/not-found/NotFound";
 const offlineSyncDependencies: OfflineSyncDependencies = {
   uploadInspectionImage: (file) => uploadClient.uploadInspectionImage(file),
   createInspection: (inspection) => inspectionClient.create(inspection),
+  createDocumentationPhoto: (photo) => documentationPhotoClient.create(photo),
   createAuditBatch: (events) => auditLogClient.createBatch(events),
   getPendingScans,
   removeScan,
+  getPendingDocumentationPhotos,
+  removeDocumentationPhoto,
   getPendingAuditLogs,
   removeAuditLog,
   protocolSpoiledReason: PROTOCOL_SPOILED_REASON,

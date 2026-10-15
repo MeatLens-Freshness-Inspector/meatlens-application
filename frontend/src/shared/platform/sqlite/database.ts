@@ -12,6 +12,7 @@
  *   003_create_offline_auth_envelope
  *   004_create_inspection_history_cache
  *   007_add_model_version_key_to_pending_scans
+ *   008_create_pending_documentation_photos
  */
 
 import { CapacitorSQLite, SQLiteConnection } from "@capacitor-community/sqlite";
@@ -51,7 +52,7 @@ const SYNC_METADATA_SEEDS = [
   ["last_scan_sync_at",            ""],
   ["last_audit_sync_at",           ""],
   ["last_inspection_cache_sync_at",""],
-  ["db_schema_version",            "7"],
+  ["db_schema_version",            "8"],
   ["app_version",                  "1.0.0"],
 ] as const;
 
@@ -229,6 +230,35 @@ const DDL_007 = `
     ADD COLUMN model_version_key TEXT;
 `;
 
+/** Migration 008 — pending documentation photos */
+const DDL_008 = `
+  CREATE TABLE IF NOT EXISTS pending_documentation_photos (
+    id                    TEXT    NOT NULL PRIMARY KEY,
+    image_data            TEXT    NOT NULL,
+    image_type            TEXT    NOT NULL,
+    image_name            TEXT    NOT NULL,
+    location              TEXT,
+    location_latitude     REAL,
+    location_longitude    REAL,
+    stall_number          TEXT,
+    captured_at           TEXT    NOT NULL,
+    queued_at             TEXT    NOT NULL,
+    user_id               TEXT    NOT NULL,
+    sync_status           TEXT    NOT NULL DEFAULT 'pending',
+    sync_attempts         INTEGER NOT NULL DEFAULT 0,
+    last_synced_at        TEXT,
+    last_sync_error       TEXT,
+    created_at            TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    updated_at            TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_pending_documentation_photos_sync_status_queued_at
+    ON pending_documentation_photos (sync_status, queued_at ASC);
+
+  CREATE INDEX IF NOT EXISTS idx_pending_documentation_photos_user_id
+    ON pending_documentation_photos (user_id);
+`;
+
 // ---------------------------------------------------------------------------
 // Ordered migration list (version, description, DDL)
 // ---------------------------------------------------------------------------
@@ -239,6 +269,7 @@ const MIGRATIONS: Array<{ version: number; description: string; ddl: string }> =
   { version: 4, description: "Create inspection_history_cache and inspection_stats_cache",    ddl: DDL_004 },
   { version: 6, description: "Add regulatory_compliance to pending_scans",                    ddl: DDL_006 },
   { version: 7, description: "Add model version key to pending_scans",                       ddl: DDL_007 },
+  { version: 8, description: "Create pending documentation photos",                          ddl: DDL_008 },
 ];
 
 // ---------------------------------------------------------------------------
