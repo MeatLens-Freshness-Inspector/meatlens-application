@@ -314,6 +314,7 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
               </p>
             </div>
           </div>
+          </div>
 
           {disputeSection}
 
@@ -354,7 +355,6 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
               <p className="text-xs">No image captured</p>
             </div>
           )}
-          </div>
 
           {hasPreScanMetadata && (
             <section className="mb-4">
