@@ -14,7 +14,13 @@ test("messages tutorial mirrors the contact directory and connected thread", () 
 
   assert.match(directory, /data-tutorial-tab="messages"[^>]*data-active="true"/);
   assert.match(directory, new RegExp(tutorialFixtures.messages.contactLabel));
-  assert.match(directory, /Contact Directory/);
-  assert.match(thread, /Conversation Thread|No messages yet/);
-  assert.match(thread, /Live updates connected/);
+  assert.match(directory, /People you can message/);
+  assert.match(directory, /Find a person by name/);
+  assert.match(directory, /aria-label="Message"/);
+  assert.match(directory, />Message</);
+  assert.doesNotMatch(directory, /Contact Directory|Total Contacts|Admin Contacts/);
+  assert.match(thread, /Chat with/);
+  assert.match(thread, /Connected/);
+  assert.match(thread, /aria-label="Send"/);
+  assert.match(thread, /Type your message/);
 });
