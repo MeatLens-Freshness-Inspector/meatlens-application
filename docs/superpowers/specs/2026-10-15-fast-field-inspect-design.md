@@ -14,6 +14,7 @@ This is a frontend-only usability and performance change. It does not add or cha
 - Start analysis automatically after an accepted camera image is returned.
 - Keep the retake path available when the image quality check fails or the result requires another sample.
 - Make repeated inspections at the same market location faster without requiring a repeated location choice.
+- Preserve the existing optional device GPS capture without making GPS or market-coordinate validation a capture prerequisite.
 - Keep the first mobile viewport focused on the active inspection task.
 - Prevent duplicate model warm-up work when the app shell and Inspect page initialize close together.
 
@@ -22,6 +23,7 @@ This is a frontend-only usability and performance change. It does not add or cha
 - Changing classification, confidence, protocol, or auto-save rules.
 - Moving safety checks after capture or allowing capture before the checklist is complete.
 - Changing backend APIs, database schema, Supabase migrations, or offline queue contracts.
+- Adding designated latitude/longitude fields to `market_locations` or an online geofence check; that is a separate backend/data contract.
 - Removing the legal scope reminder; it may move below the active workflow or become a secondary disclosure.
 - Adding a second workflow mode such as `Quick Inspect` versus `Detailed Inspect`.
 - Replacing the phone's native camera confirmation UI. The app can remove its own duplicate confirmation after the camera returns.
@@ -102,6 +104,17 @@ Remember the last selected configured market location in browser/device storage 
 - Make `Change location` open the existing selector without hiding or rewriting the selected value.
 
 Location memory is a frontend convenience only. The selected location still travels through the existing inspection payload when an inspection is saved.
+
+### Coordinate Boundary
+
+The current `market_locations` contract returns a name and identifiers, not designated coordinates. This fast-field pass therefore keeps the existing behavior:
+
+- The app requests the device's current GPS coordinates when a capture begins.
+- If GPS succeeds, those coordinates continue to be attached to the inspection through the existing payload.
+- If GPS is unavailable, times out, or the device is offline, the selected market name remains the usable location value and capture/save must continue.
+- No designated market coordinates, online proximity comparison, or database lookup is added in this pass.
+
+A future geofence feature may add designated market coordinates to the market-location API and database. That feature should define a cached reference set for offline use; it must not make offline inspection unusable merely because the server cannot be reached.
 
 ## Automatic Capture-To-Analysis Flow
 
