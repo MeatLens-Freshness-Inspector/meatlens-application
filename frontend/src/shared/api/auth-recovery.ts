@@ -10,6 +10,23 @@ function stripHashFromCurrentUrl(): void {
   window.history.replaceState(window.history.state, document.title, sanitizedUrl);
 }
 
+export function redirectRecoveryLinkToResetPassword(): void {
+  if (typeof window === "undefined") return;
+
+  const hashParams = parseHashParams(window.location.hash);
+  const isRecoveryLink = hashParams.get("type") === "recovery" && Boolean(hashParams.get("access_token"));
+
+  if (window.location.pathname !== "/" || !isRecoveryLink) {
+    return;
+  }
+
+  window.history.replaceState(
+    window.history.state,
+    document.title,
+    `/reset-password${window.location.search}${window.location.hash}`,
+  );
+}
+
 export function scrubSensitiveAuthHashFromUrl(): void {
   if (typeof window === "undefined") return;
 

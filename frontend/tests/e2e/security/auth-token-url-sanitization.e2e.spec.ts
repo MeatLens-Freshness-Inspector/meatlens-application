@@ -14,3 +14,10 @@ test("keeps reset-password recovery working while still removing hash tokens fro
   const currentUrl = new URL(page.url());
   expect(currentUrl.hash).toBe("");
 });
+
+test("routes root recovery links to the reset-password page", async ({ page }) => {
+  await page.goto("/#type=recovery&access_token=recovery-token");
+
+  await expect(page).toHaveURL(/\/reset-password$/);
+  await expect(page.getByRole("heading", { name: "New Password" })).toBeVisible();
+});

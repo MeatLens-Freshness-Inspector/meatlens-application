@@ -37,7 +37,7 @@ import {
   isDeveloperOptionsSessionExpired,
 } from "@/features/developer-tools";
 import { applyTheme } from "@/shared/lib/theme-preference";
-import { scrubSensitiveAuthHashFromUrl } from "@/shared/api";
+import { redirectRecoveryLinkToResetPassword, scrubSensitiveAuthHashFromUrl } from "@/shared/api";
 import { Capacitor } from "@capacitor/core";
 import LandingPage from "@/pages/public/landing-page";
 import { LoginPage, SignupPage } from "@/pages/auth";
@@ -80,6 +80,9 @@ const offlineSyncDependencies: OfflineSyncDependencies = {
 export function initializeAppRuntime() {
   // Start in light mode; the app router/auth layer will apply user preference from DB.
   applyTheme(false);
+  // Some recovery providers return to the site root; route those links before
+  // removing the token hash so the reset form remains the first visible page.
+  redirectRecoveryLinkToResetPassword();
   // Immediately clear auth tokens from URL fragments to avoid accidental leakage.
   scrubSensitiveAuthHashFromUrl();
   // Start ONNX model warmup as early as possible in app boot.

@@ -22,5 +22,6 @@ export type { HttpApiError } from "./api-error";
 export {
   clearStoredRecoveryAccessToken,
   getStoredRecoveryAccessToken,
+  redirectRecoveryLinkToResetPassword,
   scrubSensitiveAuthHashFromUrl,
 } from "./auth-recovery";
