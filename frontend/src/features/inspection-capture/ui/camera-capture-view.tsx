@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Camera, RotateCcw, Check, AlertTriangle, XCircle } from "lucide-react";
+import { Camera, RotateCcw, ScanLine, AlertTriangle, XCircle } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
 import { Button, buttonVariants } from "@/shared/ui";
@@ -321,7 +321,7 @@ export function CameraCaptureView({
               disabled={disabled || (captureQualityResult !== null && !captureQualityResult.canProceed)}
               className="w-full gap-2 rounded-xl min-[380px]:flex-1"
             >
-              <Check className="h-4 w-4" /> Use Photo
+              <ScanLine className="h-4 w-4" /> Analyze Sample
             </Button>
           </>
         ) : isStreaming ? (
