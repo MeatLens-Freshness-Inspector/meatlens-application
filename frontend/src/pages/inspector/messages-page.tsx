@@ -24,7 +24,6 @@ export default function MessagesPage() {
     messageStreamStatus,
     messageListRef,
     lastMessageRef,
-    contactStats,
     showContactsPanel,
     showThreadPanel,
     setDraftMessage,
@@ -64,13 +63,7 @@ export default function MessagesPage() {
     <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-24">
       <div className="mx-auto w-full max-w-6xl min-w-0 px-4 pt-4">
         {showMessagesHeader ? (
-          <MessagesHeader
-            isAdmin={isAdmin}
-            totalContacts={contactStats.total}
-            adminContacts={contactStats.adminContacts}
-            userContacts={contactStats.userContacts}
-            latestActivity={contactStats.latestActivity}
-          />
+          <MessagesHeader />
         ) : null}
 
         <div

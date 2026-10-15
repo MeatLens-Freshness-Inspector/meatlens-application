@@ -27,21 +27,22 @@ export function ContactsPanel({
   return (
     <section className="min-w-0 rounded-3xl border border-border/70 bg-card/92 p-4 lg:flex lg:max-h-[calc(100dvh-24rem)] lg:min-h-[560px] lg:flex-col">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-base font-semibold">Contact Directory</h2>
+        <h2 className="font-display text-base font-semibold">People you can message</h2>
         <div className="flex items-center gap-2">
           <span className="rounded-full border border-border/70 bg-background/55 px-3 py-1 text-[11px] uppercase tracking-widest text-muted-foreground">
-            {contacts.length} shown
+            {contacts.length} {contacts.length === 1 ? "person" : "people"}
           </span>
           <Button
             type="button"
             variant="outline"
-            size="icon"
-            className="h-8 w-8 rounded-xl"
+            size="sm"
+            className="h-10 gap-2 rounded-xl px-3"
             onClick={() => void onRefresh()}
             disabled={isLoadingContacts}
-            aria-label="Refresh messages"
+            aria-label="Refresh contacts"
           >
             <RefreshCw className={`h-4 w-4 ${isLoadingContacts ? "animate-spin" : ""}`} />
+            <span>Refresh contacts</span>
           </Button>
         </div>
       </div>
@@ -52,7 +53,8 @@ export function ContactsPanel({
           <input
             value={contactSearch}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search by name, email, code..."
+            placeholder="Find a person by name"
+            aria-label="Find a person by name"
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -110,6 +112,7 @@ export function ContactsPanel({
                 <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                   {formatTimestamp(contact.last_message_at)}
                 </p>
+                <p className="mt-2 text-sm font-semibold text-primary">Message</p>
               </button>
             );
           })
