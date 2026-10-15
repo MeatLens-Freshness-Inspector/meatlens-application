@@ -70,6 +70,7 @@ const InspectPageView = () => {
         <InspectionDisputeSection
           inspectionId={inspectPage.savedInspectionId}
           classification={inspectPage.result?.classification ?? "fresh"}
+          hasResult={Boolean(inspectPage.result)}
           isSubmitting={inspectPage.isSubmitDisputePending}
           isSubmitted={inspectPage.isDisputeSubmitted}
           onSubmit={inspectPage.onSubmitDispute}

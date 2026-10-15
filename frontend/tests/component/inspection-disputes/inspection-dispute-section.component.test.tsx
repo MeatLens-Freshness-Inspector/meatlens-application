@@ -44,19 +44,26 @@ function installDom(dom: JSDOM) {
   };
 }
 
-test("Inspect-tab dispute section stays hidden before an inspection is saved", async () => {
+test("Inspect-tab dispute section explains that saving enables disputes", async () => {
   const dom = new JSDOM("<!doctype html><html><body></body></html>");
   const restoreDom = installDom(dom);
   const { root, container } = await renderSection(dom, {
     inspectionId: null,
     classification: "fresh",
+    hasResult: true,
     isSubmitting: false,
     isSubmitted: false,
     onSubmit: () => undefined,
   });
 
   try {
-    assert.equal(container.textContent?.includes("Dispute result"), false);
+    assert.match(container.textContent ?? "", /Dispute result/);
+    assert.match(container.textContent ?? "", /Save the inspection first/);
+    const actionButton = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent?.includes("Dispute result"),
+    );
+    assert.ok(actionButton);
+    assert.equal(actionButton.disabled, true);
   } finally {
     await act(async () => root.unmount());
     restoreDom();
@@ -71,6 +78,7 @@ test("Inspect-tab dispute section submits the selected result and reason", async
   const { root, container } = await renderSection(dom, {
     inspectionId: "inspection-1",
     classification: "fresh",
+    hasResult: true,
     isSubmitting: false,
     isSubmitted: false,
     onSubmit: (input) => submissions.push(input),
@@ -125,6 +133,7 @@ test("Inspect-tab dispute section confirms a submitted dispute", async () => {
   const { root, container } = await renderSection(dom, {
     inspectionId: "inspection-1",
     classification: "fresh",
+    hasResult: true,
     isSubmitting: false,
     isSubmitted: true,
     onSubmit: () => undefined,

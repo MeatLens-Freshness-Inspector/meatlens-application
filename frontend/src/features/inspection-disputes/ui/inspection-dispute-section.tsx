@@ -7,6 +7,7 @@ import { Scale } from "lucide-react";
 type InspectionDisputeSectionProps = {
   inspectionId: string | null;
   classification: FreshnessClassification;
+  hasResult: boolean;
   isSubmitting: boolean;
   isSubmitted: boolean;
   onSubmit: (input: {
@@ -18,6 +19,7 @@ type InspectionDisputeSectionProps = {
 export function InspectionDisputeSection({
   inspectionId,
   classification,
+  hasResult,
   isSubmitting,
   isSubmitted,
   onSubmit,
@@ -33,7 +35,27 @@ export function InspectionDisputeSection({
     setReason("");
   }, [classification, inspectionId]);
 
-  if (!inspectionId) return null;
+  if (!inspectionId && !hasResult) return null;
+
+  if (!inspectionId) {
+    return (
+      <section className="mt-4 rounded-3xl border border-primary/25 bg-primary/5 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="flex items-center gap-1.5 text-xs font-display uppercase tracking-widest text-primary">
+              <Scale className="h-3.5 w-3.5" /> Dispute result
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Save the inspection first to dispute this result.
+            </p>
+          </div>
+          <Button type="button" size="sm" variant="outline" disabled>
+            Dispute result
+          </Button>
+        </div>
+      </section>
+    );
+  }
 
   if (isSubmitted) {
     return (
