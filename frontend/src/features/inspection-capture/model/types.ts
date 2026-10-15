@@ -21,6 +21,7 @@ export interface CameraCaptureProps {
   showModelInputPreview?: boolean;
   disableRoiSegmentation?: boolean;
   showCaptureConfirmAction?: boolean;
+  autoConfirmCapture?: boolean;
 }
 
 export type CaptureQualitySource = "canvas" | "file" | "cameraApp";

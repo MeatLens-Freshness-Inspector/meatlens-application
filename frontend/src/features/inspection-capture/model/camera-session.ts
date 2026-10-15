@@ -44,11 +44,13 @@ export function useCameraCapture({
   showModelInputPreview = true,
   disableRoiSegmentation = false,
   showCaptureConfirmAction = true,
+  autoConfirmCapture = false,
 }: CameraCaptureProps): CameraCaptureViewProps {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const capturedImageRef = useRef<HTMLImageElement>(null);
   const previewRequestIdRef = useRef(0);
+  const captureCommittedRef = useRef(false);
   const videoTrackRef = useRef<MediaStreamTrack | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -68,6 +70,21 @@ export function useCameraCapture({
     () => emptyCameraDeviceState().cameraControls,
   );
   const [captureQualityResult, setCaptureQualityResult] = useState<ImageQualityResult | null>(null);
+
+  const emitCapture = useCallback(
+    (file: File, source: "camera" | "file", guideBox: SquareGuideBox | null) => {
+      if (captureCommittedRef.current) return;
+
+      captureCommittedRef.current = true;
+      onCapture({
+        file,
+        guideBox,
+        source,
+        capturedAt: new Date().toISOString(),
+      });
+    },
+    [onCapture],
+  );
 
   const updateModelInputPreview = useCallback(async (sourceFile: File, guideBox: SquareGuideBox | null) => {
     const requestId = ++previewRequestIdRef.current;
@@ -189,6 +206,7 @@ export function useCameraCapture({
     resetCameraControls();
     setError(null);
     setIsStarting(true);
+    captureCommittedRef.current = false;
     setIsStreaming(true);
     setCapturedImage(null);
     setIsVideoReady(false);
@@ -317,6 +335,11 @@ export function useCameraCapture({
 
         const previewSourceFile = new File([blob], `preview-${Date.now()}.jpg`, { type: "image/jpeg" });
         setModelPreviewSourceFile(previewSourceFile);
+
+        if (autoConfirmCapture && qualityResult.canProceed) {
+          const captureFile = new File([blob], `inspection-${Date.now()}.jpg`, { type: "image/jpeg" });
+          emitCapture(captureFile, "camera", guideBox);
+        }
       },
       "image/jpeg",
       PREVIEW_EXPORT_QUALITY
@@ -327,7 +350,7 @@ export function useCameraCapture({
     setIsStreaming(false);
     setIsVideoReady(false);
     resetCameraControls();
-  }, [disabled, resetCameraControls, stream]);
+  }, [autoConfirmCapture, disabled, emitCapture, resetCameraControls, stream]);
 
   const handleCapturedImageLoad = useCallback(() => {
     if ((qualitySource !== "file" && qualitySource !== "cameraApp") || !uploadedFile || !capturedImageRef.current) {
@@ -354,7 +377,22 @@ export function useCameraCapture({
 
     setCaptureGuideBox(guideBox);
     void updateModelInputPreview(uploadedFile, guideBox);
-  }, [qualitySource, updateModelInputPreview, uploadedFile]);
+
+    if (
+      autoConfirmCapture &&
+      qualitySource === "cameraApp" &&
+      captureQualityResult?.canProceed
+    ) {
+      emitCapture(uploadedFile, "camera", guideBox);
+    }
+  }, [
+    autoConfirmCapture,
+    captureQualityResult,
+    emitCapture,
+    qualitySource,
+    updateModelInputPreview,
+    uploadedFile,
+  ]);
 
   useEffect(() => {
     if (!modelPreviewSourceFile) return;
@@ -388,12 +426,7 @@ export function useCameraCapture({
 
       if (uploadedFile) {
         const captureSource = qualitySource === "cameraApp" ? "camera" : "file";
-        onCapture({
-          file: uploadedFile,
-          guideBox: captureGuideBox,
-          source: captureSource,
-          capturedAt: new Date().toISOString(),
-        });
+        emitCapture(uploadedFile, captureSource, captureGuideBox);
       }
       return;
     }
@@ -404,22 +437,18 @@ export function useCameraCapture({
       (blob) => {
         if (blob) {
           const file = new File([blob], `inspection-${Date.now()}.jpg`, { type: "image/jpeg" });
-          onCapture({
-            file,
-            guideBox: captureGuideBox,
-            source: "camera",
-            capturedAt: new Date().toISOString(),
-          });
+          emitCapture(file, "camera", captureGuideBox);
         }
       },
       "image/jpeg",
       0.9
     );
-  }, [allowFileUpload, captureGuideBox, captureQualityResult, disabled, onCapture, qualitySource, uploadedFile]);
+  }, [allowFileUpload, captureGuideBox, captureQualityResult, disabled, emitCapture, qualitySource, uploadedFile]);
 
   const retake = useCallback(() => {
     if (disabled) return;
 
+    captureCommittedRef.current = false;
     stopCameraStream(stream);
     setStream(null);
     setIsStreaming(false);
@@ -437,6 +466,7 @@ export function useCameraCapture({
 
   const prepareCapturedFile = useCallback(
     async (file: File, source: "file" | "cameraApp", inputElement: HTMLInputElement) => {
+      captureCommittedRef.current = false;
       const legacyBypass = (window as Window & { __mockLegacyQualityAccepted?: boolean })
         .__mockLegacyQualityAccepted;
       if (!legacyBypass) {
@@ -520,7 +550,7 @@ export function useCameraCapture({
     allowFileUpload,
     allowInAppCamera,
     showModelInputPreview,
-    showCaptureConfirmAction,
+    showCaptureConfirmAction: showCaptureConfirmAction && !(autoConfirmCapture && qualitySource !== "file"),
     capturedImage,
     capturedImageRef,
     onCapturedImageLoad: handleCapturedImageLoad,

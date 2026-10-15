@@ -496,6 +496,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     capturedInput,
     inspectionDecisionSource,
     result,
+    !navigator.onLine || isModelReady,
     handleAnalyze,
     () => setIsImmediateAnalysisPending(false),
   );
@@ -658,9 +659,9 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     coordinateStatusText,
     inspectionDecisionSource,
     isAnalyzing,
+    isAnalysisPending: isImmediateAnalysisPending || isAnalyzing,
     isCaptureCommitted: Boolean(capturedInput),
     isAnalyzeBlockedByModel,
-    isAnalyzeDisabled: isAnalyzing || isAnalyzeBlockedByModel,
     isCaptureDisabled:
       saveStatus === "saving" ||
       createInspection.isPending ||
@@ -680,7 +681,6 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     showModelInputPreview: developerFlags.showModelInputPreview,
     disableRoiSegmentation,
     captureResetKey,
-    showAnalyzeAction: Boolean(capturedInput && !result && !isImmediateAnalysisPending && !isAnalyzing && inspectionDecisionSource !== "protocol_pre_scan"),
     showSaveActions: Boolean(result),
     captureStatusText: getCaptureStatusText(capturedInput),
     analysisStatusText: analysisState.analysisStatusText,
@@ -688,9 +688,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     confidenceSummaryClass,
     saveButtonLabel: getSaveButtonLabel(saveStatus),
     onPreScanFieldChange: handlePreScanFieldChange,
-    onSelectedLocationChange: setSelectedLocation,
+    onSelectedLocationChange: handleSelectedLocationChange,
     onCapture: handleCapture,
-    onAnalyze: handleAnalyze,
     onReset: handleReset,
     onSave: handleSave,
     onSubmitDispute: handleSubmitDispute,

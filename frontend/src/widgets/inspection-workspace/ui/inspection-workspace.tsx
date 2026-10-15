@@ -35,10 +35,9 @@ const InspectPageView = () => {
             isLocationSelectionDisabled={inspectPage.isLocationSelectionDisabled}
             isCaptureDisabled={inspectPage.isCaptureDisabled}
             isCaptureCommitted={inspectPage.isCaptureCommitted}
-            showAnalyzeAction={inspectPage.showAnalyzeAction}
-            isAnalyzeDisabled={inspectPage.isAnalyzeDisabled}
             isAnalyzeBlockedByModel={inspectPage.isAnalyzeBlockedByModel}
             isAnalyzing={inspectPage.isAnalyzing}
+            isAnalysisPending={inspectPage.isAnalysisPending}
             isDebugFileUploadEnabled={inspectPage.isDebugFileUploadEnabled}
             isInAppCameraEnabled={inspectPage.isInAppCameraEnabled}
             showModelInputPreview={inspectPage.showModelInputPreview}
@@ -46,7 +45,6 @@ const InspectPageView = () => {
             captureResetKey={inspectPage.captureResetKey}
             onSelectedLocationChange={inspectPage.onSelectedLocationChange}
             onCapture={inspectPage.onCapture}
-            onAnalyze={inspectPage.onAnalyze}
           />
 
           <InspectAnalysisSection

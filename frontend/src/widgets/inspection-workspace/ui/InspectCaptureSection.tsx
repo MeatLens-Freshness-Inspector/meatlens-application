@@ -1,5 +1,4 @@
 import { CameraCapture, type CapturedImagePayload } from "@/features/inspection-capture";
-import { Button } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import {
   Select,
@@ -8,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { Loader2, ScanLine, TestTube2 } from "lucide-react";
+import { Loader2, TestTube2 } from "lucide-react";
 
 type InspectCaptureSectionProps = {
   selectedLocation: string;
@@ -19,10 +18,9 @@ type InspectCaptureSectionProps = {
   isLocationSelectionDisabled: boolean;
   isCaptureDisabled: boolean;
   isCaptureCommitted: boolean;
-  showAnalyzeAction: boolean;
-  isAnalyzeDisabled: boolean;
   isAnalyzeBlockedByModel: boolean;
   isAnalyzing: boolean;
+  isAnalysisPending: boolean;
   isDebugFileUploadEnabled: boolean;
   isInAppCameraEnabled: boolean;
   showModelInputPreview: boolean;
@@ -30,7 +28,6 @@ type InspectCaptureSectionProps = {
   captureResetKey: number;
   onSelectedLocationChange: (value: string) => void;
   onCapture: (capture: CapturedImagePayload) => void;
-  onAnalyze: () => void;
 };
 
 export function InspectCaptureSection({
@@ -42,10 +39,9 @@ export function InspectCaptureSection({
   isLocationSelectionDisabled,
   isCaptureDisabled,
   isCaptureCommitted,
-  showAnalyzeAction,
-  isAnalyzeDisabled,
   isAnalyzeBlockedByModel,
   isAnalyzing,
+  isAnalysisPending,
   isDebugFileUploadEnabled,
   isInAppCameraEnabled,
   showModelInputPreview,
@@ -53,7 +49,6 @@ export function InspectCaptureSection({
   captureResetKey,
   onSelectedLocationChange,
   onCapture,
-  onAnalyze,
 }: InspectCaptureSectionProps) {
   return (
     <section className="min-w-0 rounded-3xl border border-border/70 bg-card/92 p-4">
@@ -105,33 +100,15 @@ export function InspectCaptureSection({
         showModelInputPreview={showModelInputPreview}
         disableRoiSegmentation={disableRoiSegmentation}
         showCaptureConfirmAction={!isCaptureCommitted}
+        autoConfirmCapture
       />
 
-      {showAnalyzeAction && (
-        <div className="mt-4">
-          <Button
-            onClick={onAnalyze}
-            disabled={isAnalyzeDisabled}
-            size="lg"
-            className="w-full gap-2 rounded-xl font-display uppercase tracking-wider"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Analyzing sample...
-              </>
-            ) : isAnalyzeBlockedByModel ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Preparing MobileNetV3...
-              </>
-            ) : (
-              <>
-                <ScanLine className="h-5 w-5" />
-                Analyze Sample
-              </>
-            )}
-          </Button>
+      {isAnalysisPending && (
+        <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl border border-primary/30 bg-[hsl(var(--primary)/0.08)] px-4 py-3 text-sm font-medium text-foreground">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          {isAnalyzeBlockedByModel && !isAnalyzing
+            ? "Getting the scan ready..."
+            : "Analyzing sample..."}
         </div>
       )}
     </section>

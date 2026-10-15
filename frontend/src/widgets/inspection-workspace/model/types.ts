@@ -18,9 +18,9 @@ export interface InspectPageViewModel {
   coordinateStatusText: string | null;
   inspectionDecisionSource: InspectionDecisionSource | null;
   isAnalyzing: boolean;
+  isAnalysisPending: boolean;
   isCaptureCommitted: boolean;
   isAnalyzeBlockedByModel: boolean;
-  isAnalyzeDisabled: boolean;
   isCaptureDisabled: boolean;
   isCreateInspectionPending: boolean;
   isDebugFileUploadEnabled: boolean;
@@ -36,7 +36,6 @@ export interface InspectPageViewModel {
   showModelInputPreview: boolean;
   disableRoiSegmentation: boolean;
   captureResetKey: number;
-  showAnalyzeAction: boolean;
   showSaveActions: boolean;
   captureStatusText: string;
   analysisStatusText: string;
@@ -46,7 +45,6 @@ export interface InspectPageViewModel {
   onPreScanFieldChange: (field: keyof InspectionPreScanForm, value: string) => void;
   onSelectedLocationChange: (value: string) => void;
   onCapture: (capture: CapturedImagePayload) => void;
-  onAnalyze: () => void;
   onReset: () => void;
   onSave: () => void;
   onSubmitDispute: (input: {

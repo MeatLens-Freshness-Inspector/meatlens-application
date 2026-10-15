@@ -19,10 +19,9 @@ test("renders a compact location change affordance and plain capture progress co
       isLocationSelectionDisabled={false}
       isCaptureDisabled={false}
       isCaptureCommitted={false}
-      showAnalyzeAction={false}
-      isAnalyzeDisabled={false}
       isAnalyzeBlockedByModel={false}
       isAnalyzing={false}
+      isAnalysisPending={false}
       isDebugFileUploadEnabled={false}
       isInAppCameraEnabled={false}
       showModelInputPreview={false}
@@ -30,7 +29,6 @@ test("renders a compact location change affordance and plain capture progress co
       captureResetKey={0}
       onSelectedLocationChange={() => undefined}
       onCapture={() => undefined}
-      onAnalyze={() => undefined}
     />,
   );
 

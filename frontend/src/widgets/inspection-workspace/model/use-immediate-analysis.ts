@@ -8,6 +8,7 @@ export function useImmediateAnalysis(
   capturedInput: CapturedImagePayload | null,
   inspectionDecisionSource: InspectionDecisionSource | null,
   result: AnalysisResult | null,
+  isReady: boolean,
   handleAnalyze: () => void | Promise<void>,
   clearPending: () => void,
 ) {
@@ -19,7 +20,17 @@ export function useImmediateAnalysis(
       return;
     }
 
+    if (!isReady) return;
+
     clearPending();
     void handleAnalyze();
-  }, [capturedInput, clearPending, handleAnalyze, inspectionDecisionSource, isPending, result]);
+  }, [
+    capturedInput,
+    clearPending,
+    handleAnalyze,
+    inspectionDecisionSource,
+    isPending,
+    isReady,
+    result,
+  ]);
 }

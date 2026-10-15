@@ -58,7 +58,7 @@ test("online analysis uses MobileNetV3 ONNX and exposes model confidence metadat
   await expect(page.getByRole("heading", { name: "Inspect" })).toBeVisible();
   await completePreScanChecklist(page);
   await uploadSamplePhoto(page);
-  await page.getByRole("button", { name: "Analyze Sample" }).click();
+  await expect(page.getByRole("button", { name: /Analyze Sample/i })).toHaveCount(0);
 
   await expect(page.getByText(/Source:\s*MobileNetV3 ONNX/i)).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/Model confidence:/i)).toBeVisible();
@@ -76,7 +76,6 @@ test("offline analysis allows rules-only fallback", async ({ context, page }) =>
   await completePreScanChecklist(page);
   await context.setOffline(true);
   await uploadSamplePhoto(page);
-  await page.getByRole("button", { name: "Analyze Sample" }).click();
 
   await expect(page.getByText(/Source:\s*MobileNetV3 ONNX/i)).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText(/Source:\s*Backend/i)).toHaveCount(0);
@@ -99,7 +98,6 @@ test("offline protocol failure queues a spoiled protocol result without AI analy
 
   await context.setOffline(true);
   await uploadSamplePhoto(page);
-  await page.getByRole("button", { name: "Analyze Sample" }).click();
 
   await expect(page.getByText(/protocol result: spoiled/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /Analyze Sample/i })).toHaveCount(0);
