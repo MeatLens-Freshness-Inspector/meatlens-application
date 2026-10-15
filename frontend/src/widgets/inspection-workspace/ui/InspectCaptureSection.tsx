@@ -18,6 +18,7 @@ type InspectCaptureSectionProps = {
   isPreScanChecklistComplete: boolean;
   isLocationSelectionDisabled: boolean;
   isCaptureDisabled: boolean;
+  isCaptureCommitted: boolean;
   showAnalyzeAction: boolean;
   isAnalyzeDisabled: boolean;
   isAnalyzeBlockedByModel: boolean;
@@ -40,6 +41,7 @@ export function InspectCaptureSection({
   isPreScanChecklistComplete,
   isLocationSelectionDisabled,
   isCaptureDisabled,
+  isCaptureCommitted,
   showAnalyzeAction,
   isAnalyzeDisabled,
   isAnalyzeBlockedByModel,
@@ -105,6 +107,7 @@ export function InspectCaptureSection({
         allowInAppCamera={isInAppCameraEnabled}
         showModelInputPreview={showModelInputPreview}
         disableRoiSegmentation={disableRoiSegmentation}
+        showCaptureConfirmAction={!isCaptureCommitted}
       />
 
       {showAnalyzeAction && (

@@ -18,6 +18,7 @@ export interface InspectPageViewModel {
   coordinateStatusText: string | null;
   inspectionDecisionSource: InspectionDecisionSource | null;
   isAnalyzing: boolean;
+  isCaptureCommitted: boolean;
   isAnalyzeBlockedByModel: boolean;
   isAnalyzeDisabled: boolean;
   isCaptureDisabled: boolean;

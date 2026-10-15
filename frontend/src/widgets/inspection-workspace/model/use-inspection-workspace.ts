@@ -81,6 +81,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   const [marketLocations, setMarketLocations] = useState<string[]>(FALLBACK_MARKET_LOCATIONS);
   const [selectedLocation, setSelectedLocation] = useState<string>(FALLBACK_MARKET_LOCATIONS[0] ?? "");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isImmediateAnalysisPending, setIsImmediateAnalysisPending] = useState(false);
   const [isModelReady, setIsModelReady] = useState<boolean>(() => !navigator.onLine || getAnalysisReady());
   const [saveStatus, setSaveStatus] = useState<InspectionSaveStatus>("idle");
   const [clientSubmissionId, setClientSubmissionId] = useState<string | null>(null);
@@ -322,6 +323,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     setInspectionDecisionSource(protocolTriggered ? "protocol_pre_scan" : null);
     queuedAtRef.current = null;
     const mockAnalysisResult = getMockOfflineAnalysisResult();
+    setIsImmediateAnalysisPending(!protocolTriggered && !mockAnalysisResult);
 
     void requestCurrentCoordinates().then((nextCoordinates) => {
       if (coordinateRequestIdRef.current !== requestId) {
@@ -448,6 +450,18 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     user,
   ]);
 
+  useEffect(() => {
+    if (!isImmediateAnalysisPending || !capturedInput) return;
+
+    if (inspectionDecisionSource === "protocol_pre_scan" || result) {
+      setIsImmediateAnalysisPending(false);
+      return;
+    }
+
+    setIsImmediateAnalysisPending(false);
+    void handleAnalyze();
+  }, [capturedInput, handleAnalyze, inspectionDecisionSource, isImmediateAnalysisPending, result]);
+
   const handleSave = useCallback(async () => {
     if (!result || !capturedInput?.file || saveLockRef.current || saveStatus === "saved" || saveStatus === "queued") {
       return;
@@ -552,6 +566,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     setCaptureResetKey((current) => current + 1);
     setCapturedInput(null);
     setResult(null);
+    setIsImmediateAnalysisPending(false);
     setPreScanForm(createEmptyPreScanForm());
     setCoordinates(null);
     setCoordinateStatus("idle");
@@ -605,6 +620,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     coordinateStatusText,
     inspectionDecisionSource,
     isAnalyzing,
+    isCaptureCommitted: Boolean(capturedInput),
     isAnalyzeBlockedByModel,
     isAnalyzeDisabled: isAnalyzing || isAnalyzeBlockedByModel,
     isCaptureDisabled:
@@ -626,7 +642,13 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     showModelInputPreview: developerFlags.showModelInputPreview,
     disableRoiSegmentation,
     captureResetKey,
-    showAnalyzeAction: Boolean(capturedInput && !result && inspectionDecisionSource !== "protocol_pre_scan"),
+    showAnalyzeAction: Boolean(
+      capturedInput &&
+        !result &&
+        !isImmediateAnalysisPending &&
+        !isAnalyzing &&
+        inspectionDecisionSource !== "protocol_pre_scan",
+    ),
     showSaveActions: Boolean(result),
     captureStatusText: getCaptureStatusText(capturedInput),
     analysisStatusText: analysisState.analysisStatusText,

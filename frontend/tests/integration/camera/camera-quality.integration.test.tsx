@@ -19,6 +19,7 @@ function buildProps(
     allowFileUpload: false,
     allowInAppCamera: false,
     showModelInputPreview: false,
+    showCaptureConfirmAction: true,
     capturedImage: "data:image/jpeg;base64,dGVzdA==",
     capturedImageRef: createRef<HTMLImageElement>(),
     onCapturedImageLoad: () => undefined,

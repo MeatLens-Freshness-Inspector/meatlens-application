@@ -41,6 +41,7 @@ const InspectPageView = () => {
             isPreScanChecklistComplete={inspectPage.isPreScanChecklistComplete}
             isLocationSelectionDisabled={inspectPage.isLocationSelectionDisabled}
             isCaptureDisabled={inspectPage.isCaptureDisabled}
+            isCaptureCommitted={inspectPage.isCaptureCommitted}
             showAnalyzeAction={inspectPage.showAnalyzeAction}
             isAnalyzeDisabled={inspectPage.isAnalyzeDisabled}
             isAnalyzeBlockedByModel={inspectPage.isAnalyzeBlockedByModel}

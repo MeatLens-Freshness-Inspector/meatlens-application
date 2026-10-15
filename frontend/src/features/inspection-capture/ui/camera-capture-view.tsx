@@ -18,6 +18,7 @@ export function CameraCaptureView({
   allowFileUpload,
   allowInAppCamera,
   showModelInputPreview,
+  showCaptureConfirmAction,
   capturedImage,
   capturedImageRef,
   onCapturedImageLoad,
@@ -316,13 +317,15 @@ export function CameraCaptureView({
             <Button variant="outline" onClick={onRetake} disabled={disabled} className="w-full gap-2 rounded-xl min-[380px]:flex-1">
               <RotateCcw className="h-4 w-4" /> Retake
             </Button>
-            <Button
-              onClick={onConfirmCapture}
-              disabled={disabled || (captureQualityResult !== null && !captureQualityResult.canProceed)}
-              className="w-full gap-2 rounded-xl min-[380px]:flex-1"
-            >
-              <ScanLine className="h-4 w-4" /> Analyze Sample
-            </Button>
+            {showCaptureConfirmAction && (
+              <Button
+                onClick={onConfirmCapture}
+                disabled={disabled || (captureQualityResult !== null && !captureQualityResult.canProceed)}
+                className="w-full gap-2 rounded-xl min-[380px]:flex-1"
+              >
+                <ScanLine className="h-4 w-4" /> Analyze Sample
+              </Button>
+            )}
           </>
         ) : isStreaming ? (
           <Button onClick={onCapturePhoto} size="lg" className="w-full gap-2 rounded-xl" disabled={disabled || !isVideoReady}>

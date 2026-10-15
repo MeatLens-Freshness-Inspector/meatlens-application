@@ -286,7 +286,7 @@ test.describe("Camera quality integration", () => {
     await expect(page.getByTestId("quality-banner")).not.toBeVisible();
   });
 
-  test("fail quality: Analyze Sample button does not appear (inference blocked)", async ({ page }) => {
+  test("fail quality: only Retake remains actionable while Analyze Sample stays disabled", async ({ page }) => {
     await installQualityMock(page, "fail");
     await seedSignedInSession(page, { userId: "user-1" });
     await mockCommonApi(page, { userId: "user-1" });
@@ -295,11 +295,11 @@ test.describe("Camera quality integration", () => {
     await completePreScanChecklist(page);
     await uploadViaCameraApp(page);
 
-    // The Analyze Sample button must be disabled so onCapture is never called
-    await expect(page.getByRole("button", { name: /analyze sample/i })).toBeDisabled();
-
-    // Therefore the Analyze Sample button should not appear
-    await expect(page.getByRole("button", { name: /analyze sample/i })).not.toBeVisible();
+    // The single Analyze Sample action must remain disabled so onCapture is never called.
+    const analyzeSampleBtn = page.getByRole("button", { name: /analyze sample/i });
+    await expect(analyzeSampleBtn).toHaveCount(1);
+    await expect(analyzeSampleBtn).toBeDisabled();
+    await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
   });
 
   test("in-app cam path: quality banner appears after capture with warning result", async ({ page }) => {

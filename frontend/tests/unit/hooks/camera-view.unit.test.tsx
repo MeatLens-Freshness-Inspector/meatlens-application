@@ -19,6 +19,7 @@ function buildProps(
     allowFileUpload: false,
     allowInAppCamera: false,
     showModelInputPreview: true,
+    showCaptureConfirmAction: true,
     capturedImage: null,
     capturedImageRef: createRef<HTMLImageElement>(),
     onCapturedImageLoad: () => undefined,
@@ -94,4 +95,18 @@ test("CameraCaptureView renders the captured warning state without losing action
   assert.match(markup, /Analyze Sample/);
   assert.doesNotMatch(markup, /Use Photo/);
   assert.match(markup, /224x224 model input/);
+});
+
+test("CameraCaptureView hides the confirmation action after the capture is committed", () => {
+  const markup = renderToStaticMarkup(
+    <CameraCaptureView
+      {...buildProps({
+        capturedImage: "data:image/jpeg;base64,dGVzdA==",
+        showCaptureConfirmAction: false,
+      })}
+    />,
+  );
+
+  assert.match(markup, /Retake/);
+  assert.doesNotMatch(markup, /Analyze Sample/);
 });

@@ -20,6 +20,7 @@ export interface CameraCaptureProps {
   allowInAppCamera?: boolean;
   showModelInputPreview?: boolean;
   disableRoiSegmentation?: boolean;
+  showCaptureConfirmAction?: boolean;
 }
 
 export type CaptureQualitySource = "canvas" | "file" | "cameraApp";
@@ -30,6 +31,7 @@ export interface CameraCaptureViewProps {
   allowFileUpload: boolean;
   allowInAppCamera: boolean;
   showModelInputPreview: boolean;
+  showCaptureConfirmAction: boolean;
   capturedImage: string | null;
   capturedImageRef: RefObject<HTMLImageElement | null>;
   onCapturedImageLoad: () => void;
