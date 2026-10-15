@@ -46,10 +46,10 @@ export function ThreadPanel({
   onReconnect,
 }: ThreadPanelProps) {
   const connectionCopy = connectionStatus === "connected"
-    ? "Live updates connected"
+    ? "Connected"
     : connectionStatus === "connecting"
-      ? "Connecting live updates"
-      : "Live updates disconnected";
+      ? "Connecting"
+      : "Offline";
 
   return (
     <section className="min-w-0 rounded-3xl border border-border/70 bg-card/92 p-4 lg:flex lg:max-h-[calc(100dvh-24rem)] lg:min-h-[560px] lg:flex-col">
@@ -67,7 +67,9 @@ export function ThreadPanel({
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          <h2 className="font-display text-base font-semibold">Conversation Thread</h2>
+          <h2 className="font-display text-base font-semibold">
+            {selectedContact ? `Chat with ${formatContactName(selectedContact)}` : "Choose someone to message"}
+          </h2>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <span
@@ -88,9 +90,6 @@ export function ThreadPanel({
               Reconnect
             </Button>
           ) : null}
-          <span className="rounded-full border border-border/70 bg-background/55 px-3 py-1 text-[11px] uppercase tracking-widest text-muted-foreground">
-            {messages.length} messages
-          </span>
         </div>
       </div>
 
@@ -195,9 +194,10 @@ export function ThreadPanel({
               onChange={(event) => onDraftChange(event.target.value)}
               placeholder={
                 selectedContact
-                  ? `Message ${formatContactName(selectedContact)}...`
-                  : "Select a contact to message"
+                  ? "Type your message"
+                  : "Choose someone to message"
               }
+              aria-label={selectedContact ? "Type your message" : "Choose someone to message"}
               disabled={!selectedContact || isSendingMessage}
               maxLength={2000}
               className="h-11 rounded-xl bg-background/85"

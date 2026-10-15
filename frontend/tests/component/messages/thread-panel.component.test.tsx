@@ -31,14 +31,53 @@ function renderStatus(connectionStatus: "connecting" | "connected" | "disconnect
 test("thread panel exposes an accessible disconnected state and reconnect action", () => {
   const html = renderStatus("disconnected");
   assert.match(html, /role="status"/);
-  assert.match(html, /Live updates disconnected/);
+  assert.match(html, /Offline/);
   assert.match(html, />Reconnect</);
 });
 
 test("thread panel reports a connected stream without a reconnect action", () => {
   const html = renderStatus("connected");
-  assert.match(html, /Live updates connected/);
+  assert.match(html, /Connected/);
   assert.doesNotMatch(html, />Reconnect</);
+});
+
+test("thread panel reports a connecting stream plainly", () => {
+  assert.match(renderStatus("connecting"), /Connecting/);
+});
+
+test("uses plain chat labels and a direct message composer", () => {
+  const html = renderToStaticMarkup(
+    <ThreadPanel
+      currentUserId="user-1"
+      selectedContact={{
+        id: "user-2",
+        full_name: "Chat Contact",
+        email: null,
+        inspector_code: null,
+        location: null,
+        role: "user",
+        last_message_preview: null,
+        last_message_at: null,
+      }}
+      messages={[]}
+      isDesktop
+      isLoadingMessages={false}
+      isSendingMessage={false}
+      draftMessage=""
+      lastMessageRef={createRef<HTMLDivElement>()}
+      connectionStatus="connected"
+      onBack={() => {}}
+      onDraftChange={() => {}}
+      onSendMessage={() => {}}
+      onReconnect={() => {}}
+    />,
+  );
+
+  assert.match(html, /Chat with Chat Contact/);
+  assert.match(html, /Connected/);
+  assert.match(html, /aria-label="Type your message"/);
+  assert.match(html, /Type your message/);
+  assert.doesNotMatch(html, /Conversation Thread|Live updates connected/);
 });
 
 const messages = [
