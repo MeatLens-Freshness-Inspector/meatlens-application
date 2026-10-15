@@ -436,7 +436,7 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
             </section>
           )}
 
-          
+
         </div>
       </DialogContent>
     </Dialog>
