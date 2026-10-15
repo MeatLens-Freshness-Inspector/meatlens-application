@@ -8,6 +8,7 @@ export type ApiDocsCategoryId =
   | "upload"
   | "chat"
   | "market-locations"
+  | "documentation-photos"
   | "audit-logs"
   | "developer-options"
   | "developer-dashboard"

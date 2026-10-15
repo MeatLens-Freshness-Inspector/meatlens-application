@@ -23,6 +23,7 @@ route files under `backend/src/modules/*/presentation`.
 | `/chat` | assistant chat | Authenticated and rate-limited |
 | `/user-chat` | contacts, conversation messages, SSE events, send message | Authenticated; contacts and messages are participant-scoped |
 | `/market-locations` | list, create, delete | Reads may be public to the app; mutations require admin access |
+| `/documentation-photos` | list and save plain camera photos | Authenticated; idempotent and separate from inspections |
 | `/audit-logs` | list and create | Authenticated; writes are encrypted and actor-attributed |
 | `/developer-options` | unlock and verify | Developer-option policy and token checks |
 | `/developer-dashboard` | overview, datasets, disputes, exports, classifications, training runs/import | Developer-only except explicitly admin-gated dispute review operations |

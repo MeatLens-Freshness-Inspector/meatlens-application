@@ -19,6 +19,7 @@ test("API docs category counts match the registered backend route audit", () => 
     upload: 2,
     chat: 1,
     "market-locations": 3,
+    "documentation-photos": 2,
     "audit-logs": 2,
     "developer-options": 2,
     "developer-dashboard": 14,

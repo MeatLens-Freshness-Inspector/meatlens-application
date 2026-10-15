@@ -16,6 +16,7 @@ import userChatRoutes from "../modules/chat/presentation/user-chat-routes";
 import { createDefaultModelAccuracyRouter } from "../modules/model-accuracy/presentation/routes";
 import { createPublicKeyRouter } from "../modules/transport/presentation/public-key-routes";
 import type { TransportKeyStore } from "../modules/transport/infrastructure/TransportKeyStore";
+import documentationPhotoRoutes from "../modules/documentation-photos/presentation/routes";
 
 export interface BackendRoute {
   readonly prefix: string;
@@ -45,6 +46,7 @@ export function createBackendRoutes(
     { prefix: "/api/auth", router: authRoutes },
     { prefix: "/api/chat", router: chatRoutes },
     { prefix: "/api/market-locations", router: marketLocationRoutes },
+    { prefix: "/api/documentation-photos", router: documentationPhotoRoutes },
     { prefix: "/api/audit-logs", router: auditLogRoutes },
 
     // Elevated/admin and model-observability surfaces.

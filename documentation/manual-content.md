@@ -551,6 +551,7 @@ Keep Supabase access in infrastructure adapters. Presentation and application co
 | `/api/chat` | Assistant chat |
 | `/api/user-chat` | User-to-user messaging |
 | `/api/market-locations` | Market-location administration |
+| `/api/documentation-photos` | Plain camera documentation photos and offline sync |
 | `/api/audit-logs` | Audit-event persistence and reads |
 | `/api/developer-options` | Developer options and model/runtime controls |
 | `/api/developer-dashboard` | Datasets, exports, disputes, metrics, and training runs |

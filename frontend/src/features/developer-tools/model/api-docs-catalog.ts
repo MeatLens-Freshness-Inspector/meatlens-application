@@ -20,6 +20,7 @@ export const API_DOCS_CATEGORIES: ApiDocsCategory[] = [
   { id: "upload", label: "Uploads", routePrefix: "/api/upload" },
   { id: "chat", label: "Chat", routePrefix: "/api/chat" },
   { id: "market-locations", label: "Market Locations", routePrefix: "/api/market-locations" },
+  { id: "documentation-photos", label: "Documentation Photos", routePrefix: "/api/documentation-photos" },
   { id: "audit-logs", label: "Audit Logs", routePrefix: "/api/audit-logs" },
   { id: "developer-options", label: "Developer Options", routePrefix: "/api/developer-options" },
   { id: "developer-dashboard", label: "Developer Dashboard", routePrefix: "/api/developer-dashboard" },
@@ -195,6 +196,11 @@ const auditLogOperations: ApiDocsOperation[] = [
   operation("audit-logs-create", "audit-logs", "POST", "/audit-logs", "Create an audit log event", "Admin", { body: jsonBody('{"event_type":"","event_time":"","actor":{},"source":{},"data":{}}') }),
 ];
 
+const documentationPhotoOperations: ApiDocsOperation[] = [
+  operation("documentation-photos-list", "documentation-photos", "GET", "/documentation-photos", "List saved documentation photos", "Authenticated", { parameters: [queryParameter("limit", "Maximum photos to return", "100")] }),
+  operation("documentation-photos-create", "documentation-photos", "POST", "/documentation-photos", "Save a documentation photo record", "Authenticated", { body: jsonBody('{"client_submission_id":"","image_url":"","captured_at":""}') }),
+];
+
 const developerOptionOperations: ApiDocsOperation[] = [
   operation("developer-options-unlock", "developer-options", "POST", "/developer-options/unlock", "Unlock developer options", "Public", { body: jsonBody('{"password":""}', ["password"]) }),
   operation("developer-options-verify", "developer-options", "POST", "/developer-options/verify", "Verify a developer options token", "Public", { body: jsonBody('{"token":""}', ["token"]) }),
@@ -264,6 +270,7 @@ export const API_DOCS_OPERATIONS: ApiDocsOperation[] = [
   ...uploadOperations,
   ...chatOperations,
   ...marketLocationOperations,
+  ...documentationPhotoOperations,
   ...auditLogOperations,
   ...developerOptionOperations,
   ...developerDashboardOperations,
