@@ -129,6 +129,17 @@ async function installQualityMock(page: Page, scenario: QualityScenario): Promis
   }, scenario);
 }
 
+async function installImageDecodeFailure(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "createImageBitmap", {
+      configurable: true,
+      value: async () => {
+        throw new Error("simulated image decode failure");
+      },
+    });
+  });
+}
+
 /**
  * Uploads a file through the "Use Camera App" input.
  */
@@ -199,7 +210,7 @@ test.describe("Camera quality integration", () => {
     await expect(page.getByTestId("quality-banner")).toContainText(/warning|quality|lighting/i);
 
     // Retake remains available, but the old second Analyze Sample tap is gone.
-    await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
+    await expect(page.getByRole("button", { name: /retake/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /analyze sample/i })).toHaveCount(0);
   });
 
@@ -285,6 +296,21 @@ test.describe("Camera quality integration", () => {
     await expect(page.getByTestId("quality-banner")).not.toBeVisible();
   });
 
+  test("native image decode failure keeps the capture actionable", async ({ page }) => {
+    await installImageDecodeFailure(page);
+    await seedSignedInSession(page, { userId: "user-1" });
+    await mockCommonApi(page, { userId: "user-1" });
+
+    await page.goto("/inspect");
+    await completePreScanChecklist(page);
+    await uploadViaCameraApp(page);
+
+    await expect(page.locator("img[alt='Captured']")).toBeVisible();
+    await expect(page.getByTestId("quality-banner")).toContainText(/unable to check image quality/i);
+    await expect(page.getByRole("button", { name: /analyze sample/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
+  });
+
   test("fail quality: only Retake remains actionable after automatic quality rejection", async ({ page }) => {
     await installQualityMock(page, "fail");
     await seedSignedInSession(page, { userId: "user-1" });
@@ -320,6 +346,6 @@ test.describe("Camera quality integration", () => {
     // Quality banner should show for a warning result
     await expect(page.getByTestId("quality-banner")).toBeVisible({ timeout: 3_000 });
     await expect(page.getByRole("button", { name: /analyze sample/i })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
+    await expect(page.getByRole("button", { name: /retake/i })).toBeVisible();
   });
 });

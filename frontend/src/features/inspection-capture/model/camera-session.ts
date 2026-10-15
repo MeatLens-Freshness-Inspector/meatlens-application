@@ -491,15 +491,22 @@ export function useCameraCapture({
       previewRequestIdRef.current += 1;
 
       let qualityResult: ImageQualityResult | null = null;
-      if (!legacyBypass) {
-        const legacyQuality = await assessFileQuality(file);
-        if (!legacyQuality.accepted) {
-          qualityResult = createLegacyQualityFailure(legacyQuality.reasons);
-          toast.error(legacyQuality.reasons.join(" "));
+      try {
+        if (!legacyBypass) {
+          const legacyQuality = await assessFileQuality(file);
+          if (!legacyQuality.accepted) {
+            qualityResult = createLegacyQualityFailure(legacyQuality.reasons);
+            toast.error(legacyQuality.reasons.join(" "));
+          }
         }
-      }
 
-      qualityResult ??= await resolveFileImageQuality(file);
+        qualityResult ??= await resolveFileImageQuality(file);
+      } catch {
+        qualityResult = createLegacyQualityFailure([
+          "Unable to check image quality. Please retake the photo.",
+        ]);
+        toast.error("Unable to check image quality. Please retake the photo.");
+      }
       setCaptureQualityResult(qualityResult);
 
       const reader = new FileReader();

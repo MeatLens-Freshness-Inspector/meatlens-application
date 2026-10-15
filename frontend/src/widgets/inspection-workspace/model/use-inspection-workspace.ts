@@ -581,6 +581,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     isCaptureDisabled:
       saveStatus === "saving" ||
       createInspection.isPending ||
+      isImmediateAnalysisPending ||
+      isAnalyzing ||
       !isPreScanChecklistComplete,
     isCreateInspectionPending: createInspection.isPending,
     isDebugFileUploadEnabled,
