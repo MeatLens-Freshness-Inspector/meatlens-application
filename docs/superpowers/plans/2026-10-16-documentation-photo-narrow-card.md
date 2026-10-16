@@ -26,7 +26,7 @@
 - Consumes: existing `seedSignedInSession`, `mockCommonApi`, `page`, and `@playwright/test` helpers.
 - Produces: a regression test that proves the documentation-photo action stays within its card at the target widths.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add this test after the existing narrow inspection-card test. It mocks one saved documentation-photo API response, opens history at each target width, and compares the rendered bounding boxes:
 
@@ -78,7 +78,7 @@ test("keeps documentation photo actions inside narrow cards from 300px to 350px"
 
 The route response uses the production `DocumentationPhoto` shape, so the test renders a real saved documentation-photo card rather than testing class strings alone.
 
-- [ ] **Step 2: Run the new test and verify the expected failure**
+- [x] **Step 2: Run the new test and verify the expected failure**
 
 Run from `frontend/`:
 
@@ -97,7 +97,7 @@ Expected: the test reaches the bounding-box assertion and fails because the exis
 - Consumes: the existing `DocumentationPhotoListItem` entry state and `View details` handler.
 - Produces: unchanged documentation-card behavior with a wrapped, contained mobile action.
 
-- [ ] **Step 1: Apply the minimal responsive class change**
+- [x] **Step 1: Apply the minimal responsive class change**
 
 Change the metrics wrapper from:
 
@@ -125,7 +125,7 @@ className="mt-2 h-9 w-full min-w-0 basis-full rounded-lg px-3 text-xs sm:basis-a
 
 Do not alter the click handler, disabled state, dialog, image preview, or documentation details.
 
-- [ ] **Step 2: Run the regression and focused unit tests**
+- [x] **Step 2: Run the regression and focused unit tests**
 
 Run from `frontend/`:
 
@@ -136,7 +136,7 @@ npx tsx --test tests/unit/widgets/history/documentation-photo-section.unit.test.
 
 Expected: the browser regression passes at 300px, 340px, and 350px, and all documentation-photo unit tests pass.
 
-- [ ] **Step 3: Run the focused history journey and repository gates**
+- [x] **Step 3: Run the focused history journey and repository gates**
 
 Run:
 
@@ -149,7 +149,7 @@ git diff --check
 
 Expected: all tests pass, typecheck exits 0, lint exits 0 with only the repository's pre-existing warnings, and `git diff --check` reports no whitespace errors.
 
-- [ ] **Step 4: Commit the implementation**
+- [x] **Step 4: Commit the implementation**
 
 Stage only the implementation and regression test:
 
