@@ -61,3 +61,34 @@ test("warns when the meat inspection certificate is expired", () => {
     /Certificate is expired\. Any captured meat will be automatically classified as spoiled, and AI analysis will be skipped\./,
   );
 });
+
+test("collapses completed pre-scan details behind a review control", () => {
+  const markup = renderToStaticMarkup(
+    <InspectPreScanSection
+      form={form}
+      isBypassed={false}
+      isChecklistComplete={true}
+      isLocked={false}
+      onFieldChange={() => undefined}
+    />,
+  );
+
+  assert.match(markup, /Review checklist/);
+  assert.match(markup, /aria-expanded="false"/);
+  assert.doesNotMatch(markup, /id="stall-number"/);
+});
+
+test("keeps incomplete pre-scan details open", () => {
+  const markup = renderToStaticMarkup(
+    <InspectPreScanSection
+      form={{ ...form, stallNumber: "" }}
+      isBypassed={false}
+      isChecklistComplete={false}
+      isLocked={false}
+      onFieldChange={() => undefined}
+    />,
+  );
+
+  assert.doesNotMatch(markup, /Review checklist/);
+  assert.match(markup, /id="stall-number"/);
+});

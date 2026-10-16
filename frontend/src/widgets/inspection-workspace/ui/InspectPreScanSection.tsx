@@ -1,4 +1,5 @@
-import { ShieldAlert } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronDown, ChevronUp, ShieldAlert } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
@@ -85,6 +86,11 @@ export function InspectPreScanSection({
 }: InspectPreScanSectionProps) {
   const areInputsDisabled = isLocked || isBypassed;
   const certificateExpired = isCertificateExpired(form.meatExpiryDate);
+  const [isExpanded, setIsExpanded] = useState(!isChecklistComplete);
+
+  useEffect(() => {
+    setIsExpanded(!isChecklistComplete);
+  }, [isChecklistComplete]);
 
   return (
     <section className="mt-4 rounded-3xl border border-border/70 bg-card/92 p-4">
@@ -100,16 +106,24 @@ export function InspectPreScanSection({
             will skip AI and record the inspection as spoiled.
           </p>
         </div>
-        <span className="rounded-full border border-border/70 bg-background/55 px-3 py-1 text-[11px] uppercase tracking-widest text-muted-foreground">
-          {isBypassed ? "Developer Bypass" : isChecklistComplete ? "Checklist Complete" : "Required"}
-        </span>
-      </div>
-
-      {isBypassed && (
-        <div className="mt-4 rounded-2xl border border-warning/30 bg-[hsl(var(--warning)/0.08)] px-4 py-3 text-xs text-foreground">
-          Developer bypass active. Pre-scan answers are optional for this session.
+        <div className="flex items-center gap-2">
+          <span className="rounded-full border border-border/70 bg-background/55 px-3 py-1 text-[11px] uppercase tracking-widest text-muted-foreground">
+            {isBypassed ? "Developer Bypass" : isChecklistComplete ? "Checklist Complete" : "Required"}
+          </span>
+          {(isChecklistComplete || isBypassed) && (
+            <button
+              type="button"
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-border/70 bg-background/55 px-3 text-xs font-medium text-foreground transition-colors hover:bg-background"
+              aria-controls="inspect-pre-scan-fields"
+              aria-expanded={isExpanded}
+              onClick={() => setIsExpanded((expanded) => !expanded)}
+            >
+              {isExpanded ? "Hide checklist" : "Review checklist"}
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {certificateExpired && (
         <div
@@ -121,7 +135,15 @@ export function InspectPreScanSection({
         </div>
       )}
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      {isExpanded && (
+        <div id="inspect-pre-scan-fields" className="mt-4">
+          {isBypassed && (
+            <div className="mb-4 rounded-2xl border border-warning/30 bg-[hsl(var(--warning)/0.08)] px-4 py-3 text-xs text-foreground">
+              Developer bypass active. Pre-scan answers are optional for this session.
+            </div>
+          )}
+
+          <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-2">
           <Label
             htmlFor="stall-number"
@@ -221,7 +243,9 @@ export function InspectPreScanSection({
           disabled={areInputsDisabled}
           onFieldChange={onFieldChange}
         />
-      </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
