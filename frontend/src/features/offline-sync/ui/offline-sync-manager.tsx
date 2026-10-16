@@ -162,13 +162,9 @@ async function processScan(
       : scan.analysisResult ?? await dependencies.analyzeOffline(imageFile, scan.meatType);
   const shouldRecommendRetake = result.confidence_score < FORCE_RETAKE_CONFIDENCE_THRESHOLD;
 
-  // Upload image to Supabase Storage (non-fatal).
-  let imageUrl: string | null = null;
-  try {
-    imageUrl = await dependencies.uploadInspectionImage(imageFile);
-  } catch {
-    // Save without image rather than blocking.
-  }
+  // An inspection without its evidence photo is incomplete. Keep the scan in
+  // the durable queue when upload fails so it can retry without losing the image.
+  const imageUrl = await dependencies.uploadInspectionImage(imageFile);
 
   // Compute regulatory_compliance from the three source boolean checks.
   // NULL when pre-scan was skipped; TRUE only when all three pass.

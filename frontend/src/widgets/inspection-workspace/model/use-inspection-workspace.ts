@@ -560,10 +560,22 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     try {
       let imageUrl: string | null = null;
       try {
-        imageUrl = await uploadClient.uploadInspectionImage(capturedInput.file, user.id);
+        imageUrl = await uploadClient.uploadInspectionImage(capturedInput.file);
       } catch (uploadError) {
         console.error("Image upload failed:", uploadError);
-        toast.warning("Image upload failed, saving without image");
+        try {
+          const queuedAt = queuedAtRef.current ?? new Date().toISOString();
+          queuedAtRef.current = queuedAt;
+          await persistPendingScan(submissionId, capturedInput, queuedAt, result, coordinates);
+          setSaveStatus("queued");
+          toast.info("Inspection saved on this phone. It will sync with its photo when the connection is ready.");
+        } catch (queueError) {
+          saveLockRef.current = false;
+          setSaveStatus("idle");
+          console.error("Inspection image queue error:", uploadError, queueError);
+          toast.error("Could not save the inspection photo. Please try again.");
+        }
+        return;
       }
 
       const createdInspection = await createInspection.mutateAsync(
