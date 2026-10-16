@@ -108,3 +108,20 @@ test("failed quality disables the confirm action and keeps retake available", ()
   assert.doesNotMatch(markup, /Use Photo/);
   assert.match(markup, /disabled=""/);
 });
+
+test("keeps advanced camera controls collapsed until requested", () => {
+  const markup = renderToStaticMarkup(
+    <CameraCaptureView
+      {...buildProps({
+        capturedImage: null,
+        isStreaming: true,
+        isVideoReady: true,
+        torchSupported: true,
+      })}
+    />,
+  );
+
+  assert.match(markup, /Camera settings/);
+  assert.match(markup, /aria-expanded="false"/);
+  assert.doesNotMatch(markup, /Flash Off/);
+});

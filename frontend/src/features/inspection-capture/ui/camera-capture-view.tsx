@@ -1,6 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-import { Camera, RotateCcw, ScanLine, AlertTriangle, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  Camera,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
+  ScanLine,
+  Settings2,
+  XCircle,
+} from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
 import { Button, buttonVariants } from "@/shared/ui";
@@ -49,6 +58,15 @@ export function CameraCaptureView({
   onFileInput,
   onCameraAppInput,
 }: CameraCaptureViewProps) {
+  const [isCameraSettingsOpen, setIsCameraSettingsOpen] = useState(false);
+  const hasCameraSettings = torchSupported || hasManualControlSupport;
+
+  useEffect(() => {
+    if (!isStreaming || !isVideoReady) {
+      setIsCameraSettingsOpen(false);
+    }
+  }, [isStreaming, isVideoReady]);
+
   return (
     <div className={cn("flex flex-col items-center gap-4", className)}>
       <div className="relative w-full overflow-hidden rounded-2xl border border-border/70 bg-secondary aspect-[4/3] shadow-inner">
@@ -139,26 +157,42 @@ export function CameraCaptureView({
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      {isStreaming && isVideoReady && (
+      {isStreaming && isVideoReady && hasCameraSettings && (
         <div className="w-full rounded-2xl border border-border/70 bg-background/65 p-3 shadow-sm">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-[11px] font-display uppercase tracking-widest text-muted-foreground">Camera Controls</p>
-            {torchSupported && (
-              <Button
-                type="button"
-                size="sm"
-                variant={flashEnabled ? "default" : "outline"}
-                className="h-7 rounded-full px-3 text-[10px] uppercase tracking-wide"
-                onClick={onTorchToggle}
-              >
-                {flashEnabled ? "Flash On" : "Flash Off"}
-              </Button>
-            )}
-          </div>
+          <button
+            type="button"
+            className="flex w-full items-center justify-between gap-2 text-left text-sm font-medium text-foreground"
+            aria-controls="camera-settings-panel"
+            aria-expanded={isCameraSettingsOpen}
+            onClick={() => setIsCameraSettingsOpen((open) => !open)}
+          >
+            <span className="inline-flex items-center gap-2">
+              <Settings2 className="h-4 w-4 text-muted-foreground" />
+              Camera settings
+            </span>
+            {isCameraSettingsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
 
-          {hasManualControlSupport ? (
-            <>
-              <div className="grid gap-3 sm:grid-cols-2">
+          {isCameraSettingsOpen && (
+            <div id="camera-settings-panel" className="mt-3">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-[11px] font-display uppercase tracking-widest text-muted-foreground">Camera Controls</p>
+                {torchSupported && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={flashEnabled ? "default" : "outline"}
+                    className="h-7 rounded-full px-3 text-[10px] uppercase tracking-wide"
+                    onClick={onTorchToggle}
+                  >
+                    {flashEnabled ? "Flash On" : "Flash Off"}
+                  </Button>
+                )}
+              </div>
+
+              {hasManualControlSupport ? (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-2">
                 {cameraControls.focusModeOptions.length > 0 && (
                   <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
                     Focus Mode
@@ -259,13 +293,15 @@ export function CameraCaptureView({
                     <span className="text-[10px] text-foreground">{formatControlValue(cameraControls.zoom)}</span>
                   </label>
                 )}
-              </div>
-              <p className="mt-2 text-[10px] text-muted-foreground">
-                Hardware support varies. Aperture is exposed only when the camera driver and browser provide it.
-              </p>
-            </>
-          ) : (
-            <p className="text-xs text-muted-foreground">Manual camera controls are unavailable on this device/browser.</p>
+                  </div>
+                  <p className="mt-2 text-[10px] text-muted-foreground">
+                    Hardware support varies. Aperture is exposed only when the camera driver and browser provide it.
+                  </p>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">Manual camera controls are unavailable on this device/browser.</p>
+              )}
+            </div>
           )}
         </div>
       )}
