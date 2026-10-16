@@ -46,6 +46,50 @@ test("keeps the open record action inside the inspection card from 300px to 350p
   }
 });
 
+test("keeps documentation photo actions inside narrow cards from 300px to 350px", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, { userId: "user-1" });
+  await page.route("**/api/documentation-photos**", async (route) => {
+    await fulfillEncryptedRoute(route, {
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          id: "documentation-photo-1",
+          user_id: "user-1",
+          client_submission_id: "submission-documentation-photo-1",
+          image_url: "https://example.test/documentation-photo.jpg",
+          location: "Ikot Palengke",
+          location_latitude: null,
+          location_longitude: null,
+          stall_number: "A-12",
+          captured_at: "2026-10-16T08:00:00.000Z",
+          created_at: "2026-10-16T08:00:00.000Z",
+          updated_at: "2026-10-16T08:00:00.000Z",
+        },
+      ]),
+    });
+  });
+
+  for (const width of [300, 340, 350]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/history");
+
+    const card = page.getByTestId("documentation-photo-card-layout").first();
+    const viewDetails = card.getByRole("button", { name: "View details" });
+    await expect(card).toBeVisible();
+    await expect(viewDetails).toBeVisible();
+
+    const cardBox = await card.boundingBox();
+    const viewDetailsBox = await viewDetails.boundingBox();
+    expect(cardBox).not.toBeNull();
+    expect(viewDetailsBox).not.toBeNull();
+    expect(viewDetailsBox!.x).toBeGreaterThanOrEqual(cardBox!.x);
+    expect(viewDetailsBox!.x + viewDetailsBox!.width)
+      .toBeLessThanOrEqual(cardBox!.x + cardBox!.width);
+  }
+});
+
 test("history query does not run when no user is signed in", async ({ page }) => {
   let inspectionCalls = 0;
 

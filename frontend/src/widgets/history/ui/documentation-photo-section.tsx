@@ -212,7 +212,7 @@ function DocumentationPhotoListItem({ entry }: { entry: DocumentationPhotoEntry 
           )}
         </div>
 
-        <div className="col-span-2 flex items-end justify-between gap-3 border-t border-border/60 pt-2 sm:col-span-1 sm:block sm:border-t-0 sm:pt-0 sm:text-right">
+        <div className="col-span-2 flex min-w-0 flex-wrap items-end justify-between gap-3 border-t border-border/60 pt-2 sm:col-span-1 sm:block sm:border-t-0 sm:pt-0 sm:text-right">
           <p className="font-display text-lg font-bold text-muted-foreground">—</p>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">no analysis</p>
           <p className="mt-1 flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
@@ -223,7 +223,7 @@ function DocumentationPhotoListItem({ entry }: { entry: DocumentationPhotoEntry 
             type="button"
             variant="outline"
             size="sm"
-            className="mt-2 h-9 w-full rounded-lg px-3 text-xs sm:w-auto"
+            className="mt-2 h-9 w-full min-w-0 basis-full rounded-lg px-3 text-xs sm:basis-auto sm:w-auto"
             onClick={() => setIsPreviewOpen(true)}
             disabled={!imageUrl}
           >
