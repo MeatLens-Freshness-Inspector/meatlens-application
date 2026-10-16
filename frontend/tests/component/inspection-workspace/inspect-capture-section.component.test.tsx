@@ -12,7 +12,6 @@ test("renders a compact location change affordance and plain capture progress co
   const markup = renderToStaticMarkup(
     <InspectCaptureSection
       selectedLocation="Old Market"
-      locationDisplayLabel="Old Market"
       coordinateStatusText={null}
       marketLocations={["Old Market", "New Market"]}
       isPreScanChecklistComplete={true}
@@ -34,6 +33,7 @@ test("renders a compact location change affordance and plain capture progress co
 
   assert.match(markup, /Open Camera/);
   assert.match(markup, /Change location/);
+  assert.doesNotMatch(markup, /Saved to report:/);
   assert.doesNotMatch(markup, /MobileNetV3/);
 });
 
@@ -41,7 +41,6 @@ test("announces automatic analysis progress in plain language", () => {
   const markup = renderToStaticMarkup(
     <InspectCaptureSection
       selectedLocation="Old Market"
-      locationDisplayLabel="Old Market"
       coordinateStatusText={null}
       marketLocations={["Old Market", "New Market"]}
       isPreScanChecklistComplete={true}

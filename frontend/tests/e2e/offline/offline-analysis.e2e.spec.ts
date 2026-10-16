@@ -56,6 +56,8 @@ test("online analysis uses MobileNetV3 ONNX and exposes model confidence metadat
 
   await page.goto("/inspect");
   await expect(page.getByRole("heading", { name: "Inspect" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Analysis Output" })).toHaveCount(0);
+  await expect(page.getByText(/Dispute result/i)).toHaveCount(0);
   await completePreScanChecklist(page);
   await uploadSamplePhoto(page);
   await expect(page.getByRole("button", { name: /Analyze Sample/i })).toHaveCount(0);
@@ -107,8 +109,8 @@ test("offline protocol failure queues a spoiled protocol result without AI analy
   await expect(page.getByRole("button", { name: /New Scan/i })).toBeVisible();
 
   await page.getByRole("button", { name: /New Scan/i }).click();
-  await expect(page.getByText(/Analysis will appear here after the photo is checked/i)).toBeVisible();
-  await expect(page.getByText(/Saved to report:\s*Old Market/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Analysis Output" })).toHaveCount(0);
+  await expect(page.getByText("Old Market", { exact: true }).first()).toBeVisible();
 
   const queuedScan = await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {

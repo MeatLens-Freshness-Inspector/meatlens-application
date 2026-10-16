@@ -9,6 +9,7 @@ import { InspectScopeReminder } from "./InspectScopeReminder";
 
 const InspectPageView = () => {
   const inspectPage = useInspectPage();
+  const showAnalysisOutput = Boolean(inspectPage.result) && !inspectPage.isPhotoOnlyMode;
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-24">
@@ -25,11 +26,12 @@ const InspectPageView = () => {
             onFieldChange={inspectPage.onPreScanFieldChange}
           />}
 
-        <div className={`mt-4 grid min-w-0 gap-4 ${inspectPage.isPhotoOnlyMode ? "lg:grid-cols-1" : "lg:grid-cols-[1.05fr_0.95fr]"}`}>
+        <div
+          className={`mt-4 grid min-w-0 gap-4 ${showAnalysisOutput ? "lg:grid-cols-[1.05fr_0.95fr]" : "lg:grid-cols-1"}`}
+        >
           <InspectCaptureSection
             mode={inspectPage.captureMode}
             selectedLocation={inspectPage.selectedLocation}
-            locationDisplayLabel={inspectPage.locationDisplayLabel}
             coordinateStatusText={inspectPage.coordinateStatusText}
             marketLocations={inspectPage.marketLocations}
             isPreScanChecklistComplete={inspectPage.isPreScanChecklistComplete}
@@ -51,7 +53,7 @@ const InspectPageView = () => {
             onCapture={inspectPage.onCapture}
           />
 
-          {!inspectPage.isPhotoOnlyMode && <InspectAnalysisSection
+          {showAnalysisOutput && <InspectAnalysisSection
             result={inspectPage.result}
             inspectionDecisionSource={inspectPage.inspectionDecisionSource}
             showDetailedResults={inspectPage.showDetailedResults}
@@ -72,14 +74,16 @@ const InspectPageView = () => {
 
         <InspectScopeReminder />
 
-        <InspectionDisputeSection
-          inspectionId={inspectPage.savedInspectionId}
-          classification={inspectPage.result?.classification ?? "fresh"}
-          hasResult={Boolean(inspectPage.result)}
-          isSubmitting={inspectPage.isSubmitDisputePending}
-          isSubmitted={inspectPage.isDisputeSubmitted}
-          onSubmit={inspectPage.onSubmitDispute}
-        />
+        {inspectPage.savedInspectionId && (
+          <InspectionDisputeSection
+            inspectionId={inspectPage.savedInspectionId}
+            classification={inspectPage.result?.classification ?? "fresh"}
+            hasResult={Boolean(inspectPage.result)}
+            isSubmitting={inspectPage.isSubmitDisputePending}
+            isSubmitted={inspectPage.isDisputeSubmitted}
+            onSubmit={inspectPage.onSubmitDispute}
+          />
+        )}
       </div>
     </div>
   );

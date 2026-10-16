@@ -14,7 +14,6 @@ import { InspectCaptureModeSection } from "./InspectCaptureModeSection";
 type InspectCaptureSectionProps = {
   selectedLocation: string;
   mode?: InspectionCaptureMode;
-  locationDisplayLabel: string;
   coordinateStatusText: string | null;
   marketLocations: string[];
   isPreScanChecklistComplete: boolean;
@@ -39,7 +38,6 @@ type InspectCaptureSectionProps = {
 export function InspectCaptureSection({
   selectedLocation,
   mode = "analyze",
-  locationDisplayLabel,
   coordinateStatusText,
   marketLocations,
   isPreScanChecklistComplete,
@@ -87,9 +85,6 @@ export function InspectCaptureSection({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-xs font-medium text-foreground">
-          Saved to report: {locationDisplayLabel || selectedLocation || "--"}
-        </p>
         {coordinateStatusText && (
           <p className="text-[11px] text-muted-foreground">{coordinateStatusText}</p>
         )}
