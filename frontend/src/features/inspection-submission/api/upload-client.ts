@@ -2,6 +2,26 @@ import { createAuthHeaders } from "@/shared/api/auth-headers";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import { UPLOAD_REQUEST_TIMEOUT_MS, fetchWithTimeout } from "@/shared/api";
 
+export function resolveUploadedInspectionImageUrl(payload: unknown): string {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Inspection image upload did not return a usable image URL");
+  }
+
+  const record = payload as Record<string, unknown>;
+  const imageUrl = typeof record.imageUrl === "string"
+    ? record.imageUrl
+    : typeof record.image_url === "string"
+      ? record.image_url
+      : "";
+  const normalizedImageUrl = imageUrl.trim();
+
+  if (!normalizedImageUrl) {
+    throw new Error("Inspection image upload did not return a usable image URL");
+  }
+
+  return normalizedImageUrl;
+}
+
 export class UploadClient {
   private static instance: UploadClient;
 
@@ -38,8 +58,7 @@ export class UploadClient {
       throw new Error(error.error || `Upload failed: ${res.statusText}`);
     }
 
-    const data = await res.json();
-    return data.imageUrl;
+    return resolveUploadedInspectionImageUrl(await res.json());
   }
 }
 
