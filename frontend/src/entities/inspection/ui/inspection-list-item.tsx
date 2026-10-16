@@ -99,7 +99,7 @@ export function InspectionListItem({ inspection, onClick, onSelect, className }:
 
         <div
           data-testid="inspection-metrics"
-          className="col-span-2 flex items-end justify-between gap-3 border-t border-border/60 pt-2 sm:col-span-1 sm:block sm:border-t-0 sm:pt-0 sm:text-right"
+          className="col-span-2 flex min-w-0 flex-wrap items-end justify-between gap-3 border-t border-border/60 pt-2 sm:col-span-1 sm:block sm:border-t-0 sm:pt-0 sm:text-right"
         >
           <p className={cn("font-display text-lg font-bold", confidenceTextClass)}>{inspection.confidence_score}%</p>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">confidence</p>
@@ -112,7 +112,7 @@ export function InspectionListItem({ inspection, onClick, onSelect, className }:
             data-testid="inspection-open-record"
             variant="outline"
             size="sm"
-            className="mt-2 h-9 w-full rounded-lg px-3 text-xs sm:w-auto"
+            className="mt-2 h-9 w-full min-w-0 basis-full rounded-lg px-3 text-xs sm:basis-auto sm:w-auto"
             onClick={(event) => {
               event.stopPropagation();
               onSelect?.(inspection);

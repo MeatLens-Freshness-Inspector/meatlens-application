@@ -23,6 +23,29 @@ test("signed-in history fetches inspections scoped to the current user", async (
   expect(inspectionRequest?.url).toContain("scope=mine");
 });
 
+test("keeps the open record action inside the inspection card from 300px to 350px", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, { userId: "user-1" });
+
+  for (const width of [300, 340, 350]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/history");
+
+    const card = page.getByTestId("inspection-card-layout").first();
+    const openRecord = page.getByTestId("inspection-open-record").first();
+    await expect(card).toBeVisible();
+    await expect(openRecord).toBeVisible();
+
+    const cardBox = await card.boundingBox();
+    const openRecordBox = await openRecord.boundingBox();
+    expect(cardBox).not.toBeNull();
+    expect(openRecordBox).not.toBeNull();
+
+    expect(openRecordBox!.x).toBeGreaterThanOrEqual(cardBox!.x);
+    expect(openRecordBox!.x + openRecordBox!.width).toBeLessThanOrEqual(cardBox!.x + cardBox!.width);
+  }
+});
+
 test("history query does not run when no user is signed in", async ({ page }) => {
   let inspectionCalls = 0;
 
