@@ -8,7 +8,7 @@ import { InspectionTimelineSection } from "../../../src/widgets/history";
 
 Object.assign(globalThis, { React });
 
-test("presents saved records with plain search and status controls", () => {
+test("keeps record search visible while hiding secondary status filters", () => {
   const markup = renderToStaticMarkup(
     <InspectionTimelineSection
       activeFilter="all"
@@ -27,7 +27,8 @@ test("presents saved records with plain search and status controls", () => {
   );
 
   assert.match(markup, /Saved inspections/);
-  assert.match(markup, /Find a record by meat or place/);
-  assert.match(markup, /Show results/);
+  assert.match(markup, /Find a saved record/);
+  assert.match(markup, /Filter results/);
+  assert.doesNotMatch(markup, /id="inspection-status"/);
   assert.doesNotMatch(markup, /Export PDF/);
 });

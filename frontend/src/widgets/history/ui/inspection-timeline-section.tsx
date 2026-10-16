@@ -1,7 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/shared/ui";
 import { InspectionListItem } from "@/entities/inspection";
-import { Loader2, ClipboardList, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Loader2,
+  ClipboardList,
+  Search,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+} from "lucide-react";
 import type { Inspection } from "@/entities/inspection";
 import type { FilterOption } from "../model/types";
 import { HISTORY_FILTER_OPTIONS } from "../model/history-page";
@@ -35,6 +43,9 @@ export function InspectionTimelineSection({
   onPreviousPage,
   onSearchTextChange,
 }: InspectionTimelineSectionProps) {
+  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+  const activeFilterLabel = HISTORY_FILTER_OPTIONS.find((option) => option.key === activeFilter)?.label;
+
   return (
     <section className="min-w-0 rounded-3xl border border-border/70 bg-card/92 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -45,40 +56,64 @@ export function InspectionTimelineSection({
       </div>
 
       <div className="mt-3 grid gap-2 rounded-2xl border border-border/70 bg-background/50 p-2 sm:grid-cols-[minmax(0,1fr)_minmax(10rem,14rem)] sm:items-end">
-        <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-background/70 px-2 py-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <label htmlFor="history-search" className="sr-only">
-            Find a record by meat or place
+        <div className="space-y-1">
+          <label htmlFor="history-search" className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            Find a saved record
           </label>
-          <input
-            id="history-search"
-            value={searchText}
-            onChange={(event) => onSearchTextChange(event.target.value)}
-            placeholder="Find a record by meat or place"
-            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-          />
+          <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border/70 bg-background/70 px-2 py-2">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <input
+              id="history-search"
+              value={searchText}
+              onChange={(event) => onSearchTextChange(event.target.value)}
+              placeholder="Search by meat or place"
+              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
         </div>
 
-        <div className="space-y-1">
-          <label
-            htmlFor="inspection-status"
-            className="text-[10px] uppercase tracking-widest text-muted-foreground"
-          >
-            Show results
-          </label>
-          <select
-            id="inspection-status"
-            value={activeFilter}
-            onChange={(event) => onActiveFilterChange(event.target.value as FilterOption)}
-            className="h-10 w-full rounded-lg border border-border/70 bg-background/80 px-3 text-sm capitalize outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {HISTORY_FILTER_OPTIONS.map((option) => (
-              <option key={option.key} value={option.key}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <button
+          type="button"
+          className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border/70 bg-background/70 px-3 py-2 text-left"
+          aria-controls="history-filter-controls"
+          aria-expanded={isFilterExpanded}
+          onClick={() => setIsFilterExpanded((expanded) => !expanded)}
+        >
+          <span className="flex min-w-0 flex-col">
+            <span className="text-sm font-medium">Filter results</span>
+            <span className="truncate text-xs text-muted-foreground">
+              {activeFilter === "all" ? "All saved results" : activeFilterLabel}
+            </span>
+          </span>
+          {isFilterExpanded ? (
+            <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+          )}
+        </button>
+
+        {isFilterExpanded && (
+          <div id="history-filter-controls" className="space-y-1 sm:col-start-2">
+            <label
+              htmlFor="inspection-status"
+              className="text-[10px] uppercase tracking-widest text-muted-foreground"
+            >
+              Show results
+            </label>
+            <select
+              id="inspection-status"
+              value={activeFilter}
+              onChange={(event) => onActiveFilterChange(event.target.value as FilterOption)}
+              className="h-10 w-full rounded-lg border border-border/70 bg-background/80 px-3 text-sm capitalize outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {HISTORY_FILTER_OPTIONS.map((option) => (
+                <option key={option.key} value={option.key}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="mt-3 space-y-3">
@@ -90,7 +125,7 @@ export function InspectionTimelineSection({
           <div className="flex flex-col items-center justify-center rounded-2xl border border-border/70 bg-background/55 py-16 text-muted-foreground">
             <ClipboardList className="mb-3 h-12 w-12" />
             <p className="font-display text-sm">No saved inspections found</p>
-            <p className="mt-1 text-xs">Try another search or result status.</p>
+            <p className="mt-1 text-xs">Try another search or open Filter results.</p>
           </div>
         ) : (
           <>
