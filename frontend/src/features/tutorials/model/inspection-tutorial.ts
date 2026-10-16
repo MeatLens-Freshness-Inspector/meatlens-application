@@ -351,7 +351,7 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
       sectionTitle: "History demo",
       stepTitle: "Find a saved inspection",
       instruction:
-        "Use the search if needed, then tap Open record to review a saved inspection. Report tools stay visible below the list: without a date, export all saved inspections.",
+        "Search is ready when you need it. Tap Open record to review a saved inspection. Open Filter results, Show documentation photos, or Show totals and trends only when you need those details; without a date, export all saved inspections.",
       sceneTitle: "History",
       sceneSubtitle: "Saved inspections",
       hotspotLabel: "Open record",
@@ -371,7 +371,12 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
         {
           id: "history-back",
           title: "Result filter",
-          description: "Use Show results only when you need a freshness status filter.",
+          description: "Open Filter results only when you need a freshness status filter.",
+        },
+        {
+          id: "history-photos",
+          title: "Documentation photos",
+          description: "Open Show documentation photos when you need stall photos without analysis.",
         },
         {
           id: "history-report",
@@ -380,8 +385,8 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
         },
         {
           id: "history-totals",
-          title: "Inspection totals",
-          description: "Review the saved-inspection totals below the report controls.",
+          title: "Totals and trends",
+          description: "Open Show totals and trends when you need classification or monthly activity details.",
         },
       ],
     },
@@ -451,7 +456,7 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
       sectionTitle: "History demo",
       stepTitle: "Export all saved inspections",
       instruction:
-        "The report tools stay visible below the saved records. Tap Export all inspections as PDF to include every saved inspection, or choose a date first when you only need one day.",
+        "The report tools stay visible below the saved records. Tap Export all inspections as PDF to include every saved inspection, or choose a date first when you only need one day. Documentation photos and totals stay collapsed until you ask to see them.",
       sceneTitle: "History",
       sceneSubtitle: "Report and totals",
       hotspotLabel: "Export all inspections as PDF",
@@ -470,8 +475,8 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
         },
         {
           id: "history-totals",
-          title: "Inspection totals",
-          description: "Review the saved-inspection totals below the report controls.",
+          title: "Totals and trends",
+          description: "Open Show totals and trends when you need classification or monthly activity details.",
         },
       ],
     },

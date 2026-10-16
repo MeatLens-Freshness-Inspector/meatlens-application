@@ -12,13 +12,18 @@ test("history tutorial mirrors the simplified saved-record flow", () => {
   assert.match(markup, /data-tutorial-tab="history"[^>]*data-active="true"/);
   assert.match(markup, new RegExp(tutorialFixtures.history.recordLabel));
   assert.match(markup, /Saved inspections/);
-  assert.match(markup, /Find a record by meat or place/);
+  assert.match(markup, /Find a saved record/);
+  assert.match(markup, /Filter results/);
+  assert.match(markup, /Documentation photos/);
+  assert.match(markup, /Show documentation photos/);
   assert.match(markup, /Open record/);
   assert.match(markup, /Export a report/);
   assert.match(markup, /Without a date, this includes all saved inspections/);
   assert.match(markup, /Choose a date to export one day/);
   assert.match(markup, /Export all inspections as PDF/);
-  assert.match(markup, /Inspection totals/);
+  assert.match(markup, /Show totals and trends/);
+  assert.doesNotMatch(markup, /Classification Mix/);
+  assert.doesNotMatch(markup, /Recent Activity by Month/);
   assert.doesNotMatch(markup, /More options/);
 
   const detailMarkup = renderToStaticMarkup(

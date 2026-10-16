@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft, ClipboardList, Hash, MapPin } from "lucide-react";
+import { ArrowLeft, ChevronDown, ClipboardList, Hash, MapPin } from "lucide-react";
 import { tutorialFixtures } from "../../model/tutorial-fixtures";
 import type { TutorialStepDefinition } from "../../model/inspection-tutorial";
 import { MockHotspot } from "../mock-hotspot";
@@ -29,11 +29,18 @@ export function HistoryMockScene({ step, onAdvance }: HistoryMockSceneProps) {
         <div className="flex flex-col gap-2 p-3">
           <div className="rounded-2xl border border-border/70 bg-card/90 p-3">
             <p className="font-display text-[10px] font-semibold">Saved inspections</p>
-            <div className="mt-2 rounded-xl border border-border/70 bg-background/70 px-2 py-2 text-[9px] text-muted-foreground">
-              Find a record by meat or place
+            <div className="mt-2 space-y-1">
+              <p className="text-[8px] uppercase tracking-widest text-muted-foreground">Find a saved record</p>
+              <div className="rounded-xl border border-border/70 bg-background/70 px-2 py-2 text-[9px] text-muted-foreground">
+                Search by meat or place
+              </div>
             </div>
-            <div className="mt-2 rounded-xl border border-border/70 bg-background/70 px-2 py-2 text-[9px] text-muted-foreground">
-              Show results: All results
+            <div className="mt-2 flex items-center justify-between rounded-xl border border-border/70 bg-background/70 px-2 py-2">
+              <div>
+                <p className="text-[9px] font-semibold">Filter results</p>
+                <p className="text-[8px] text-muted-foreground">All saved results</p>
+              </div>
+              <ChevronDown className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
             </div>
           </div>
 
@@ -67,6 +74,15 @@ export function HistoryMockScene({ step, onAdvance }: HistoryMockSceneProps) {
           </MockHotspot>
 
           <section className="rounded-2xl border border-border/70 bg-card/90 p-3">
+            <p className="font-display text-[10px] font-semibold">Documentation photos</p>
+            <p className="mt-1 text-[8px] text-muted-foreground">Photos are hidden until requested.</p>
+            <div className="mt-2 flex items-center justify-between rounded-xl border border-border/70 bg-background/70 px-2 py-2 text-[9px] font-semibold">
+              <span>Show documentation photos</span>
+              <ChevronDown className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-border/70 bg-card/90 p-3">
             <p className="font-display text-[10px] font-semibold">Export a report</p>
             <p className="mt-1 text-[8px] leading-relaxed text-muted-foreground">
               Without a date, this includes all saved inspections.
@@ -87,8 +103,13 @@ export function HistoryMockScene({ step, onAdvance }: HistoryMockSceneProps) {
           </section>
 
           <section className="rounded-2xl border border-border/70 bg-card/90 p-3">
-            <p className="font-display text-[10px] font-semibold">Inspection totals</p>
-            <p className="mt-1 text-[8px] text-muted-foreground">Fresh, warning, and spoiled results are summarized here.</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-display text-[10px] font-semibold">Show totals and trends</p>
+                <p className="mt-1 text-[8px] text-muted-foreground">Classification and monthly activity</p>
+              </div>
+              <ChevronDown className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+            </div>
           </section>
         </div>
       ) : (
