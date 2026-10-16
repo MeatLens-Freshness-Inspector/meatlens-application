@@ -75,6 +75,9 @@ test("keeps documentation photo actions inside narrow cards from 300px to 350px"
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/history");
 
+    await expect(page.getByTestId("documentation-photo-card-layout")).toHaveCount(0);
+    await page.getByRole("button", { name: "Show documentation photos" }).click();
+
     const card = page.getByTestId("documentation-photo-card-layout").first();
     const viewDetails = card.getByRole("button", { name: "View details" });
     await expect(card).toBeVisible();

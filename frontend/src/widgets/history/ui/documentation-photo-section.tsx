@@ -268,8 +268,7 @@ export function DocumentationPhotoSection({ photos, pendingPhotos }: Documentati
     ].sort((left, right) => getCaptureTimestamp(right.capturedAt) - getCaptureTimestamp(left.capturedAt)),
     [pendingPhotos, photos],
   );
-  const visibleEntries = isExpanded ? entries : entries.slice(0, 3);
-  const hasMoreEntries = entries.length > visibleEntries.length;
+  const visibleEntries = isExpanded ? entries : [];
 
   return (
     <section
@@ -297,32 +296,32 @@ export function DocumentationPhotoSection({ photos, pendingPhotos }: Documentati
         <p className="mt-3 text-sm text-muted-foreground">No documentation photos yet.</p>
       ) : (
         <>
-          <div className="mt-3 space-y-3">
-            {visibleEntries.map((entry) => (
-              <DocumentationPhotoListItem key={entry.key} entry={entry} />
-            ))}
-          </div>
-          {(hasMoreEntries || isExpanded) && (
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-3 h-10 w-full rounded-xl"
-              onClick={() => setIsExpanded((expanded) => !expanded)}
-              aria-expanded={isExpanded}
-            >
-              {isExpanded ? (
-                <>
-                  <ChevronUp className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Show fewer documentation photos
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Show all documentation photos
-                </>
-              )}
-            </Button>
+          {isExpanded && (
+            <div className="mt-3 space-y-3">
+              {visibleEntries.map((entry) => (
+                <DocumentationPhotoListItem key={entry.key} entry={entry} />
+              ))}
+            </div>
           )}
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-3 h-10 w-full rounded-xl"
+            onClick={() => setIsExpanded((expanded) => !expanded)}
+            aria-expanded={isExpanded}
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="mr-2 h-4 w-4" aria-hidden="true" />
+                Hide documentation photos
+              </>
+            ) : (
+              <>
+                <ChevronDown className="mr-2 h-4 w-4" aria-hidden="true" />
+                Show documentation photos
+              </>
+            )}
+          </Button>
         </>
       )}
     </section>
