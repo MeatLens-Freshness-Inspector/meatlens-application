@@ -29,7 +29,7 @@ const baseProps = {
   onReportDayChange: () => {},
 };
 
-test("keeps report export and inspection totals visible without a hidden menu", () => {
+test("keeps report export visible while hiding totals and trends until requested", () => {
   const markup = renderToStaticMarkup(
     <HistoryMoreOptions
       {...baseProps}
@@ -43,10 +43,10 @@ test("keeps report export and inspection totals visible without a hidden menu", 
   assert.match(markup, /Without a date, this includes all saved inspections/);
   assert.match(markup, /Export all inspections as PDF/);
   assert.match(markup, /Choose a date to export one day/);
-  assert.match(markup, /Inspection totals/);
+  assert.match(markup, /Show totals and trends/);
   assert.doesNotMatch(markup, /More options/);
-  assert.match(markup, /Classification Mix/);
-  assert.match(markup, /Recent Activity by Month/);
+  assert.doesNotMatch(markup, /Classification Mix/);
+  assert.doesNotMatch(markup, /Recent Activity by Month/);
 });
 
 test("explains that a selected date limits the exported PDF", () => {

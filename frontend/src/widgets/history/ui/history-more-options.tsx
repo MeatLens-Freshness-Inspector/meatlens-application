@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button, ExportLoadingOverlay, Input } from "@/shared/ui";
 import type { ExportProgress } from "@/shared/lib/use-export-task";
 import type { FreshnessClassification } from "@/entities/inspection";
@@ -33,6 +35,8 @@ export function HistoryMoreOptions({
   onExportDetailedPdf,
   onReportDayChange,
 }: HistoryMoreOptionsProps) {
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+
   return (
     <section
       className="relative min-w-0 rounded-3xl border border-border/70 bg-card/92"
@@ -104,19 +108,41 @@ export function HistoryMoreOptions({
           )}
         </section>
 
-        <section aria-labelledby="history-totals-heading">
-          <h2 id="history-totals-heading" className="mb-3 font-display text-base font-semibold">
-            Inspection totals
-          </h2>
-          <HistorySidebar
-            classificationCounts={classificationCounts}
-            hasValidReportDay={hasValidReportDay}
-            monthlyCounts={monthlyCounts}
-            selectedDayAverageConfidence={selectedDayAverageConfidence}
-            selectedDayCount={selectedDayCount}
-            totalInspections={totalInspections}
-          />
-        </section>
+        <button
+          type="button"
+          className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/50 px-4 py-3 text-left"
+          aria-controls="history-summary-controls"
+          aria-expanded={isSummaryExpanded}
+          onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
+        >
+          <span className="flex min-w-0 flex-col">
+            <span className="text-sm font-medium">
+              {isSummaryExpanded ? "Hide totals and trends" : "Show totals and trends"}
+            </span>
+            <span className="text-xs text-muted-foreground">Classification and monthly activity</span>
+          </span>
+          {isSummaryExpanded ? (
+            <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+          )}
+        </button>
+
+        {isSummaryExpanded && (
+          <section id="history-summary-controls" aria-labelledby="history-totals-heading">
+            <h2 id="history-totals-heading" className="mb-3 font-display text-base font-semibold">
+              Inspection totals
+            </h2>
+            <HistorySidebar
+              classificationCounts={classificationCounts}
+              hasValidReportDay={hasValidReportDay}
+              monthlyCounts={monthlyCounts}
+              selectedDayAverageConfidence={selectedDayAverageConfidence}
+              selectedDayCount={selectedDayCount}
+              totalInspections={totalInspections}
+            />
+          </section>
+        )}
       </div>
     </section>
   );
