@@ -75,6 +75,46 @@ function makeBlurryImageData(width: number, height: number, baseGray = 128): Ima
 }
 
 /**
+ * Creates a checkerboard softened by a box blur. The image still has
+ * meaningful edges, but its sharpness score is below the hard-fail boundary.
+ */
+function makeSoftenedCheckerboardImageData(
+  width: number,
+  height: number,
+  blurRadius: number,
+  blockSize = 8,
+): ImageData {
+  const data = new Uint8ClampedArray(width * height * 4);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let sum = 0;
+      let count = 0;
+
+      for (let dy = -blurRadius; dy <= blurRadius; dy++) {
+        for (let dx = -blurRadius; dx <= blurRadius; dx++) {
+          const sampleX = Math.max(0, Math.min(width - 1, x + dx));
+          const sampleY = Math.max(0, Math.min(height - 1, y + dy));
+          const isLight =
+            (Math.floor(sampleX / blockSize) + Math.floor(sampleY / blockSize)) % 2 === 0;
+          sum += isLight ? 255 : 0;
+          count++;
+        }
+      }
+
+      const value = Math.round(sum / count);
+      const index = (y * width + x) * 4;
+      data[index] = value;
+      data[index + 1] = value;
+      data[index + 2] = value;
+      data[index + 3] = 255;
+    }
+  }
+
+  return { data, width, height, colorSpace: "srgb" } as ImageData;
+}
+
+/**
  * Creates a checkerboard that alternates between `darkValue` and `lightValue`.
  * This gives a SHARP image (high Laplacian variance) with a tunable mean
  * brightness of (darkValue + lightValue) / 2, so we can test brightness
@@ -280,6 +320,16 @@ test.describe("validateImageQuality", () => {
 
     const blurIssue = result.issues.find((i) => i.code === "BLURRY_IMAGE");
     expect(blurIssue).toBeDefined();
+  });
+
+  test("allows moderately soft images to proceed with a warning", () => {
+    const imageData = makeSoftenedCheckerboardImageData(64, 64, 6);
+    const result = validateImageQuality(imageData, 640, 480);
+
+    const blurIssue = result.issues.find((i) => i.code === "BLURRY_IMAGE");
+    expect(blurIssue?.severity).toBe("warning");
+    expect(result.status).toBe("warning");
+    expect(result.canProceed).toBe(true);
   });
 
   test("collects ALL detected issues, not just the first one", () => {

@@ -30,7 +30,7 @@ const BRIGHTNESS_BRIGHT_WARN = 220;
 const BRIGHTNESS_BRIGHT_FAIL = 240;
 
 /** Laplacian variance below which the image is considered too blurry (hard fail) */
-const SHARPNESS_FAIL = 35;
+const SHARPNESS_FAIL = 20;
 /** Laplacian variance below which the image gets a blur warning */
 const SHARPNESS_WARN = 70;
 
