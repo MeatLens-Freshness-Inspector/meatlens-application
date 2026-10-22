@@ -14,7 +14,7 @@ services:
         - scripts/run-build.mjs
     envVars:
       - key: NODE_VERSION
-        value: "22.22.0"
+        value: "22.23.4"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_KEY
@@ -44,7 +44,7 @@ services:
     startCommand: npm run capture:model-accuracy --workspace backend
     envVars:
       - key: NODE_VERSION
-        value: "22.22.0"
+        value: "22.23.4"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_KEY

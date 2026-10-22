@@ -6,7 +6,7 @@ AI-powered meat freshness inspection for wet markets.
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js 22.23.4
 - npm or your preferred package manager
 
 ### Installation
@@ -19,7 +19,7 @@ git clone <YOUR_GIT_URL>
 cd freshness-forensics-main/frontend
 
 # Install dependencies
-npm install
+npm ci
 ```
 
 ### Development

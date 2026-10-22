@@ -5,7 +5,6 @@ import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
   type AuthenticationResponseJSON,
-  type AuthenticatorTransportFuture,
   type RegistrationResponseJSON,
   type WebAuthnCredential,
 } from "@simplewebauthn/server";
@@ -43,12 +42,12 @@ export interface PasskeyDatabase {
 
 function normalizeTransports(
   transports: string[] | null | undefined,
-): AuthenticatorTransportFuture[] | undefined {
+): string[] | undefined {
   if (!transports || transports.length === 0) {
     return undefined;
   }
 
-  return transports as AuthenticatorTransportFuture[];
+  return [...transports];
 }
 
 function normalizeDeviceLabel(deviceLabel: string | undefined): string {

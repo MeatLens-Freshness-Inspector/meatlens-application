@@ -1,10 +1,10 @@
 # ---- Build stage ----
-FROM node:22-alpine AS builder
+FROM node:22.23.4-alpine AS builder
 
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm ci --no-audit --no-fund
 
 COPY tsconfig.json ./
 COPY src ./src
@@ -12,13 +12,13 @@ COPY src ./src
 RUN npm run build
 
 # ---- Production stage ----
-FROM node:22-alpine AS production
+FROM node:22.23.4-alpine AS production
 
 WORKDIR /app
 
 # Reinstall prod deps natively (sharp requires platform bindings)
 COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
+RUN npm ci --omit=dev --no-audit --no-fund
 
 COPY --from=builder /app/dist ./dist
 

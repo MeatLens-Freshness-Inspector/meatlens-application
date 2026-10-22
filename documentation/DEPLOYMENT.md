@@ -4,7 +4,20 @@ Use [Getting started](GETTING_STARTED.md) for local prerequisites and
 environment names, [Security](SECURITY.md) for trust boundaries, and [API
 reference](API_REFERENCE.md) for health and smoke-check endpoints.
 
-MeatLens is deployed as two application services backed by Supabase:
+MeatLens is deployed as two application services backed by Supabase. Every
+Node.js service and build runner is pinned to Node.js **22.23.4**.
+
+Before deployment, run `npm ci` from the repository root and verify:
+
+```bash
+npm run security:runtime
+npm run security:audit
+```
+
+Both checks are blocking. Do not deploy from an installation that reports an
+advisory or uses a different Node.js runtime.
+
+The services are:
 
 - Frontend: Netlify static hosting.
 - Backend: Render Node web service.
@@ -33,7 +46,7 @@ The frontend build synchronizes and validates the MobileNetV3 ONNX artifact and 
 
 ## Render backend
 
-`render.yaml` creates one Node web service with:
+`render.yaml` creates one Node web service with Node.js 22.23.4 and:
 
 - build: `npm ci && npm run build`
 - start: `npm run start`
@@ -116,7 +129,7 @@ The repository workflow is path-aware and keeps deployment independent of paid i
 - frontend unit, component, integration, and critical Playwright gates; and
 - a final quality-gate job that summarizes all lanes and fails on any failure or cancellation.
 
-Documentation-only changes run the documentation validator and skip the expensive application lanes. Scheduled and manual runs additionally execute infrastructure checks and the full Playwright suite. Keep preview deploy hooks optional; deployment does not depend on them.
+Documentation-only changes run the documentation validator and skip the expensive application lanes. Scheduled and manual runs additionally execute infrastructure checks and the full Playwright suite. Dependency security is a required quality-gate job for relevant changes. Keep preview deploy hooks optional; deployment does not depend on them.
 
 ## Free-tier request budget
 

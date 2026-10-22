@@ -5,7 +5,7 @@
   "author": "Annah Claire B. Dimate",
   "private": true,
   "engines": {
-    "node": ">=22 <25"
+    "node": "22.23.4"
   },
   "workspaces": [
     "frontend",
@@ -41,19 +41,24 @@
     "test:e2e": "npm run test:e2e:full",
     "test:ci": "npm run lint && npm run typecheck && npm run test:scripts && npm run test:documentation && npm run test:fast && npm run test:backend:integration && npm run test:contract",
     "test:watch": "npm run test:e2e:ui -w frontend",
-    "build:android": "npm run build:frontend && npx cap sync android && npx cap open android"
+    "build:android": "npm run build:frontend && npx cap sync android && npx cap open android",
+    "security:runtime": "node scripts/check-node-runtime.mjs",
+    "security:audit": "npm audit --audit-level=low"
   },
   "dependencies": {
-    "@capacitor-community/sqlite": "^8.1.0",
-    "@capacitor/core": "^8.4.1",
-    "@capacitor/device": "^8.0.2",
-    "@capacitor/network": "^8.0.1",
-    "@techstark/opencv-js": "^4.12.0-release.1"
+    "@capacitor-community/sqlite": "8.1.1",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/device": "8.0.3",
+    "@capacitor/network": "8.0.1",
+    "@techstark/opencv-js": "5.0.0-release.1"
   },
   "devDependencies": {
-    "@capacitor/android": "^8.4.1",
-    "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^8.4.1",
-    "@capacitor/ios": "^8.4.1"
+    "@capacitor/android": "8.5.3",
+    "@capacitor/cli": "8.4.3",
+    "@capacitor/ios": "8.5.3",
+    "esbuild": "0.28.2"
+  },
+  "overrides": {
+    "esbuild": "0.28.2"
   }
 }

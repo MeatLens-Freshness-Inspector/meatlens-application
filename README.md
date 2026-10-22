@@ -17,14 +17,14 @@ This is a monorepo containing two main applications:
 ## Quick Start
 
 ### Prerequisites
-- Node.js 22.x (the supported runtime range is >=22 <25)
+- Node.js 22.23.4 (the pinned supported runtime)
 - npm v9+ (for workspace support)
 
 ### Installation
 
 ```bash
-# Install all dependencies for both frontend and backend
-npm install
+# Install exactly the committed dependency graph
+npm ci
 ```
 
 ### Development
@@ -136,6 +136,8 @@ npm run test:android:unit # Run Android JVM tests without a device
 npm run test:android     # Run Android JVM tests and compile instrumentation
 npm run test:android:instrumentation # Run AndroidX tests on a connected device
 npm run test:ci         # Local equivalent of the main CI test pipeline
+npm run security:audit   # Blocking zero-vulnerability dependency audit
+npm run security:runtime # Verify the pinned Node.js runtime
 npm run test:watch      # Watch tests
 ```
 
@@ -186,7 +188,7 @@ GitHub Actions uses [`.github/workflows/ci.yml`](.github/workflows/ci.yml) as th
 
 ### Playwright troubleshooting
 
-Run the same bounded commands locally from a Node 22 checkout when diagnosing a
+Run the same bounded commands locally from a Node 22.23.4 checkout when diagnosing a
 CI Playwright failure:
 
 ```bash

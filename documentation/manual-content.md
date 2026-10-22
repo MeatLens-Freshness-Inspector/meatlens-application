@@ -458,14 +458,14 @@ Audit-log entries are evidence and must not be casually edited or deleted.
 
 ## Supported technical baseline
 
-The supported runtime is Node.js 22.x, within `>=22 <25`, with npm 9 or newer. The repository is an npm workspace containing `frontend` and `backend`.
+The supported runtime is Node.js 22.23.4, with npm 9 or newer. The repository is an npm workspace containing `frontend` and `backend`.
 
 ## Install and configure
 
 From the repository root:
 
 ```powershell
-npm install
+npm ci
 ```
 
 Create `backend/.env` from the example and configure at least:

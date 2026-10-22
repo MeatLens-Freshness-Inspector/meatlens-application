@@ -76,7 +76,7 @@ cross-stack request rules.
 From the repository root:
 
 ```powershell
-npm install
+npm ci
 Copy-Item frontend/.env.example frontend/.env
 npm run dev:frontend
 ```

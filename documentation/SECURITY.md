@@ -5,6 +5,23 @@ frontend. For route-level authentication requirements, see [API reference](API_R
 for environment setup and release configuration, see [Getting started](GETTING_STARTED.md)
 and [Deployment](DEPLOYMENT.md).
 
+## Runtime and dependency policy
+
+- All supported deployment and CI surfaces use Node.js **22.23.4**, the pinned
+  patched Node 22 LTS runtime.
+- Installations use the committed lockfiles with `npm ci`; production images
+  omit development dependencies.
+- `npm run security:audit` is a blocking check and must report zero findings at
+  low severity or above. Advisories are not suppressed with ignore files or
+  advisory exceptions.
+- `npm run security:runtime` rejects any runtime other than Node.js 22.23.4.
+- The backend contains no request-reachable `child_process`, dynamic function,
+  or shell execution API. Trusted repository runners use fixed argument arrays
+  and do not enable `shell: true`.
+- MeatLens is a React/Vite single-page application and does not use Next.js or
+  React Server Components. The React Server Components deserialization path is
+  therefore not part of this application boundary.
+
 ## Secrets and trust boundaries
 
 Required backend secrets are configured only on the server:
@@ -78,12 +95,19 @@ The app applies `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, 
 
 ## Verification
 
-Security-sensitive changes must include or update tests under `backend/tests/unit`, `backend/tests/integration`, or `backend/tests/architecture`. Run:
+Security-sensitive changes must include or update tests under `backend/tests/unit`, `backend/tests/integration`, or `backend/tests/architecture`. The constrained local gate is:
 
 ```bash
-npm run test -w backend
+npm run security:audit
+npm run security:runtime
 npm run typecheck -w backend
+npm run build -w backend
+npm run typecheck -w frontend
+npm run build:frontend
+npm run test:scripts
+npm run test:documentation
 ```
 
-Also run `npm run test:documentation` when changing security instructions or
-route references so the linked operational guides remain valid.
+The full CI pipeline remains the authoritative release gate. When local memory
+is constrained, do not run the full E2E or full monorepo test suites; report
+those lanes as not run rather than treating them as passed.

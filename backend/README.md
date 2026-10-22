@@ -6,7 +6,7 @@ Node.js/Express backend for MeatLens authentication, inspection, storage, and ad
 
 ```bash
 cd backend
-npm install
+npm ci
 npm run dev
 ```
 

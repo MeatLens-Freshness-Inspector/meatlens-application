@@ -1,5 +1,5 @@
 # ---- Build stage ----
-FROM node:20-bullseye AS builder
+FROM node:22.23.4-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -8,9 +8,9 @@ COPY package.json package-lock.json* ./
 # Copy workspace package files so npm can install workspace packages and dev deps
 COPY frontend/package.json frontend/package-lock.json* frontend/
 COPY backend/package.json backend/package-lock.json* backend/
-# Use npm install (not `ci`) so optional native binaries are installed
-# for the build platform (fixes rollup native optional dependency errors)
-RUN npm install --prefer-offline --no-audit --no-progress --include=dev
+# npm ci installs the lockfile's platform-appropriate optional binaries while
+# preventing dependency drift in the production build context.
+RUN npm ci --no-audit --no-fund --include=dev
 
 COPY . .
 

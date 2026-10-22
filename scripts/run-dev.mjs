@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { createProcessInvocation } from "./process-runner.mjs";
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptsDir, "..");
@@ -26,11 +27,11 @@ export function runDev() {
   };
 
   for (const command of devCommands) {
-    const child = spawn(npmCommand, command.args, {
+    const invocation = createProcessInvocation(npmCommand, command.args);
+    const child = spawn(invocation.command, invocation.args, {
       cwd: repoRoot,
       env: process.env,
       stdio: "inherit",
-      shell: process.platform === "win32",
     });
 
     children.set(command.name, child);

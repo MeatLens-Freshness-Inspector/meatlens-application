@@ -124,7 +124,7 @@ in [Image access control](../../IMAGE_ACCESS_CONTROL.md) and [Storage setup](../
 From the repository root:
 
 ```bash
-npm install
+npm ci
 npm run dev:backend
 npm run typecheck -w backend
 npm run test -w backend

@@ -6,7 +6,7 @@ and [Security](SECURITY.md) before configuring shared or hosted environments.
 
 ## Prerequisites
 
-- Node.js 22.x (the supported runtime range is >=22 <25).
+- Node.js 22.23.4.
 - npm 9 or newer.
 - A Supabase project with PostgreSQL, Auth, and Storage enabled.
 - Git.
@@ -16,7 +16,7 @@ and [Security](SECURITY.md) before configuring shared or hosted environments.
 ```bash
 git clone <repository-url>
 cd botchabuster
-npm install
+npm ci
 ```
 
 The root package is an npm workspace for `frontend` and `backend`; install once from the repository root.
