@@ -36,3 +36,14 @@ test("documentation validation reports a missing local markdown target", () => {
   const errors = checkDocumentation(root);
   assert.ok(errors.some((error) => error.includes("MISSING.md")));
 });
+
+test("manual content documents automatic and fallback market classification", () => {
+  const content = fs.readFileSync(
+    path.join(process.cwd(), "documentation", "manual-content.md"),
+    "utf8",
+  );
+
+  assert.match(content, /50 metres/i);
+  assert.match(content, /latitude.*longitude/i);
+  assert.match(content, /closest market.*manually/i);
+});

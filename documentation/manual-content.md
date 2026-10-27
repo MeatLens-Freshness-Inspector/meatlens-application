@@ -186,11 +186,11 @@ Do not select an answer merely to unlock the camera. If an answer is unknown, st
 
 [[FIG:mobile-inspect-location-camera-annotated.png|Figure 7. Mobile location selection and camera entry|Mobile Capture Station view. Marker 1 identifies the manual market selector; marker 2 identifies Open Camera.]]
 
-1. In **Capture Station**, click **Location Selection**.
-2. Open the **Select market location** list.
-3. Click the market/location supplied by the administrator.
-4. Confirm that **Saved to report:** shows the intended market before capture.
-5. If the device requests location permission, allow it when authorized. GPS coordinates are captured separately when available; MeatLens does not auto-assign the nearest configured market.
+1. In **Capture Station**, allow location access when the device requests it.
+2. MeatLens captures the inspection GPS position and auto-detects the nearest configured market when it is within **50 metres** of that market's reference point.
+3. Confirm that the detected market and distance are shown before saving.
+4. If GPS is unavailable or no market is within 50 metres, open **Select market location** and choose the closest market manually.
+5. The same manual fallback is available offline. The queued record retains its coordinates and selected market; synchronization verifies the market again.
 
 ### 3. Capture or select an image
 
@@ -403,15 +403,16 @@ Click **Access Codes**, then use this control sequence:
 
 ## Manage market locations
 
-**Supported.** The Markets area maintains the selectable market/location list used during inspections.
+**Supported.** The Markets area maintains the selectable market/location list and the reference points used for automatic inspection classification.
 
 1. Click **Markets**.
-2. In **Add Market Location**, enter **Market Name**.
+2. In **Add Market Location**, enter **Market Name**, **Latitude**, and **Longitude** as a complete coordinate pair.
 3. Click **Add Market**.
-4. Confirm the new name appears in **Manage Market Locations** and matches the spelling used in reports and inspector instructions.
-5. To remove a location, click its delete control and confirm only after checking historical-report and active-inspection implications.
+4. For an existing market, use **Edit point**, enter the reference latitude and longitude, and click **Save point**.
+5. Confirm the row shows the configured reference point and that the name matches reports and inspector instructions.
+6. To remove a location, click its delete control and confirm only after checking historical-report and active-inspection implications.
 
-The market list is a selectable configuration list. Inspectors choose the physical market manually; the system does not replace that choice with the nearest configured market.
+Configured reference points drive automatic classification within 50 metres. Inspectors choose the closest market manually only when GPS cannot classify the inspection, including offline captures. The backend re-checks the coordinates during save and synchronization.
 
 ## Generate reports
 

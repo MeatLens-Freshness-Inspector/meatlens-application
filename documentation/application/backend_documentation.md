@@ -44,6 +44,13 @@ Current bounded contexts are `access-codes`, `analysis`, `analytics`, `audit`,
 `auth`, `chat`, `developer`, `inspections`, `markets`, `model-accuracy`,
 `transport`, and `users`.
 
+The `markets` module stores administrator-managed market names and nullable
+reference coordinates. Its resolver applies the inclusive 50-metre Haversine
+rule for inspection creation. A nearby configured market canonicalizes the
+submitted name; when no nearby point exists, the submitted name must match an
+existing market so online and offline manual fallback remain bounded to the
+configured market list.
+
 The normal module flow is:
 
 ```text

@@ -22,7 +22,7 @@ route files under `backend/src/modules/*/presentation`.
 | `/stats` | `GET /landing-page` | Public aggregate landing statistics |
 | `/chat` | assistant chat | Authenticated and rate-limited |
 | `/user-chat` | contacts, conversation messages, SSE events, send message | Authenticated; contacts and messages are participant-scoped |
-| `/market-locations` | list, create, delete | Reads may be public to the app; mutations require admin access |
+| `/market-locations` | list, create, update, delete | Reads may be public to the app; mutations require admin access |
 | `/documentation-photos` | list and save plain camera photos | Authenticated; idempotent and separate from inspections |
 | `/audit-logs` | list and create | Authenticated; writes are encrypted and actor-attributed |
 | `/developer-options` | unlock and verify | Developer-option policy and token checks |
@@ -61,6 +61,14 @@ The supported user workflow performs primary image inference in the frontend
 and submits the classification and evidence to these APIs. `POST
 /api/analysis/analyze` remains available only as a retired compatibility path;
 it is not the primary model runtime.
+
+Market location records include nullable `latitude` and `longitude` reference
+coordinates. Administrators configure them through `POST
+/api/market-locations` and `PATCH /api/market-locations/:id`; both mutations
+require a complete valid coordinate pair. Inspection creation re-checks the
+submitted GPS position against configured points using an inclusive 50-metre
+radius. If no point matches, the submitted market name must match a configured
+market for manual fallback, including records replayed from the offline queue.
 
 ## User, administration, and developer routes
 

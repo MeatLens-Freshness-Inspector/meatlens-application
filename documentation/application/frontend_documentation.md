@@ -113,6 +113,14 @@ queue/cache adapters keep bounded pending work and reconcile it when
 connectivity returns. The backend remains authoritative for users, roles,
 inspections, audit data, shared chat, and server-side policy checks.
 
+Inspection location resolution captures GPS during the existing capture flow.
+The frontend matches the nearest cached market reference point within an
+inclusive 50-metre radius and locks the automatic result. When GPS is missing
+or no point matches, the inspector selects the closest market manually; this
+fallback is available online and offline. Cached market rows support offline
+matching when present, and the queued market name plus coordinates are
+re-verified by the backend during synchronization.
+
 ## API Docs workspace
 
 Developer accounts have an API Docs tab in the developer settings workspace.
