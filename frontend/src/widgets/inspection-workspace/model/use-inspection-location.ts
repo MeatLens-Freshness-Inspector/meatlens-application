@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { marketLocationClient } from "@/entities/market-location";
+import {
+  marketLocationClient,
+  readCachedMarketLocations,
+  writeCachedMarketLocations,
+  type MarketLocation,
+} from "@/entities/market-location";
 import {
   FALLBACK_MARKET_LOCATIONS,
   normalizeMarketLocationNames,
@@ -19,10 +24,25 @@ function getLocationStorage(): Storage | null {
   }
 }
 
+function createFallbackMarketRows(): MarketLocation[] {
+  return FALLBACK_MARKET_LOCATIONS.map((name, index) => ({
+    id: `fallback-${index}-${name}`,
+    name,
+    latitude: null,
+    longitude: null,
+    created_at: "",
+    updated_at: "",
+  }));
+}
+
+function getMarketNames(locations: readonly MarketLocation[]): string[] {
+  return locations.map((location) => location.name);
+}
+
 export function useInspectionLocation(userId: string | null) {
   const [locationState, setLocationState] = useState(() => ({
     ownerId: userId,
-    marketLocations: FALLBACK_MARKET_LOCATIONS,
+    marketLocationRows: createFallbackMarketRows(),
     selectedLocation: FALLBACK_MARKET_LOCATIONS[0] ?? "",
   }));
 
@@ -30,7 +50,7 @@ export function useInspectionLocation(userId: string | null) {
     ? locationState
     : {
         ownerId: userId,
-        marketLocations: FALLBACK_MARKET_LOCATIONS,
+        marketLocationRows: createFallbackMarketRows(),
         selectedLocation: FALLBACK_MARKET_LOCATIONS[0] ?? "",
       };
 
@@ -40,7 +60,7 @@ export function useInspectionLocation(userId: string | null) {
     if (!userId) {
       setLocationState({
         ownerId: null,
-        marketLocations: FALLBACK_MARKET_LOCATIONS,
+        marketLocationRows: createFallbackMarketRows(),
         selectedLocation: FALLBACK_MARKET_LOCATIONS[0] ?? "",
       });
       return () => {
@@ -48,20 +68,21 @@ export function useInspectionLocation(userId: string | null) {
       };
     }
 
-    const applyLocations = (nextLocations: string[]) => {
+    const applyLocations = (nextLocations: MarketLocation[]) => {
       if (isCancelled) return;
 
       setLocationState((current) => {
         const rememberedLocation = readRememberedMarketLocation(getLocationStorage(), userId);
+        const nextNames = getMarketNames(nextLocations);
         return {
           ownerId: userId,
-          marketLocations: nextLocations,
+          marketLocationRows: nextLocations,
           selectedLocation: resolveActiveInspectionLocation(
             current.ownerId,
             userId,
             rememberedLocation,
             current.selectedLocation,
-            nextLocations,
+            nextNames,
           ),
         };
       });
@@ -70,9 +91,20 @@ export function useInspectionLocation(userId: string | null) {
     const loadMarketLocations = async () => {
       try {
         const locationRows = await marketLocationClient.getAll();
-        applyLocations(normalizeMarketLocationNames(locationRows));
+        const normalizedNames = normalizeMarketLocationNames(locationRows);
+        const normalizedRows = locationRows.length > 0
+          ? locationRows
+              .map((row) => ({
+                ...row,
+                name: row.name.trim().replace(/\s+/g, " "),
+              }))
+              .filter((row) => normalizedNames.includes(row.name))
+          : createFallbackMarketRows();
+        writeCachedMarketLocations(getLocationStorage(), normalizedRows);
+        applyLocations(normalizedRows);
       } catch {
-        applyLocations(FALLBACK_MARKET_LOCATIONS);
+        const cachedRows = readCachedMarketLocations(getLocationStorage());
+        applyLocations(cachedRows.length > 0 ? cachedRows : createFallbackMarketRows());
       }
     };
 
@@ -90,9 +122,9 @@ export function useInspectionLocation(userId: string | null) {
       }
       setLocationState((current) => ({
         ownerId: userId,
-        marketLocations: current.ownerId === userId
-          ? current.marketLocations
-          : FALLBACK_MARKET_LOCATIONS,
+        marketLocationRows: current.ownerId === userId
+          ? current.marketLocationRows
+          : createFallbackMarketRows(),
         selectedLocation: value,
       }));
     },
@@ -100,7 +132,8 @@ export function useInspectionLocation(userId: string | null) {
   );
 
   return {
-    marketLocations: activeLocationState.marketLocations,
+    marketLocations: getMarketNames(activeLocationState.marketLocationRows),
+    marketLocationRecords: activeLocationState.marketLocationRows,
     selectedLocation: activeLocationState.selectedLocation,
     handleSelectedLocationChange,
   };
