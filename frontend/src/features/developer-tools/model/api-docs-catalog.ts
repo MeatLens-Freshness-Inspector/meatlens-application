@@ -187,7 +187,8 @@ const chatOperations: ApiDocsOperation[] = [
 
 const marketLocationOperations: ApiDocsOperation[] = [
   operation("market-locations-list", "market-locations", "GET", "/market-locations", "List market locations", "Admin"),
-  operation("market-locations-create", "market-locations", "POST", "/market-locations", "Create a market location", "Admin", { body: jsonBody('{"name":""}') }),
+  operation("market-locations-create", "market-locations", "POST", "/market-locations", "Create a market location", "Admin", { body: jsonBody('{"name":"","latitude":null,"longitude":null}') }),
+  operation("market-locations-update", "market-locations", "PATCH", "/market-locations/{id}", "Update a market reference point", "Admin", { parameters: [pathParameter("id", "Market location id")], body: jsonBody('{"name":"","latitude":null,"longitude":null}') }),
   operation("market-locations-delete", "market-locations", "DELETE", "/market-locations/{id}", "Delete a market location", "Admin", { parameters: [pathParameter("id", "Market location id")], responseKind: "empty", responseContentType: "text/plain" }),
 ];
 

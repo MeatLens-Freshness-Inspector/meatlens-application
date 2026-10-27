@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { resolveInspectionLocationState } from "../../../../src/widgets/inspection-workspace/model/inspection-location-resolution";
+import {
+  resolveInspectionLocationState,
+  shouldWaitForOnlineLocationResolution,
+} from "../../../../src/widgets/inspection-workspace/model/inspection-location-resolution";
 
 const market = {
   id: "m1",
@@ -48,4 +51,15 @@ test("offline fallback preserves the remembered manual selection", () => {
 
   assert.equal(state.selectedLocation, "Old Market");
   assert.equal(state.locationResolution, "manual");
+});
+
+test("online saves wait for GPS classification while coordinates are pending", () => {
+  assert.equal(
+    shouldWaitForOnlineLocationResolution({ isOnline: true, coordinateStatus: "capturing" }),
+    true,
+  );
+  assert.equal(
+    shouldWaitForOnlineLocationResolution({ isOnline: false, coordinateStatus: "capturing" }),
+    false,
+  );
 });

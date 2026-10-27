@@ -616,27 +616,44 @@ export async function mockCommonApi(
     if (path === "/api/market-locations" && method === "GET") {
       await fulfillEncryptedRoute(route,
         jsonResponse([
-          { id: "market-1", name: "Old Market", created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
-          { id: "market-2", name: "New Market", created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
-          { id: "market-3", name: "Pag-asa Market", created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
-          { id: "market-4", name: "Baretto Talipapa", created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
-          { id: "market-5", name: "Old Cabalan Talipapa", created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
-          { id: "market-6", name: "New Cabalan Talipapa", created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
+          { id: "market-1", name: "Old Market", latitude: 14.5995, longitude: 120.9842, created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
+          { id: "market-2", name: "New Market", latitude: 14.6005, longitude: 120.9852, created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
+          { id: "market-3", name: "Pag-asa Market", latitude: null, longitude: null, created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
+          { id: "market-4", name: "Baretto Talipapa", latitude: null, longitude: null, created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
+          { id: "market-5", name: "Old Cabalan Talipapa", latitude: null, longitude: null, created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
+          { id: "market-6", name: "New Cabalan Talipapa", latitude: null, longitude: null, created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
         ])
       );
       return;
     }
 
     if (path === "/api/market-locations" && method === "POST") {
-      const payload = JSON.parse(decryptedRequest.postData || "{}") as { name?: string };
+      const payload = JSON.parse(decryptedRequest.postData || "{}") as { name?: string; latitude?: number | null; longitude?: number | null };
       const normalizedName = payload.name?.trim() || "Unnamed Market";
       await fulfillEncryptedRoute(route,
         jsonResponse({
           id: `market-${normalizedName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "new"}`,
           name: normalizedName,
+          latitude: payload.latitude ?? null,
+          longitude: payload.longitude ?? null,
           created_at: "2026-05-03T00:00:00.000Z",
           updated_at: "2026-05-03T00:00:00.000Z",
         }, 201)
+      );
+      return;
+    }
+
+    if (/^\/api\/market-locations\/[^/]+$/.test(path) && method === "PATCH") {
+      const payload = JSON.parse(decryptedRequest.postData || "{}") as { name?: string; latitude?: number | null; longitude?: number | null };
+      await fulfillEncryptedRoute(route,
+        jsonResponse({
+          id: path.split("/").at(-1),
+          name: payload.name?.trim() || "Updated Market",
+          latitude: payload.latitude ?? null,
+          longitude: payload.longitude ?? null,
+          created_at: "2026-05-03T00:00:00.000Z",
+          updated_at: "2026-05-03T00:00:00.000Z",
+        })
       );
       return;
     }

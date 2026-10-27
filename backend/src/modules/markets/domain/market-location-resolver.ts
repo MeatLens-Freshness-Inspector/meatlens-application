@@ -22,7 +22,11 @@ function parseCoordinate(value: unknown, fieldName: "latitude" | "longitude"): n
     throw new Error(`${fieldName} is required`);
   }
 
-  const parsed = typeof value === "number" ? value : Number(value);
+  const parsed = typeof value === "number"
+    ? value
+    : typeof value === "string" && value.trim() !== ""
+      ? Number(value)
+      : Number.NaN;
   if (!Number.isFinite(parsed)) {
     throw new Error(`${fieldName} must be a valid number`);
   }

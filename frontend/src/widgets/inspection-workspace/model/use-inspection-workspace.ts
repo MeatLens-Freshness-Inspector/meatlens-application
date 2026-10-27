@@ -71,6 +71,7 @@ import {
 import { useInspectionLocation } from "./use-inspection-location";
 import {
   resolveInspectionLocationState,
+  shouldWaitForOnlineLocationResolution,
   type InspectionLocationResolution,
 } from "./inspection-location-resolution";
 
@@ -111,24 +112,33 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     handleSelectedLocationChange,
     setResolvedLocation,
   } = useInspectionLocation(user?.id ?? null);
+  const selectedLocationRef = useRef(selectedLocation);
+  selectedLocationRef.current = selectedLocation;
 
   const applyLocationResolution = useCallback((nextCoordinates: InspectionCoordinates | null) => {
     const resolution = resolveInspectionLocationState({
       coordinates: nextCoordinates,
       marketLocations: marketLocationRecords,
-      selectedLocation,
+      selectedLocation: selectedLocationRef.current,
       isOnline,
     });
+    selectedLocationRef.current = resolution.selectedLocation;
     setResolvedLocation(resolution.selectedLocation);
     setLocationResolution(resolution.locationResolution);
     setLocationDistanceMeters(resolution.locationDistanceMeters);
-  }, [isOnline, marketLocationRecords, selectedLocation, setResolvedLocation]);
+  }, [isOnline, marketLocationRecords, setResolvedLocation]);
 
   const handleManualLocationChange = useCallback((value: string) => {
+    selectedLocationRef.current = value;
     setLocationResolution("manual");
     setLocationDistanceMeters(null);
     handleSelectedLocationChange(value);
   }, [handleSelectedLocationChange]);
+
+  useEffect(() => {
+    if (coordinates === null) return;
+    applyLocationResolution(coordinates);
+  }, [applyLocationResolution, coordinates]);
 
   useEffect(() => {
     if (!user || !isDeveloper) {
@@ -580,6 +590,11 @@ export function useInspectionWorkspace(): InspectPageViewModel {
       return;
     }
 
+    if (shouldWaitForOnlineLocationResolution({ isOnline, coordinateStatus })) {
+      toast.info("Waiting for your location before saving.");
+      return;
+    }
+
     if (!result) return;
     const decisionSource = inspectionDecisionSource ?? getInspectionDecisionSource(preScanForm);
 
@@ -646,9 +661,11 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     capturedInput,
     clientSubmissionId,
     coordinates,
+    coordinateStatus,
     createInspection,
     captureMode,
     inspectionDecisionSource,
+    isOnline,
     persistPendingDocumentationPhoto,
     persistPendingScan,
     preScanForm,

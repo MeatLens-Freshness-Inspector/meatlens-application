@@ -30,6 +30,15 @@ test("requires latitude and longitude together", () => {
   );
 });
 
+test("rejects non-numeric coordinate values instead of coercing them", () => {
+  for (const value of [true, [], "   "]) {
+    assert.throws(
+      () => normalizeMarketCoordinates({ latitude: value, longitude: 120 }),
+      /latitude.*valid number|latitude.*required/i,
+    );
+  }
+});
+
 test("returns the nearest configured market at the inclusive boundary", () => {
   const result = resolveNearestMarketLocation(
     { latitude: 14, longitude: 120.00044966 },

@@ -6,8 +6,8 @@ import {
 } from "../../../src/features/developer-tools";
 
 test("catalog contains every API route operation exactly once", () => {
-  assert.equal(API_DOCS_OPERATIONS.length, 68);
-  assert.equal(new Set(API_DOCS_OPERATIONS.map((operation) => operation.id)).size, 68);
+  assert.equal(API_DOCS_OPERATIONS.length, 69);
+  assert.equal(new Set(API_DOCS_OPERATIONS.map((operation) => operation.id)).size, 69);
   assert.deepEqual(
     API_DOCS_CATEGORIES.map((category) => category.id),
     [
