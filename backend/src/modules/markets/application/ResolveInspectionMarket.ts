@@ -3,6 +3,9 @@ import {
   resolveNearestMarketLocation,
   type MarketLocationCandidate,
 } from "../domain/market-location-resolver";
+import { InvalidInspectionMarketLocationError } from "../domain/InvalidInspectionMarketLocationError";
+
+export { InvalidInspectionMarketLocationError } from "../domain/InvalidInspectionMarketLocationError";
 
 export type InspectionMarketInput = {
   location: unknown;
@@ -12,13 +15,6 @@ export type InspectionMarketInput = {
 
 export interface InspectionMarketReader {
   getAll(): Promise<MarketLocationCandidate[]>;
-}
-
-export class InvalidInspectionMarketLocationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "InvalidInspectionMarketLocationError";
-  }
 }
 
 export class ResolveInspectionMarket {

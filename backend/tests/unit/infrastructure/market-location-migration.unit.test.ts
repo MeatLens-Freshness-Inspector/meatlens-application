@@ -5,7 +5,7 @@ import test from "node:test";
 
 test("market coordinate migration adds paired range-checked columns", () => {
   const sql = readFileSync(
-    join(process.cwd(), "backend", "supabase", "migrations", "20261027100000_add_market_location_coordinates.sql"),
+    join(process.cwd(), "supabase", "migrations", "20261027100000_add_market_location_coordinates.sql"),
     "utf8",
   ).toLowerCase();
 

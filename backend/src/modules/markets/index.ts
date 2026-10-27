@@ -6,9 +6,9 @@ export { CreateMarketLocation } from "./application/CreateMarketLocation";
 export { DeleteMarketLocation } from "./application/DeleteMarketLocation";
 export { UpdateMarketLocation } from "./application/UpdateMarketLocation";
 export {
-  InvalidInspectionMarketLocationError,
   ResolveInspectionMarket,
 } from "./application/ResolveInspectionMarket";
+export { InvalidInspectionMarketLocationError } from "./domain/InvalidInspectionMarketLocationError";
 export {
   normalizeMarketCoordinates,
   normalizeOptionalMarketCoordinates,
