@@ -1,6 +1,11 @@
 import type { MarketLocation } from "../infrastructure/MarketLocationService";
-export interface MarketLocationCreator { create(name: string): Promise<MarketLocation>; }
+import type { MarketCoordinatePair } from "../domain/market-location-resolver";
+export interface MarketLocationCreator {
+  create(name: string, coordinates: MarketCoordinatePair): Promise<MarketLocation>;
+}
 export class CreateMarketLocation {
   constructor(private readonly creator: MarketLocationCreator) {}
-  execute(name: string): Promise<MarketLocation> { return this.creator.create(name); }
+  execute(name: string, coordinates: MarketCoordinatePair): Promise<MarketLocation> {
+    return this.creator.create(name, coordinates);
+  }
 }

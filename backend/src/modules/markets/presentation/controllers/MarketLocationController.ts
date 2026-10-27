@@ -5,6 +5,11 @@ import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type Re
 import { ListMarketLocations } from "../../application/ListMarketLocations";
 import { CreateMarketLocation } from "../../application/CreateMarketLocation";
 import { DeleteMarketLocation } from "../../application/DeleteMarketLocation";
+import { UpdateMarketLocation } from "../../application/UpdateMarketLocation";
+import {
+  normalizeMarketCoordinates,
+  type MarketCoordinatePair,
+} from "../../domain/market-location-resolver";
 
 class MarketLocationAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -16,6 +21,37 @@ export class MarketLocationController {
   private readonly listLocations = new ListMarketLocations(marketLocationService);
   private readonly createLocation = new CreateMarketLocation(marketLocationService);
   private readonly deleteLocation = new DeleteMarketLocation(marketLocationService);
+  private readonly updateLocation = new UpdateMarketLocation(marketLocationService);
+
+  private parseMarketInput(body: unknown): {
+    name: string;
+    coordinates: MarketCoordinatePair;
+  } {
+    const input = (body ?? {}) as {
+      name?: unknown;
+      latitude?: unknown;
+      longitude?: unknown;
+    };
+    const name = typeof input.name === "string" ? input.name : "";
+    if (!name.trim()) {
+      throw new MarketLocationAccessError(400, "Market location name is required");
+    }
+
+    try {
+      return {
+        name,
+        coordinates: normalizeMarketCoordinates({
+          latitude: input.latitude,
+          longitude: input.longitude,
+        }),
+      };
+    } catch (error) {
+      throw new MarketLocationAccessError(
+        400,
+        error instanceof Error ? error.message : "Invalid market coordinates",
+      );
+    }
+  }
   private async requireAdmin(req: Request): Promise<RequestAuthContext> {
     try {
       const authContext = await resolveTrackedRequestAuthContext(req);
@@ -60,13 +96,8 @@ export class MarketLocationController {
     try {
       const actor = await this.requireAdmin(req);
 
-      const { name } = req.body as { name?: string };
-      if (!name || !name.trim()) {
-        res.status(400).json({ error: "Market location name is required" });
-        return;
-      }
-
-      const createdLocation = await this.createLocation.execute(name);
+      const { name, coordinates } = this.parseMarketInput(req.body);
+      const createdLocation = await this.createLocation.execute(name, coordinates);
 
       await auditLogService.write({
         payload: {
@@ -80,6 +111,8 @@ export class MarketLocationController {
           data: {
             market_location_id: createdLocation.id,
             name: createdLocation.name,
+            latitude: createdLocation.latitude,
+            longitude: createdLocation.longitude,
           },
         },
       });
@@ -87,6 +120,42 @@ export class MarketLocationController {
       res.status(201).json(createdLocation);
     } catch (error) {
       this.handleError("Create market location", res, error, "Failed to create market location");
+    }
+  }
+
+  async update(req: Request, res: Response): Promise<void> {
+    try {
+      const actor = await this.requireAdmin(req);
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: "Market location ID is required" });
+        return;
+      }
+
+      const { name, coordinates } = this.parseMarketInput(req.body);
+      const updatedLocation = await this.updateLocation.execute(id, name, coordinates);
+
+      await auditLogService.write({
+        payload: {
+          event_type: "admin.market_location.update",
+          event_time: new Date().toISOString(),
+          actor: toAuditActor(actor),
+          source: {
+            ip: req.ip || null,
+            user_agent: req.header("user-agent") || null,
+          },
+          data: {
+            market_location_id: updatedLocation.id,
+            name: updatedLocation.name,
+            latitude: updatedLocation.latitude,
+            longitude: updatedLocation.longitude,
+          },
+        },
+      });
+
+      res.json(updatedLocation);
+    } catch (error) {
+      this.handleError("Update market location", res, error, "Failed to update market location");
     }
   }
 

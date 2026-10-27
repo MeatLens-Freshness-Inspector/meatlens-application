@@ -1,8 +1,11 @@
 import { supabase } from "../../../integrations/supabase";
+import type { MarketCoordinatePair } from "../domain/market-location-resolver";
 
 export interface MarketLocation {
   id: string;
   name: string;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,7 +26,7 @@ export class MarketLocationService {
   async getAll(): Promise<MarketLocation[]> {
     const { data, error } = await supabase
       .from(this.tableName)
-      .select("id, name, created_at, updated_at")
+      .select("id, name, latitude, longitude, created_at, updated_at")
       .order("name", { ascending: true })
       .order("id", { ascending: true })
       .limit(2_000);
@@ -32,7 +35,7 @@ export class MarketLocationService {
     return (data as unknown as MarketLocation[]) ?? [];
   }
 
-  async create(name: string): Promise<MarketLocation> {
+  async create(name: string, coordinates: MarketCoordinatePair): Promise<MarketLocation> {
     const normalizedName = this.normalizeName(name);
     if (!normalizedName) {
       throw new Error("Market location name is required");
@@ -40,11 +43,44 @@ export class MarketLocationService {
 
     const { data, error } = await (supabase
       .from(this.tableName) as any)
-      .insert({ name: normalizedName })
-      .select("id, name, created_at, updated_at")
+      .insert({
+        name: normalizedName,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+      })
+      .select("id, name, latitude, longitude, created_at, updated_at")
       .single();
 
     if (error) throw new Error(`Failed to create market location: ${error.message}`);
+    return data as unknown as MarketLocation;
+  }
+
+  async update(
+    id: string,
+    name: string,
+    coordinates: MarketCoordinatePair,
+  ): Promise<MarketLocation> {
+    const normalizedName = this.normalizeName(name);
+    if (!id.trim()) {
+      throw new Error("Market location ID is required");
+    }
+    if (!normalizedName) {
+      throw new Error("Market location name is required");
+    }
+
+    const { data, error } = await (supabase
+      .from(this.tableName) as any)
+      .update({
+        name: normalizedName,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select("id, name, latitude, longitude, created_at, updated_at")
+      .single();
+
+    if (error) throw new Error(`Failed to update market location: ${error.message}`);
     return data as unknown as MarketLocation;
   }
 
