@@ -40,6 +40,7 @@ function getMarketNames(locations: readonly MarketLocation[]): string[] {
 }
 
 export function useInspectionLocation(userId: string | null) {
+  const [isOnline, setIsOnline] = useState(() => globalThis.navigator?.onLine ?? true);
   const [locationState, setLocationState] = useState(() => ({
     ownerId: userId,
     marketLocationRows: createFallbackMarketRows(),
@@ -53,6 +54,17 @@ export function useInspectionLocation(userId: string | null) {
         marketLocationRows: createFallbackMarketRows(),
         selectedLocation: FALLBACK_MARKET_LOCATIONS[0] ?? "",
       };
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -131,10 +143,19 @@ export function useInspectionLocation(userId: string | null) {
     [userId],
   );
 
+  const setResolvedLocation = useCallback((value: string) => {
+    setLocationState((current) => ({
+      ...current,
+      selectedLocation: value,
+    }));
+  }, []);
+
   return {
+    isOnline,
     marketLocations: getMarketNames(activeLocationState.marketLocationRows),
     marketLocationRecords: activeLocationState.marketLocationRows,
     selectedLocation: activeLocationState.selectedLocation,
     handleSelectedLocationChange,
+    setResolvedLocation,
   };
 }

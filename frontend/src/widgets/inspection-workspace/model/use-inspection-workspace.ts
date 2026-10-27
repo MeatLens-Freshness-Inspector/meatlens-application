@@ -69,6 +69,10 @@ import {
   getSaveButtonLabel,
 } from "./inspect-page";
 import { useInspectionLocation } from "./use-inspection-location";
+import {
+  resolveInspectionLocationState,
+  type InspectionLocationResolution,
+} from "./inspection-location-resolution";
 
 // Inspection workflow: pre-scan/capture -> local inference -> online save or offline queue.
 export function useInspectionWorkspace(): InspectPageViewModel {
@@ -86,6 +90,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   const [clientSubmissionId, setClientSubmissionId] = useState<string | null>(null);
   const [coordinates, setCoordinates] = useState<InspectionCoordinates | null>(null);
   const [coordinateStatus, setCoordinateStatus] = useState<CoordinateCaptureStatus>("idle");
+  const [locationResolution, setLocationResolution] = useState<InspectionLocationResolution>("pending");
+  const [locationDistanceMeters, setLocationDistanceMeters] = useState<number | null>(null);
   const [inspectionDecisionSource, setInspectionDecisionSource] =
     useState<InspectionDecisionSource | null>(null);
   const [captureResetKey, setCaptureResetKey] = useState(0);
@@ -97,7 +103,32 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   const queuedAtRef = useRef<string | null>(null);
   const createInspection = useSubmitInspection();
   const { savedInspectionId, isSubmitDisputePending, isDisputeSubmitted, setSavedInspectionId, reset: resetDispute, onSubmit: handleSubmitDispute } = useInspectionDispute();
-  const { marketLocations, selectedLocation, handleSelectedLocationChange } = useInspectionLocation(user?.id ?? null);
+  const {
+    isOnline,
+    marketLocations,
+    marketLocationRecords,
+    selectedLocation,
+    handleSelectedLocationChange,
+    setResolvedLocation,
+  } = useInspectionLocation(user?.id ?? null);
+
+  const applyLocationResolution = useCallback((nextCoordinates: InspectionCoordinates | null) => {
+    const resolution = resolveInspectionLocationState({
+      coordinates: nextCoordinates,
+      marketLocations: marketLocationRecords,
+      selectedLocation,
+      isOnline,
+    });
+    setResolvedLocation(resolution.selectedLocation);
+    setLocationResolution(resolution.locationResolution);
+    setLocationDistanceMeters(resolution.locationDistanceMeters);
+  }, [isOnline, marketLocationRecords, selectedLocation, setResolvedLocation]);
+
+  const handleManualLocationChange = useCallback((value: string) => {
+    setLocationResolution("manual");
+    setLocationDistanceMeters(null);
+    handleSelectedLocationChange(value);
+  }, [handleSelectedLocationChange]);
 
   useEffect(() => {
     if (!user || !isDeveloper) {
@@ -296,6 +327,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
       setClientSubmissionId(submissionId);
       setCoordinates(null);
       setCoordinateStatus("capturing");
+      setLocationResolution("pending");
+      setLocationDistanceMeters(null);
       setInspectionDecisionSource(null);
       queuedAtRef.current = null;
 
@@ -303,6 +336,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
         if (coordinateRequestIdRef.current !== requestId) return;
         setCoordinates(nextCoordinates);
         setCoordinateStatus(nextCoordinates ? "captured" : "unavailable");
+        applyLocationResolution(nextCoordinates);
       });
       return;
     }
@@ -330,6 +364,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     setClientSubmissionId(submissionId);
     setCoordinates(null);
     setCoordinateStatus("capturing");
+    setLocationResolution("pending");
+    setLocationDistanceMeters(null);
     setInspectionDecisionSource(protocolTriggered ? "protocol_pre_scan" : null);
     queuedAtRef.current = null;
     const mockAnalysisResult = getMockOfflineAnalysisResult();
@@ -347,6 +383,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
         setCoordinates(null);
         setCoordinateStatus("unavailable");
       }
+      applyLocationResolution(nextCoordinates);
 
       if (!protocolTriggered && mockAnalysisResult) {
         setInspectionDecisionSource("ai");
@@ -375,6 +412,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     saveStatus,
     user,
     captureMode,
+    applyLocationResolution,
   ]);
 
   useEffect(() => {
@@ -650,6 +688,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     setPreScanForm(createEmptyPreScanForm());
     setCoordinates(null);
     setCoordinateStatus("idle");
+    setLocationResolution("pending");
+    setLocationDistanceMeters(null);
     setInspectionDecisionSource(null);
     setSaveStatus("idle");
     resetDispute();
@@ -701,8 +741,12 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     result,
     preScanForm,
     marketLocations,
+    marketLocationRecords,
     selectedLocation,
     locationDisplayLabel,
+    locationResolution,
+    locationDistanceMeters,
+    isOnline,
     coordinateStatusText,
     inspectionDecisionSource,
     isAnalyzing,
@@ -742,7 +786,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     resetButtonLabel: captureMode === "photo-only" ? "New photo" : "New scan",
     onCaptureModeChange: handleCaptureModeChange,
     onPreScanFieldChange: handlePreScanFieldChange,
-    onSelectedLocationChange: handleSelectedLocationChange,
+    onSelectedLocationChange: handleManualLocationChange,
     onCapture: handleCapture,
     onReset: handleReset,
     onSave: handleSave,

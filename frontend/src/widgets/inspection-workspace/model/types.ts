@@ -7,6 +7,8 @@ import type {
   FreshnessClassification,
   InspectionDecisionSource,
 } from "@/entities/inspection";
+import type { MarketLocation } from "@/entities/market-location";
+import type { InspectionLocationResolution } from "./inspection-location-resolution";
 
 export type InspectionSaveStatus = "idle" | "saving" | "saved" | "queued";
 
@@ -16,8 +18,12 @@ export interface InspectPageViewModel {
   result: AnalysisResult | null;
   preScanForm: InspectionPreScanForm;
   marketLocations: string[];
+  marketLocationRecords: MarketLocation[];
   selectedLocation: string;
   locationDisplayLabel: string;
+  locationResolution: InspectionLocationResolution;
+  locationDistanceMeters: number | null;
+  isOnline: boolean;
   coordinateStatusText: string | null;
   inspectionDecisionSource: InspectionDecisionSource | null;
   isAnalyzing: boolean;
