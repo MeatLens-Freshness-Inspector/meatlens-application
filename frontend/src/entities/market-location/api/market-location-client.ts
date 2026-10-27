@@ -5,6 +5,8 @@ import { fetchWithTimeout } from "@/shared/api";
 export interface MarketLocation {
   id: string;
   name: string;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
 }
