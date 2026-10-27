@@ -11,6 +11,7 @@ import {
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
+import { MarketLocationEditor } from "./market-location-editor";
 
 type MarketsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
@@ -20,9 +21,21 @@ const MarketsTab = ({ dashboard }: MarketsTabContentProps) => {
   const {
     marketLocations,
     newMarketName,
+    newMarketLatitude,
+    newMarketLongitude,
+    setNewMarketLatitude,
+    setNewMarketLongitude,
     setNewMarketName,
     handleCreateMarket,
     handleDeleteMarket,
+    editingMarketId,
+    editingLatitude,
+    editingLongitude,
+    setEditingLatitude,
+    setEditingLongitude,
+    startEditingMarket,
+    cancelEditingMarket,
+    saveMarketCoordinates,
   } = dashboard;
 
   return (
@@ -47,6 +60,30 @@ const MarketsTab = ({ dashboard }: MarketsTabContentProps) => {
               onChange={(event) => setNewMarketName(event.target.value)}
               className="h-10 rounded-xl"
             />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Latitude</Label>
+              <Input
+                type="number"
+                step="any"
+                placeholder="e.g. 14.5995"
+                value={newMarketLatitude}
+                onChange={(event) => setNewMarketLatitude(event.target.value)}
+                className="h-10 rounded-xl"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Longitude</Label>
+              <Input
+                type="number"
+                step="any"
+                placeholder="e.g. 120.9842"
+                value={newMarketLongitude}
+                onChange={(event) => setNewMarketLongitude(event.target.value)}
+                className="h-10 rounded-xl"
+              />
+            </div>
           </div>
           <Button
             size="sm"
@@ -99,6 +136,17 @@ const MarketsTab = ({ dashboard }: MarketsTabContentProps) => {
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
+                  <MarketLocationEditor
+                    market={market}
+                    isEditing={editingMarketId === market.id}
+                    latitude={editingLatitude}
+                    longitude={editingLongitude}
+                    onStartEditing={() => startEditingMarket(market)}
+                    onCancel={cancelEditingMarket}
+                    onSave={() => void saveMarketCoordinates(market.id)}
+                    onLatitudeChange={setEditingLatitude}
+                    onLongitudeChange={setEditingLongitude}
+                  />
                 </div>
               ))}
             </div>
