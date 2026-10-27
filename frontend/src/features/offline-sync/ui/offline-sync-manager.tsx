@@ -7,6 +7,8 @@ import {
 } from "@/entities/inspection";
 import type { AnalysisModelSelection } from "@/features/offline-analysis";
 import type { PendingDocumentationPhoto } from "../model/documentation-photo-queue";
+import { resolveQueuedInspectionLocation } from "../model/location-resolution-sync";
+import type { MarketLocation } from "@/entities/market-location";
 
 const FORCE_RETAKE_CONFIDENCE_THRESHOLD = 80;
 
@@ -114,6 +116,7 @@ export type OfflineSyncDependencies = {
   removeDocumentationPhoto: (id: string) => Promise<void>;
   getPendingAuditLogs: () => Promise<PendingAuditLog[]>;
   removeAuditLog: (id: string) => Promise<void>;
+  getMarketLocations: () => Promise<MarketLocation[]>;
   protocolSpoiledReason: string;
   buildProtocolSpoiledAnalysisResult: (reason?: string) => AnalysisResult;
   analyzeOffline: (file: File, meatType: MeatType) => Promise<AnalysisResult>;
@@ -162,6 +165,12 @@ async function processScan(
       : scan.analysisResult ?? await dependencies.analyzeOffline(imageFile, scan.meatType);
   const shouldRecommendRetake = result.confidence_score < FORCE_RETAKE_CONFIDENCE_THRESHOLD;
 
+  const marketLocations = await dependencies.getMarketLocations();
+  const resolvedLocation = resolveQueuedInspectionLocation(scan, marketLocations);
+  if (!resolvedLocation) {
+    throw new Error("Queued inspection has no valid market location");
+  }
+
   // An inspection without its evidence photo is incomplete. Keep the scan in
   // the durable queue when upload fails so it can retry without losing the image.
   const imageUrl = await dependencies.uploadInspectionImage(imageFile);
@@ -184,7 +193,7 @@ async function processScan(
     user_id: scan.userId,
     client_submission_id: scan.id,
     meat_type: scan.meatType,
-    location: scan.location ?? null,
+    location: resolvedLocation,
     location_latitude: scan.locationLatitude ?? null,
     location_longitude: scan.locationLongitude ?? null,
     stall_number: scan.stallNumber ?? null,
@@ -217,7 +226,7 @@ async function processScan(
   queryClient.invalidateQueries({ queryKey: ["inspection-stats"] });
 
   const label = scan.meatType.charAt(0).toUpperCase() + scan.meatType.slice(1);
-  const locationSuffix = scan.location ? ` @ ${scan.location}` : "";
+  const locationSuffix = ` @ ${resolvedLocation}`;
   if (shouldRecommendRetake) {
     toast.warning(
       `Synced offline scan: ${label}${locationSuffix} - ${result.classification} (${result.confidence_score}%). Retake is recommended.`

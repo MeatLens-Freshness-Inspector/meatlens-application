@@ -22,6 +22,7 @@ import { PublicLayout } from "@/app/layouts/public-layout";
 import { hasSkippedOnboardingForSession } from "@/features/onboarding";
 import { uploadClient } from "@/features/inspection-submission";
 import { inspectionClient } from "@/entities/inspection";
+import { marketLocationClient } from "@/entities/market-location";
 import { documentationPhotoClient } from "@/entities/documentation-photo";
 import { auditLogClient } from "@/entities/audit-log";
 import {
@@ -71,6 +72,7 @@ const offlineSyncDependencies: OfflineSyncDependencies = {
   removeDocumentationPhoto,
   getPendingAuditLogs,
   removeAuditLog,
+  getMarketLocations: () => marketLocationClient.getAll(),
   protocolSpoiledReason: PROTOCOL_SPOILED_REASON,
   buildProtocolSpoiledAnalysisResult,
   analyzeOffline,

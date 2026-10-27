@@ -519,6 +519,10 @@ export function useInspectionWorkspace(): InspectPageViewModel {
       toast.error(captureMode === "photo-only" ? "Please sign in to save photos" : "Please sign in to save inspections");
       return;
     }
+    if (!selectedLocation.trim()) {
+      toast.error("Select the closest market before saving.");
+      return;
+    }
 
     const submissionId = clientSubmissionId ?? createClientSubmissionId();
     setClientSubmissionId(submissionId);

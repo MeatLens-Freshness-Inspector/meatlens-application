@@ -27,3 +27,4 @@ export {
   removeDocumentationPhoto,
   type PendingDocumentationPhoto,
 } from "./model/documentation-photo-queue";
+export { resolveQueuedInspectionLocation, type QueuedLocationInput } from "./model/location-resolution-sync";
