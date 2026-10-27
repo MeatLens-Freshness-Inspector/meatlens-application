@@ -13,6 +13,11 @@ import { ListInspections } from "../../application/ListInspections";
 import { GetInspectionStatistics } from "../../application/GetInspectionStatistics";
 import { CreateInspection } from "../../application/CreateInspection";
 import { DeleteInspection } from "../../application/DeleteInspection";
+import { marketLocationService } from "../../../markets/infrastructure/MarketLocationService";
+import {
+  InvalidInspectionMarketLocationError,
+  ResolveInspectionMarket,
+} from "../../../markets/application/ResolveInspectionMarket";
 
 class RequestAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -25,6 +30,7 @@ export class InspectionController {
   private readonly getInspectionStatistics = new GetInspectionStatistics(inspectionService);
   private readonly createInspection = new CreateInspection(inspectionService);
   private readonly deleteInspection = new DeleteInspection(inspectionService);
+  private readonly resolveInspectionMarket = new ResolveInspectionMarket(marketLocationService);
   private getScope(req: Request): InspectionScope {
     return req.query.scope === "all" ? "all" : "mine";
   }
@@ -161,8 +167,24 @@ export class InspectionController {
         return;
       }
 
+      let resolvedLocation: string;
+      try {
+        resolvedLocation = await this.resolveInspectionMarket.execute({
+          location: input.location,
+          location_latitude: coordinates.location_latitude,
+          location_longitude: coordinates.location_longitude,
+        });
+      } catch (error) {
+        if (error instanceof InvalidInspectionMarketLocationError) {
+          res.status(400).json({ error: error.message });
+          return;
+        }
+        throw error;
+      }
+
       const inspectionInput: InspectionInsert = {
         ...(input as InspectionInsert),
+        location: resolvedLocation,
         ...coordinates,
         ...preScanFields,
         ...(normalizedCapturedAt ? { captured_at: normalizedCapturedAt } : {}),
