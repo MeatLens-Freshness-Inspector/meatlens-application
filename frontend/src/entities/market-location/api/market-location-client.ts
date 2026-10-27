@@ -11,6 +11,14 @@ export interface MarketLocation {
   updated_at: string;
 }
 
+export interface MarketLocationCreateInput {
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+export type MarketLocationUpdateInput = MarketLocationCreateInput;
+
 export class MarketLocationClient {
   private static instance: MarketLocationClient;
 
@@ -53,13 +61,26 @@ export class MarketLocationClient {
     return res.json();
   }
 
-  async create(name: string): Promise<MarketLocation> {
+  async create(input: MarketLocationCreateInput): Promise<MarketLocation>;
+  async create(name: string): Promise<MarketLocation>;
+  async create(input: MarketLocationCreateInput | string): Promise<MarketLocation> {
+    const payload = typeof input === "string" ? { name: input } : input;
     const res = await fetchWithTimeout(`${API_BASE_URL}/market-locations`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) throw this.createRequestError("create market location", res);
+    return res.json();
+  }
+
+  async update(id: string, input: MarketLocationUpdateInput): Promise<MarketLocation> {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/market-locations/${id}`, {
+      method: "PATCH",
+      headers: this.createHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) throw this.createRequestError("update market location", res);
     return res.json();
   }
 
