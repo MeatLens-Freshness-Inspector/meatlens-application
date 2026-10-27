@@ -33,6 +33,9 @@ const InspectPageView = () => {
             mode={inspectPage.captureMode}
             selectedLocation={inspectPage.selectedLocation}
             coordinateStatusText={inspectPage.coordinateStatusText}
+            locationResolution={inspectPage.locationResolution}
+            locationDistanceMeters={inspectPage.locationDistanceMeters}
+            isOnline={inspectPage.isOnline}
             marketLocations={inspectPage.marketLocations}
             isPreScanChecklistComplete={inspectPage.isPreScanChecklistComplete}
             isLocationSelectionDisabled={inspectPage.isLocationSelectionDisabled}

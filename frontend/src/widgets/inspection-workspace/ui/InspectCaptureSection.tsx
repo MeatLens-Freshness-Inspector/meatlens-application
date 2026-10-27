@@ -15,6 +15,9 @@ type InspectCaptureSectionProps = {
   selectedLocation: string;
   mode?: InspectionCaptureMode;
   coordinateStatusText: string | null;
+  locationResolution: "pending" | "automatic" | "manual";
+  locationDistanceMeters: number | null;
+  isOnline: boolean;
   marketLocations: string[];
   isPreScanChecklistComplete: boolean;
   isLocationSelectionDisabled: boolean;
@@ -39,6 +42,9 @@ export function InspectCaptureSection({
   selectedLocation,
   mode = "analyze",
   coordinateStatusText,
+  locationResolution,
+  locationDistanceMeters,
+  isOnline,
   marketLocations,
   isPreScanChecklistComplete,
   isLocationSelectionDisabled,
@@ -67,8 +73,24 @@ export function InspectCaptureSection({
 
       <div className="mb-4 space-y-1">
         <Label className="text-xs uppercase tracking-widest text-muted-foreground">
-          Change location
+          Market location
         </Label>
+        {locationResolution === "automatic" && selectedLocation && (
+          <p className="text-[11px] font-medium text-primary" data-location-resolution="automatic">
+            Auto-detected: {selectedLocation}
+            {locationDistanceMeters != null ? ` · ${Math.round(locationDistanceMeters)} m away` : ""}
+          </p>
+        )}
+        {locationResolution === "manual" && (
+          <p className="text-[11px] font-medium text-warning" data-location-resolution="manual">
+            Select the closest market
+          </p>
+        )}
+        {locationResolution === "pending" && isOnline && (
+          <p className="text-[11px] text-muted-foreground" data-location-resolution="pending">
+            Location will be detected automatically after capture.
+          </p>
+        )}
         <Select
           value={selectedLocation}
           onValueChange={onSelectedLocationChange}

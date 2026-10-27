@@ -765,7 +765,11 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     isPreScanBypassed,
     isPreScanChecklistComplete,
     isLocationSelectionDisabled:
-      saveStatus === "saving" || createInspection.isPending || marketLocations.length === 0,
+      saveStatus === "saving"
+      || createInspection.isPending
+      || marketLocations.length === 0
+      || (isOnline && !capturedInput && locationResolution !== "manual")
+      || locationResolution === "automatic",
     isPhotoOnlyMode: captureMode === "photo-only",
     saveStatus,
     savedInspectionId,
