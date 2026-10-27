@@ -7,6 +7,7 @@ import type { Inspection as BackendInspection } from "../../backend/src/types/in
 import { auditLogService } from "../../backend/src/modules/audit/infrastructure/AuditLogService";
 import { authService } from "../../backend/src/modules/auth/infrastructure/SupabaseAuthFactory";
 import { inspectionService } from "../../backend/src/modules/inspections/infrastructure/InspectionService";
+import { marketLocationService } from "../../backend/src/modules/markets/infrastructure/MarketLocationService";
 import { profileService } from "../../backend/src/modules/users/infrastructure/ProfileService";
 import { getSessionLimitService } from "../../backend/src/modules/auth/infrastructure/SessionLimitService";
 import { startTestServer } from "../../backend/tests/support/appFactory";
@@ -18,6 +19,7 @@ import {
 import { assertAnalysisResponseSchema } from "./schemas/analysis-response.schema";
 import { assertErrorResponseSchema } from "./schemas/error-response.schema";
 import { assertInspectionListSchema } from "./schemas/inspection.schema";
+import { assertMarketLocationListSchema } from "./schemas/market-location.schema";
 
 function assertAuthBootstrapPayload(value: unknown): asserts value is AuthBootstrapPayload {
   assert.ok(value && typeof value === "object" && !Array.isArray(value), "Auth bootstrap payload must be an object");
@@ -161,6 +163,31 @@ test("inspection list responses match the shared frontend and backend inspection
     authService.getUserByAccessToken = originalGetUserByAccessToken;
     profileService.getPrivilegeSummary = originalGetPrivilegeSummary;
     inspectionService.getAll = originalGetAll;
+    await close();
+  }
+});
+
+test("market location responses expose nullable coordinate fields", async () => {
+  const originalGetAll = marketLocationService.getAll.bind(marketLocationService);
+  marketLocationService.getAll = async () => [{
+    id: "market-1",
+    name: "Old Market",
+    latitude: 14.5995,
+    longitude: 120.9842,
+    created_at: "2026-10-27T00:00:00.000Z",
+    updated_at: "2026-10-27T00:00:00.000Z",
+  }];
+
+  const { baseUrl, close } = await startTestServer();
+  try {
+    const client = await getEncryptedTestClient(baseUrl);
+    const response = await client.request("/api/market-locations");
+    const body = await response.json();
+    assert.equal(response.status, 200);
+    assertMarketLocationListSchema(body);
+    assert.equal(body[0].latitude, 14.5995);
+  } finally {
+    marketLocationService.getAll = originalGetAll;
     await close();
   }
 });
