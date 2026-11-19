@@ -230,7 +230,7 @@ test("analysis result fixtures stay on the shared frontend contract", () => {
     flagged_deviations: [],
     explanation: "The sample appears fresh.",
     analysis_source: "resnet50",
-    model_path: "models/resnet50_meat/meatlens_resnet50_exp2.onnx",
+    model_path: "model/model1/resnet50.onnx",
   };
 
   assertAnalysisResponseSchema(analysis);

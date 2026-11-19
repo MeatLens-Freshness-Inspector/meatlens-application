@@ -70,7 +70,7 @@ test("shows ResNet50 as the rendered result source label", () => {
     <AnalysisResultCard
       result={buildResult({
         analysis_source: "resnet50",
-        model_path: "/models/resnet50_meat/meatlens_resnet50_exp2.onnx",
+        model_path: "/model/model1/resnet50.onnx",
       })}
     />
   );

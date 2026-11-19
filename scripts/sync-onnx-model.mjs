@@ -1,69 +1,63 @@
-import { copyFileSync, existsSync, mkdirSync, statSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const thisFile = fileURLToPath(import.meta.url);
-const scriptsDir = path.dirname(thisFile);
-const repoRoot = path.resolve(scriptsDir, "..");
+const repoRoot = path.resolve(path.dirname(thisFile), "..");
+const modelRoot = path.join(repoRoot, "model");
+const publicModelRoot = path.join(repoRoot, "frontend", "public", "model");
+const modelDirectories = ["model1", "model2", "model3", "model4", "model5"];
+const browserAssetExtensions = new Set([".json", ".onnx", ".txt"]);
 
-const sourceCandidates = [
-  path.join(repoRoot, "model", "NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only.onnx"),
-  path.join(repoRoot, "model", "meatlens_mobilenetv3small_cnn_only.onnx"),
-  path.join(repoRoot, "model", "meatlens_mobilenetv3small_cnn_only (1).onnx"),
-  path.join(repoRoot, "model", "mobilenetv3.onnx"),
-  path.join(repoRoot, "model", "model.onnx"),
-];
-const metadataSourceCandidates = [
-  path.join(repoRoot, "model", "NEW-meatlens_best_model_metadata.json"),
-  path.join(repoRoot, "model", "NEW-meatlens_mobilenetv3small_cnn_only_metadata.json"),
-  path.join(repoRoot, "model", "NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata.json"),
-  path.join(repoRoot, "model", "NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json"),
-  path.join(repoRoot, "model", "meatlens_mobilenetv3small_cnn_only_metadata.json"),
-  path.join(repoRoot, "model", "meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata.json"),
-  path.join(repoRoot, "model", "meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json"),
-  path.join(repoRoot, "model", "meatlens_best_model_metadata.json"),
-  path.join(repoRoot, "model", "best_model_metadata.json"),
-  path.join(
-    repoRoot,
-    "frontend",
-    "public",
-    "models",
-    "mobilenetv3_meat",
-    "meatlens_mobilenetv3small_cnn_only_metadata.json"
-  ),
-  path.join(
-    repoRoot,
-    "frontend",
-    "public",
-    "models",
-    "mobilenetv3_meat",
-    "meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata.json"
-  ),
-  path.join(
-    repoRoot,
-    "frontend",
-    "public",
-    "models",
-    "mobilenetv3_meat",
-    "meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json"
-  ),
-];
+function copyIfChanged(sourcePath, targetPath) {
+  mkdirSync(path.dirname(targetPath), { recursive: true });
 
-const targetPaths = [
-  path.join(repoRoot, "frontend", "public", "model", "NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only.onnx"),
-  path.join(repoRoot, "frontend", "public", "model", "meatlens_mobilenetv3small_cnn_only.onnx"),
-  path.join(repoRoot, "frontend", "public", "models", "mobilenetv3_meat", "NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only.onnx"),
-  path.join(repoRoot, "frontend", "public", "models", "mobilenetv3_meat", "meatlens_mobilenetv3small_cnn_only.onnx"),
-];
-const metadataTargetPaths = [
-  path.join(repoRoot, "frontend", "public", "model", "NEW-meatlens_best_model_metadata.json"),
-  path.join(repoRoot, "frontend", "public", "model", "meatlens_best_model_metadata.json"),
-  path.join(repoRoot, "frontend", "public", "models", "mobilenetv3_meat", "NEW-meatlens_best_model_metadata.json"),
-  path.join(repoRoot, "frontend", "public", "models", "mobilenetv3_meat", "meatlens_best_model_metadata.json"),
-];
+  let shouldCopy = true;
+  if (existsSync(targetPath)) {
+    const sourceStat = statSync(sourcePath);
+    const targetStat = statSync(targetPath);
+    shouldCopy =
+      sourceStat.size !== targetStat.size ||
+      targetStat.mtimeMs < sourceStat.mtimeMs;
+  }
 
-const ortDistDir = path.join(repoRoot, "node_modules", "onnxruntime-web", "dist");
-const ortPublicDir = path.join(repoRoot, "frontend", "public", "ort");
+  if (!shouldCopy) {
+    console.info(`[sync-onnx-model] Up to date: ${path.relative(repoRoot, targetPath)}`);
+    return;
+  }
+
+  copyFileSync(sourcePath, targetPath);
+  console.info(
+    `[sync-onnx-model] Copied ${path.relative(repoRoot, sourcePath)} -> ${path.relative(repoRoot, targetPath)}`,
+  );
+}
+
+function syncModelDirectory(directoryName) {
+  const sourceDirectory = path.join(modelRoot, directoryName);
+  const targetDirectory = path.join(publicModelRoot, directoryName);
+
+  if (!existsSync(sourceDirectory)) {
+    throw new Error(`[sync-onnx-model] Missing canonical model directory: ${path.relative(repoRoot, sourceDirectory)}`);
+  }
+
+  for (const entry of readdirSync(sourceDirectory, { withFileTypes: true })) {
+    if (!entry.isFile() || !browserAssetExtensions.has(path.extname(entry.name).toLowerCase())) {
+      continue;
+    }
+
+    copyIfChanged(
+      path.join(sourceDirectory, entry.name),
+      path.join(targetDirectory, entry.name),
+    );
+  }
+}
+
+for (const directoryName of modelDirectories) {
+  syncModelDirectory(directoryName);
+}
+
+const ortDistDirectory = path.join(repoRoot, "node_modules", "onnxruntime-web", "dist");
+const ortPublicDirectory = path.join(repoRoot, "frontend", "public", "ort");
 const ortRuntimeFiles = [
   "ort-wasm-simd-threaded.wasm",
   "ort-wasm-simd-threaded.mjs",
@@ -75,181 +69,12 @@ const ortRuntimeFiles = [
   "ort-wasm-simd-threaded.asyncify.mjs",
 ];
 
-const sourcePath = sourceCandidates.find((candidate) => existsSync(candidate));
-const metadataSourcePath = metadataSourceCandidates.find((candidate) => existsSync(candidate));
-
-if (!sourcePath) {
-  console.info("[sync-onnx-model] No ONNX source found in model/. Skipping.");
-  process.exit(0);
-}
-
-const sourceStat = statSync(sourcePath);
-
-for (const targetPath of targetPaths) {
-  mkdirSync(path.dirname(targetPath), { recursive: true });
-
-  let shouldCopy = true;
-  if (existsSync(targetPath)) {
-    const targetStat = statSync(targetPath);
-    shouldCopy =
-      targetStat.size !== sourceStat.size ||
-      targetStat.mtimeMs < sourceStat.mtimeMs;
-  }
-
-  if (!shouldCopy) {
-    console.info(`[sync-onnx-model] Up to date: ${path.relative(repoRoot, targetPath)}`);
-    continue;
-  }
-
-  copyFileSync(sourcePath, targetPath);
-  console.info(
-    `[sync-onnx-model] Copied ${path.relative(repoRoot, sourcePath)} -> ${path.relative(repoRoot, targetPath)}`
-  );
-}
-
-if (!metadataSourcePath) {
-  console.info("[sync-onnx-model] No metadata source found in model/. Skipping metadata sync.");
-} else {
-  const metadataSourceStat = statSync(metadataSourcePath);
-
-  for (const targetPath of metadataTargetPaths) {
-    mkdirSync(path.dirname(targetPath), { recursive: true });
-
-    let shouldCopy = true;
-    if (existsSync(targetPath)) {
-      const targetStat = statSync(targetPath);
-      shouldCopy =
-        targetStat.size !== metadataSourceStat.size ||
-        targetStat.mtimeMs < metadataSourceStat.mtimeMs;
-    }
-
-    if (!shouldCopy) {
-      console.info(`[sync-onnx-model] Up to date: ${path.relative(repoRoot, targetPath)}`);
-      continue;
-    }
-
-    copyFileSync(metadataSourcePath, targetPath);
-    console.info(
-      `[sync-onnx-model] Copied ${path.relative(repoRoot, metadataSourcePath)} -> ${path.relative(repoRoot, targetPath)}`
-    );
-  }
-}
-
-mkdirSync(ortPublicDir, { recursive: true });
 for (const runtimeFile of ortRuntimeFiles) {
-  const runtimeSource = path.join(ortDistDir, runtimeFile);
-  const runtimeTarget = path.join(ortPublicDir, runtimeFile);
-
-  if (!existsSync(runtimeSource)) {
-    console.warn(`[sync-onnx-model] Missing runtime file: ${path.relative(repoRoot, runtimeSource)}`);
+  const sourcePath = path.join(ortDistDirectory, runtimeFile);
+  if (!existsSync(sourcePath)) {
+    console.warn(`[sync-onnx-model] Missing runtime file: ${path.relative(repoRoot, sourcePath)}`);
     continue;
   }
 
-  const sourceRuntimeStat = statSync(runtimeSource);
-  let shouldCopyRuntime = true;
-
-  if (existsSync(runtimeTarget)) {
-    const targetRuntimeStat = statSync(runtimeTarget);
-    shouldCopyRuntime =
-      targetRuntimeStat.size !== sourceRuntimeStat.size ||
-      targetRuntimeStat.mtimeMs < sourceRuntimeStat.mtimeMs;
-  }
-
-  if (!shouldCopyRuntime) {
-    console.info(`[sync-onnx-model] Up to date: ${path.relative(repoRoot, runtimeTarget)}`);
-    continue;
-  }
-
-  copyFileSync(runtimeSource, runtimeTarget);
-  console.info(
-    `[sync-onnx-model] Copied ${path.relative(repoRoot, runtimeSource)} -> ${path.relative(repoRoot, runtimeTarget)}`
-  );
+  copyIfChanged(sourcePath, path.join(ortPublicDirectory, runtimeFile));
 }
-
-// Sync model2 assets if present in model-old/model2 or model/model2
-const model2OnnxSource = [
-  path.join(repoRoot, "frontend", "public", "model-old", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx"),
-  path.join(repoRoot, "model", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx"),
-].find((candidate) => existsSync(candidate));
-
-const model2MetaSource = [
-  path.join(repoRoot, "frontend", "public", "model-old", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json"),
-  path.join(repoRoot, "model", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json"),
-].find((candidate) => existsSync(candidate));
-
-if (model2OnnxSource) {
-  const target = path.join(repoRoot, "frontend", "public", "model", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx");
-  mkdirSync(path.dirname(target), { recursive: true });
-  if (!existsSync(target) || statSync(target).size !== statSync(model2OnnxSource).size) {
-    copyFileSync(model2OnnxSource, target);
-    console.info(`[sync-onnx-model] Copied model2 ONNX -> ${path.relative(repoRoot, target)}`);
-  }
-}
-
-if (model2MetaSource) {
-  const target = path.join(repoRoot, "frontend", "public", "model", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json");
-  mkdirSync(path.dirname(target), { recursive: true });
-  if (!existsSync(target) || statSync(target).size !== statSync(model2MetaSource).size) {
-    copyFileSync(model2MetaSource, target);
-    console.info(`[sync-onnx-model] Copied model2 metadata -> ${path.relative(repoRoot, target)}`);
-  }
-}
-
-const model3Files = [
-  "meatlens_roboflow_mobilenetv3small_8fold_final.onnx",
-  "meatlens_roboflow_mobilenetv3small_8fold_final_metadata.json",
-];
-
-for (const fileName of model3Files) {
-  const source = path.join(repoRoot, "model3", fileName);
-  if (!existsSync(source)) {
-    continue;
-  }
-
-  const target = path.join(repoRoot, "frontend", "public", "model", "model3", fileName);
-  mkdirSync(path.dirname(target), { recursive: true });
-  if (!existsSync(target) || statSync(target).size !== statSync(source).size) {
-    copyFileSync(source, target);
-    console.info(`[sync-onnx-model] Copied model3 ${fileName} -> ${path.relative(repoRoot, target)}`);
-  }
-}
-
-const model4Files = [
-  "meatlens_final_8samples_cnn_only_mobilenetv3small.onnx",
-  "meatlens_final_8samples_cnn_only_mobilenetv3small_metadata.json",
-  "README.txt",
-];
-
-for (const fileName of model4Files) {
-  const source = path.join(repoRoot, "model4", fileName);
-  if (!existsSync(source)) {
-    continue;
-  }
-
-  const target = path.join(repoRoot, "frontend", "public", "model", "model4", fileName);
-  mkdirSync(path.dirname(target), { recursive: true });
-  if (!existsSync(target) || statSync(target).size !== statSync(source).size) {
-    copyFileSync(source, target);
-    console.info(`[sync-onnx-model] Copied model4 ${fileName} -> ${path.relative(repoRoot, target)}`);
-  }
-}
-
-const model5Files = [
-  "meatlens_best_fulldata_final_cnn_only_mobilenetv3small.onnx",
-  "meatlens_best_fulldata_final_cnn_only_mobilenetv3small_metadata.json",
-];
-
-for (const fileName of model5Files) {
-  const source = path.join(repoRoot, "model5", fileName);
-  if (!existsSync(source)) {
-    continue;
-  }
-
-  const target = path.join(repoRoot, "frontend", "public", "model", "model5", fileName);
-  mkdirSync(path.dirname(target), { recursive: true });
-  if (!existsSync(target) || statSync(target).size !== statSync(source).size) {
-    copyFileSync(source, target);
-    console.info(`[sync-onnx-model] Copied model5 ${fileName} -> ${path.relative(repoRoot, target)}`);
-  }
-}
-

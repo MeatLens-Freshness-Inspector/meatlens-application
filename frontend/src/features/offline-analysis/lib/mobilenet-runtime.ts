@@ -108,32 +108,15 @@ const MODEL_ASSET_PROFILES: Record<MobileNetModelVariant, ModelAssetProfile> = {
     modelCandidatePaths: Array.from(
       new Set(
         [
-          "/model/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only.onnx",
-          "/model/meatlens_mobilenetv3small_cnn_only.onnx",
-          "/models/mobilenetv3_meat/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only.onnx",
-          "/models/mobilenetv3_meat/meatlens_mobilenetv3small_cnn_only.onnx",
-          "/models/mobilenetv3_meat/model.onnx",
+          "/model/model1/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only.onnx",
+          "/model/model1/meatlens_mobilenetv3small_cnn_only (1).onnx",
           ENV_MOBILE_MODEL_PATH,
         ].filter((path) => path.length > 0)
       )
     ),
     metadataCandidatePaths: [
-      "/model/NEW-meatlens_best_model_metadata.json",
-      "/model/NEW-meatlens_mobilenetv3small_cnn_only_metadata.json",
-      "/model/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata.json",
-      "/model/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json",
-      "/models/mobilenetv3_meat/NEW-meatlens_best_model_metadata.json",
-      "/models/mobilenetv3_meat/NEW-meatlens_mobilenetv3small_cnn_only_metadata.json",
-      "/models/mobilenetv3_meat/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata.json",
-      "/models/mobilenetv3_meat/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json",
-      "/models/mobilenetv3_meat/meatlens_best_model_metadata.json",
-      "/models/mobilenetv3_meat/meatlens_mobilenetv3small_cnn_only_metadata.json",
-      "/models/mobilenetv3_meat/meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata.json",
-      "/models/mobilenetv3_meat/meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json",
-      "/model/meatlens_mobilenetv3small_metadata.json",
+      "/model/model1/NEW-meatlens_best_model_metadata.json",
       ENV_MOBILE_METADATA_PATH,
-      "/model/meatlens_best_model_metadata.json",
-      "/models/meatlens_best_model_metadata.json",
     ].filter((path) => path.length > 0),
     defaultMetadata: { ...DEFAULT_MODEL_METADATA },
   },
@@ -143,15 +126,9 @@ const MODEL_ASSET_PROFILES: Record<MobileNetModelVariant, ModelAssetProfile> = {
     preprocessContract: "segmented_center_roi",
     modelCandidatePaths: [
       "/model/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
-      "/model-old/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
-      "/models/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
-      "/models/mobilenetv3_meat/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
     ],
     metadataCandidatePaths: [
       "/model/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
-      "/model-old/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
-      "/models/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
-      "/models/mobilenetv3_meat/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
     ],
     defaultMetadata: {
       ...DEFAULT_MODEL_METADATA,

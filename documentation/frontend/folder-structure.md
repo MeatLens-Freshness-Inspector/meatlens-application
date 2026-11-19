@@ -107,9 +107,7 @@ hard limit and a 450-line split-review threshold for maintained source files.
 
 ```text
 public/
-├── models/                 # current ONNX model families and metadata
-├── model-old/              # retained historical model assets
-├── model/                  # compatibility model assets
+├── model/                  # canonical model/model1 through model/model5 assets
 ├── ort/                    # ONNX Runtime Web loader assets
 ├── letterheads/            # report letterheads and rendered pages
 ├── *.png / *.ico           # browser and mobile icons

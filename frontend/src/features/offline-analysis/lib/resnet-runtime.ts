@@ -78,15 +78,10 @@ const DEFAULT_MODEL_METADATA: MeatLensModelMetadata = {
 const MODEL_ASSET_PROFILE: ModelAssetProfile = {
   displayName: "ResNet50",
   modelCandidatePaths: [
-    "/model/meatlens_resnet50_exp2.onnx",
-    "/models/resnet50_meat/meatlens_resnet50_exp2.onnx",
-    "/models/resnet50_meat/model.onnx",
+    "/model/model1/resnet50.onnx",
     ENV_MODEL_PATH,
   ].filter((path) => path.length > 0),
   metadataCandidatePaths: [
-    "/model/meatlens_resnet50_exp2_metadata.json",
-    "/models/resnet50_meat/meatlens_resnet50_exp2_metadata.json",
-    "/models/resnet50_meat/model_metadata.json",
     ENV_METADATA_PATH,
   ].filter((path) => path.length > 0),
   defaultMetadata: { ...DEFAULT_MODEL_METADATA },

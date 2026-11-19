@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,12 +8,8 @@ if (!isNetlifyBuild) {
 }
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-
-function hasAny(paths) {
-  return paths.some((candidate) => existsSync(path.join(rootDir, candidate)));
-}
-
 const apiBaseUrl = (process.env.VITE_API_BASE_URL ?? "").trim();
+
 if (!apiBaseUrl) {
   console.error("[netlify-preflight] Missing VITE_API_BASE_URL. Set it in Netlify env vars (Build scope).");
   process.exit(1);
@@ -28,64 +24,30 @@ if (!apiBaseUrl.toLowerCase().includes("/api")) {
   console.warn("[netlify-preflight] VITE_API_BASE_URL does not include '/api'. Verify this is intentional.");
 }
 
-const modelCandidates = [
-  "model/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only.onnx",
-  "frontend/public/model/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only.onnx",
-  "frontend/public/models/mobilenetv3_meat/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only.onnx",
-  "model/meatlens_mobilenetv3small_cnn_only.onnx",
-  "model/meatlens_mobilenetv3small_cnn_only (1).onnx",
-  "frontend/public/model/meatlens_mobilenetv3small_cnn_only.onnx",
-  "frontend/public/models/mobilenetv3_meat/meatlens_mobilenetv3small_cnn_only.onnx",
-  "frontend/public/model/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
-  "frontend/public/model-old/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
-  "model3/meatlens_roboflow_mobilenetv3small_8fold_final.onnx",
-  "frontend/public/model/model3/meatlens_roboflow_mobilenetv3small_8fold_final.onnx",
-  "model4/meatlens_final_8samples_cnn_only_mobilenetv3small.onnx",
-  "frontend/public/model/model4/meatlens_final_8samples_cnn_only_mobilenetv3small.onnx",
-  "model5/meatlens_best_fulldata_final_cnn_only_mobilenetv3small.onnx",
-  "frontend/public/model/model5/meatlens_best_fulldata_final_cnn_only_mobilenetv3small.onnx",
-];
+const modelRoot = path.join(rootDir, "model");
+const modelDirectories = ["model1", "model2", "model3", "model4", "model5"];
 
-const metadataCandidates = [
-  "model/NEW-meatlens_best_model_metadata.json",
-  "model/NEW-meatlens_mobilenetv3small_cnn_only_metadata.json",
-  "model/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata.json",
-  "model/NEW-meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json",
-  "frontend/public/model/NEW-meatlens_best_model_metadata.json",
-  "frontend/public/models/mobilenetv3_meat/NEW-meatlens_best_model_metadata.json",
-  "model/meatlens_mobilenetv3small_cnn_only_metadata.json",
-  "model/meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata.json",
-  "model/meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json",
-  "model/meatlens_best_model_metadata.json",
-  "frontend/public/model/meatlens_best_model_metadata.json",
-  "frontend/public/models/mobilenetv3_meat/meatlens_best_model_metadata.json",
-  "frontend/public/models/mobilenetv3_meat/meatlens_mobilenetv3small_cnn_only_metadata.json",
-  "frontend/public/models/mobilenetv3_meat/meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata.json",
-  "frontend/public/models/mobilenetv3_meat/meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json",
-  "frontend/public/model/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
-  "frontend/public/model-old/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
-  "model3/meatlens_roboflow_mobilenetv3small_8fold_final_metadata.json",
-  "frontend/public/model/model3/meatlens_roboflow_mobilenetv3small_8fold_final_metadata.json",
-  "model4/meatlens_final_8samples_cnn_only_mobilenetv3small_metadata.json",
-  "frontend/public/model/model4/meatlens_final_8samples_cnn_only_mobilenetv3small_metadata.json",
-  "model5/meatlens_best_fulldata_final_cnn_only_mobilenetv3small_metadata.json",
-  "frontend/public/model/model5/meatlens_best_fulldata_final_cnn_only_mobilenetv3small_metadata.json",
-];
-
-if (!hasAny(modelCandidates)) {
-  console.error("[netlify-preflight] MobileNetV3 ONNX file not found. Expected one of:");
-  for (const candidate of modelCandidates) {
-    console.error(`  - ${candidate}`);
+function hasAsset(directoryName, extension) {
+  const directory = path.join(modelRoot, directoryName);
+  if (!existsSync(directory)) {
+    return false;
   }
-  process.exit(1);
+
+  return readdirSync(directory, { withFileTypes: true }).some(
+    (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(extension),
+  );
 }
 
-if (!hasAny(metadataCandidates)) {
-  console.error("[netlify-preflight] Model metadata JSON not found. Expected one of:");
-  for (const candidate of metadataCandidates) {
-    console.error(`  - ${candidate}`);
+for (const directoryName of modelDirectories) {
+  if (!hasAsset(directoryName, ".onnx")) {
+    console.error(`[netlify-preflight] Missing ONNX model in model/${directoryName}.`);
+    process.exit(1);
   }
-  process.exit(1);
+
+  if (!hasAsset(directoryName, ".json")) {
+    console.error(`[netlify-preflight] Missing model metadata in model/${directoryName}.`);
+    process.exit(1);
+  }
 }
 
-console.info("[netlify-preflight] Deployment checks passed.");
+console.info("[netlify-preflight] Deployment checks passed for model/model1 through model/model5.");

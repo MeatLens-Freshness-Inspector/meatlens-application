@@ -100,7 +100,7 @@ export default defineConfig(({ mode }) => ({
           {
             urlPattern: ({ url }: { url: URL }) =>
               url.pathname.endsWith(".onnx") &&
-              (url.pathname.startsWith("/model/") || url.pathname.startsWith("/models/")),
+              url.pathname.startsWith("/model/"),
             handler: "NetworkFirst",
             options: {
               cacheName: "onnx-model-cache",
